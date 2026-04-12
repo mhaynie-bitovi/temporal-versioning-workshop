@@ -4,12 +4,7 @@ IMAGE_NAME = valet-worker
 WORKER_CONTROLLER_NAMESPACE = temporal-worker-controller
 WORKER_CONTROLLER_VERSION ?= 0.24.0
 
-.PHONY: setup build deploy get-status get-logs start-load-simulator start-worker run-tests clean start-temporal-server
-
-## start-temporal-server — start Temporal dev server locally (outside the cluster)
-start-temporal-server:
-	@echo "==> Starting Temporal dev server on localhost:7233 (UI on localhost:8233)..."
-	temporal server start-dev --log-format pretty
+.PHONY: setup build deploy get-status get-logs run-load-simulator run-worker run-tests clean
 
 ## setup — start minikube, install Worker Controller (assumes Temporal dev server already running)
 setup:
@@ -68,12 +63,12 @@ get-status:
 get-logs:
 	kubectl logs -n $(WORKER_CONTROLLER_NAMESPACE) -l app.kubernetes.io/name=temporal-worker-controller --tail=100 -f
 
-## start-worker — run the worker locally
-start-worker:
+## run-worker — run the worker locally
+run-worker:
 	PYTHONPATH=. exec $(PYTHON) -m valet.worker
 
-## start-load-simulator — run the load simulator locally (Temporal dev server must be running)
-start-load-simulator:
+## run-load-simulator — run the load simulator locally (Temporal dev server must be running)
+run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
 
 ## run-tests — run tests

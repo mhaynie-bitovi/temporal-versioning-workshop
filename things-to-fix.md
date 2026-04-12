@@ -1,0 +1,4 @@
+- make sure imports are already setup
+- make sure TODO (Part X.3) formatting is consistent throughout workshop
+- add this is the end of the exercise banner to the end of the exercise readmes
+- make the "voice" of the readme instructions consistent throughout the workshop. sometimes it sounds like it's talking to the author not the audience

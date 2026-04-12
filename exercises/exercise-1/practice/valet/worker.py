@@ -2,11 +2,13 @@ import asyncio
 import logging
 import os
 
+from temporalio import activity, workflow
 from temporalio.client import Client
 from temporalio.worker import Worker
 from temporalio.worker.workflow_sandbox import SandboxedWorkflowRunner, SandboxRestrictions
 
 from valet.activities import (
+    bill_customer,
     move_car,
     notify_owner,
     release_parking_space,
@@ -17,7 +19,11 @@ from valet.valet_parking_workflow import ValetParkingWorkflow
 
 
 async def main():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+    # Simplify log output: don't append Temporal context dicts to messages
+    workflow.logger.workflow_info_on_message = False
+    activity.logger.activity_info_on_message = False
 
     temporal_address = os.environ.get("TEMPORAL_ADDRESS", "localhost:7233")
     temporal_namespace = os.environ.get("TEMPORAL_NAMESPACE", "default")
@@ -28,8 +34,7 @@ async def main():
         client,
         task_queue="valet",
         workflows=[ValetParkingWorkflow, ParkingLotWorkflow],
-        # TODO(Part C.2): Add notify_owner to this activities list.
-        activities=[move_car, request_parking_space, release_parking_space, notify_owner],
+        activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer],
         workflow_runner=SandboxedWorkflowRunner(
             # Prevent the sandbox from re-reading workflow code from disk on each run.
             # Without this, a running worker would pick up file edits without a restart.

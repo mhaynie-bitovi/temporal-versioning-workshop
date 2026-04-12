@@ -20,7 +20,7 @@ Restart the Temporal dev server at the start of Exercise 2 so there are no lefto
   - Add `VersioningBehavior.AUTO_UPGRADE` to `ParkingLotWorkflow` (immortal singleton with continue-as-new)
   - Add `WorkerDeploymentConfig` to `worker.py` (reads `TEMPORAL_DEPLOYMENT_NAME` and `TEMPORAL_WORKER_BUILD_ID` from env)
 - **CLI work:**
-  - `make start-worker BUILD_ID=1.0`
+  - `make run-worker BUILD_ID=1.0`
   - `temporal worker deployment set-current --deployment-name valet --build-id 1.0`
 - **Run load simulator**, observe workflows flowing through the versioned 1.0 worker.
 - **Teaches:**
@@ -35,7 +35,7 @@ Restart the Temporal dev server at the start of Exercise 2 so there are no lefto
   - Call `bill_customer` activity at the end of the workflow (models, activity definition, imports, and worker registration are already in place)
   - Remove `workflow.patched("add-notify-owner")` guard — no longer needed, since PINNED means old workflows never replay on new code
 - **CLI work:**
-  - Start 2.0 worker alongside 1.0: `make start-worker BUILD_ID=2.0`
+  - Start 2.0 worker alongside 1.0: `make run-worker BUILD_ID=2.0`
   - Set 2.0 as current: `temporal worker deployment set-current --deployment-name valet --build-id 2.0`
 - **Observe:**
   - New workflows start on 2.0 with billing. In-flight 1.0 workflows stay pinned to 1.0 — they complete on the 1.0 worker with no billing, no patching, no replay issues.
@@ -74,7 +74,7 @@ Present this table (from Temporal docs) to frame when each behavior applies:
 - **Code changes (introduce the bug intentionally):**
   - Modify the `bill_customer` activity to include the buggy line. This should be a small, realistic mistake — one line that causes an exception.
 - **Deploy v3.0:**
-  - Start 3.0 worker: `make start-worker BUILD_ID=3.0`
+  - Start 3.0 worker: `make run-worker BUILD_ID=3.0`
   - Set 3.0 as current: `temporal worker deployment set-current --deployment-name valet --build-id 3.0`
   - Watch new workflows start on 3.0. After a few seconds, notice activity failures in the Temporal UI or worker logs — the billing activity is failing and retrying.
 - **Step 1 — Instant rollback (stop the bleeding):**
@@ -87,7 +87,7 @@ Present this table (from Temporal docs) to frame when each behavior applies:
   - Observe: the previously-stuck workflows now complete successfully on v2.0.
 - **Step 3 — Fix the bug and deploy v3.1:**
   - Revert the buggy line in `bill_customer` (fix the `AttributeError`).
-  - Start a v3.1 worker: `make start-worker BUILD_ID=3.1`
+  - Start a v3.1 worker: `make run-worker BUILD_ID=3.1`
   - Set v3.1 as current: `temporal worker deployment set-current --deployment-name valet --build-id 3.1`
   - New workflows now flow through v3.1 with working billing.
 - **Step 4 — Clean up:**
@@ -107,7 +107,7 @@ Present this table (from Temporal docs) to frame when each behavior applies:
 - **Motivation:** "We need to make a breaking change to ParkingLotWorkflow. Since it's AUTO_UPGRADE, we'd normally need to patch. But since it already uses continue-as-new, there's a cleaner option: switch to PINNED + upgrade on CaN. Each run stays on its version, and the new run after CaN starts on the new version."
 - **Code changes:** Switch ParkingLotWorkflow from AUTO_UPGRADE to PINNED, add upgrade-on-CaN check, make the non-replay-safe change (TBD — specific change to ParkingLotWorkflow).
 - **Deploy v4.0:**
-  - Start 4.0 worker: `make start-worker BUILD_ID=4.0`
+  - Start 4.0 worker: `make run-worker BUILD_ID=4.0`
   - Set 4.0 as current: `temporal worker deployment set-current --deployment-name valet --build-id 4.0`
 - **Observe:** ParkingLotWorkflow finishes its current run on v3.1 code, performs CaN, and the new run starts on v4.0 with the updated code — no patching needed.
 - **Teaches:**

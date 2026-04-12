@@ -1,9 +1,5 @@
 # Exercise 1: Patching a Non-Deterministic Change + Replay Testing
 
-**Time:** ~30 minutes
-**Theme:** "Product wants us to send the car owner a confirmation when their car is parked."
-**Skills:** Replay testing, identifying non-determinism errors (NDEs), using `workflow.patched()`
-
 ### Summary
 
 - **Part A:** Run the v1.0 workflow, export a completed workflow's history, and run a replay test against it.
@@ -36,7 +32,7 @@ temporal server start-dev
 4. Start the worker (in a **new terminal** from the same directory):
 
 ```bash
-make start-worker
+make run-worker
 ```
 
 > **Note:** Keep this worker running — you'll be instructed when to restart it later.
@@ -44,7 +40,7 @@ make start-worker
 5. Start the load simulator (in a **new terminal** from the same directory):
 
 ```bash
-make start-load-simulator
+make run-load-simulator
 ```
 
 6. Wait for a workflow to complete (trip durations are 5–30 seconds). Then **stop the load simulator** (Ctrl+C) and export a completed workflow's history:
@@ -83,8 +79,6 @@ await workflow.execute_activity(
 )
 ```
 
-   Don't forget to add `notify_owner` and `NotifyOwnerInput` to the imports.
-
 2. Run the replay test — **it fails** with a non-determinism error:
 
 ```bash
@@ -111,8 +105,6 @@ if workflow.patched("add-notify-owner"):
     )
 ```
 
-2. Register `notify_owner` in the worker's activities list in `valet/worker.py`.
-
 3. Run the replay test — **it passes**:
 
 ```bash
@@ -125,25 +117,25 @@ make run-tests
 
 ## Part D — See it in action (~6 min)
 
-Now let's watch the patched workflow handle both in-flight (old) and brand-new executions. We'll use the starter script (`make run-starter`), which kicks off a **single** workflow per invocation, making it easy to track exactly which executions should take the pre-patch vs post-patch path.
+The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code and watch a **single worker** handle both old and new executions correctly.
 
-1. Make sure the **old (unpatched) worker is still running**. Start a workflow in a **new terminal**:
+1. With the **old worker still running** (from Part A), start a workflow in a **new terminal**:
 
 ```bash
 make run-starter
 ```
 
-   Note the workflow ID printed to the terminal (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. It has a 30-second trip, so it will sit in `sleep` for a bit — leave it in flight.
+   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. The old worker begins executing it with the v1.0 code — no `notify_owner`, no patch marker in the history. The starter sets a 30-second trip, so the workflow is now sitting in `sleep`.
 
-2. **Stop the old worker** (Ctrl+C) and restart it with the patched code:
+2. While that workflow is still sleeping, **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
 
 ```bash
-make start-worker
+make run-worker
 ```
 
-3. Watch the first workflow complete in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). It completes **without** `notify_owner` — `workflow.patched()` returned `False` during replay (no marker in the history) and skipped the notification block.
+   The restarted worker now has your Part C code with `workflow.patched("add-notify-owner")`.
 
-4. Now start a **second** workflow:
+3. Start a **second** workflow:
 
 ```bash
 make run-starter
@@ -151,6 +143,13 @@ make run-starter
 
    Note this workflow ID — this is your **post-patch workflow**.
 
-5. Watch this second workflow in the Temporal Web UI. It **includes** `notify_owner` right after `request_parking_space` — `workflow.patched()` returned `True` during live execution and wrote a marker event into the history.
+4. Watch **both** workflows complete in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). The same worker handles both, but the outcomes differ:
 
-6. Stop the worker when you're satisfied (Ctrl+C).
+   - **Pre-patch workflow:** Completes **without** `notify_owner`. When the new worker replays this workflow's history, it finds no patch marker, so `workflow.patched()` returns `False` and the notification block is skipped.
+   - **Post-patch workflow:** Includes `notify_owner` right after `request_parking_space`. This is a fresh execution, so `workflow.patched()` returns `True` and writes a marker into the history.
+
+5. Stop the worker when you're satisfied (Ctrl+C).
+
+---
+
+> **🎉 Congratulations!** You've completed Exercise 1.

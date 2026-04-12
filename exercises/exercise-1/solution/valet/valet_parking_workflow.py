@@ -5,19 +5,19 @@ from temporalio import workflow
 with workflow.unsafe.imports_passed_through():
     from valet.activities import (
         move_car,
-        notify_owner,
         release_parking_space,
         request_parking_space,
+        notify_owner
     )
     from valet.models import (
         Location,
         LocationKind,
         MoveCarInput,
-        NotifyOwnerInput,
         ReleaseParkingSpaceInput,
         RequestParkingSpaceInput,
         ValetParkingInput,
         ValetParkingOutput,
+        NotifyOwnerInput
     )
 
 
@@ -41,7 +41,7 @@ class ValetParkingWorkflow:
             kind=LocationKind.PARKING_SPACE, id=parking_space_result.parking_space_number
         )
 
-        # Notify the owner their car is being parked
+        # Notify the owner their car has been parked
         if workflow.patched("add-notify-owner"):
             await workflow.execute_activity(
                 notify_owner,

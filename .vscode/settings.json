@@ -1,12 +1,14 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python.defaultInterpreterPath": "${workspaceFolder}/env/bin/python",
     "files.exclude": {
         "**/__pycache__": true,
         "**/*.egg-info": true,
         "**/.pytest_cache": true
     },
     "workbench.editorAssociations": {
-        "*.md": "vscode.markdown.preview.editor"
+        // "*.md": "vscode.markdown.preview.editor"
     },
-    "markdown.preview.doubleClickToSwitchToEditor": false
+    // "markdown.preview.doubleClickToSwitchToEditor": false
+    // TODO: uncomment these
 }

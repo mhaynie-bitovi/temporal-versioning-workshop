@@ -1,11 +1,11 @@
 PYTHON ?= ../../../env/bin/python
 
-.PHONY: start-worker start-load-simulator run-starter run-tests
+.PHONY: run-worker run-load-simulator run-starter run-tests
 
-start-worker:
+run-worker:
 	PYTHONPATH=. exec $(PYTHON) -m valet.worker
 
-start-load-simulator:
+run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
 
 run-starter:

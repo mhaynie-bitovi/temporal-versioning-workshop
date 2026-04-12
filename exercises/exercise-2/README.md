@@ -87,7 +87,7 @@ cd exercises/exercise-2/practice
 4. Start the versioned 1.0 worker (in a **new terminal**):
 
 ```bash
-make start-worker BUILD_ID=1.0
+make run-worker BUILD_ID=1.0
 ```
 
 5. Register version 1.0 as the **Current Version** for the deployment:
@@ -110,7 +110,7 @@ temporal worker deployment describe --name valet
 7. Start the load simulator (in a **new terminal**):
 
 ```bash
-make start-load-simulator
+make run-load-simulator
 ```
 
 8. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) and watch workflows flow through the versioned 1.0 worker.
@@ -159,7 +159,7 @@ make start-load-simulator
 2. Start a 2.0 worker **alongside** the running 1.0 worker (in a **new terminal**):
 
 ```bash
-make start-worker BUILD_ID=2.0
+make run-worker BUILD_ID=2.0
 ```
 
 3. Set 2.0 as the Current Version:
@@ -214,7 +214,7 @@ temporal worker deployment describe --name valet
 2. Start a 3.0 worker (in a **new terminal**):
 
 ```bash
-make start-worker BUILD_ID=3.0
+make run-worker BUILD_ID=3.0
 ```
 
 3. Set 3.0 as current:
@@ -272,7 +272,7 @@ temporal workflow update-options \
 10. Start a v3.1 worker (in a **new terminal**):
 
 ```bash
-make start-worker BUILD_ID=3.1
+make run-worker BUILD_ID=3.1
 ```
 
 11. Set v3.1 as current:

@@ -80,3 +80,15 @@ class NotifyOwnerInput:
 @dataclass
 class NotifyOwnerOutput:
     notified: bool
+
+
+@dataclass
+class BillCustomerInput:
+    license_plate: str
+    duration_seconds: int
+    total_distance: float
+
+
+@dataclass
+class BillCustomerOutput:
+    amount: float

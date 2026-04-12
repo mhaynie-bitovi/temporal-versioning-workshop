@@ -2,12 +2,12 @@ PYTHON ?= ../../../env/bin/python
 DEPLOYMENT_NAME ?= valet
 BUILD_ID ?= 1.0
 
-.PHONY: start-worker start-load-simulator run-starter run-tests
+.PHONY: run-worker run-load-simulator run-starter run-tests
 
-start-worker:
+run-worker:
 	TEMPORAL_DEPLOYMENT_NAME=$(DEPLOYMENT_NAME) TEMPORAL_WORKER_BUILD_ID=$(BUILD_ID) PYTHONPATH=. exec $(PYTHON) -m valet.worker
 
-start-load-simulator:
+run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
 
 run-starter:

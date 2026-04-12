@@ -61,7 +61,7 @@ kubectl get pods         # Worker pods are Running
 5. Start the load simulator:
 
 ```bash
-make start-load-simulator
+make run-load-simulator
 ```
 
    Check the Temporal UI at [http://localhost:8233](http://localhost:8233) — workflows are flowing.

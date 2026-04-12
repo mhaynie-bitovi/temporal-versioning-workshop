@@ -18,15 +18,15 @@ env/bin/pip install -r requirements.txt
 All commands are run from within an exercise's `practice/` directory (e.g., `exercises/exercise-1/practice/`).
 
 ```sh
-make start-worker        # Start the Temporal worker
-make start-load-simulator # Run the load simulator (generates workflows continuously)
+make run-worker        # Start the Temporal worker
+make run-load-simulator # Run the load simulator (generates workflows continuously)
 make run-starter         # Start a single workflow execution (fire-and-forget, does not wait for completion)
 make run-tests           # Run pytest (PYTHONPATH=. python -m pytest tests/ -v)
 ```
 
 **Exercise 2 only (pass BUILD_ID):**
 ```sh
-make start-worker BUILD_ID=1.0  # Start worker with versioning env vars
+make run-worker BUILD_ID=1.0  # Start worker with versioning env vars
 ```
 
 **Exercise 3 only:**
@@ -70,7 +70,7 @@ Exercises build upon one another sequentially:
 
 ### README Style Guidelines
 
-- **Never combine `make start-worker &` and `make start-load-simulator` (or similar) in the same code block.** Each long-running process should be shown as a separate step, instructing the user to open a separate terminal. Backgrounding a process with `&` in a workshop README obscures what's happening and doesn't serve the educational purpose. Show each command in its own block with clear instructions (e.g., "In a new terminal, start the load simulator").
+- **Never combine `make run-worker &` and `make run-load-simulator` (or similar) in the same code block.** Each long-running process should be shown as a separate step, instructing the user to open a separate terminal. Backgrounding a process with `&` in a workshop README obscures what's happening and doesn't serve the educational purpose. Show each command in its own block with clear instructions (e.g., "In a new terminal, start the load simulator").
 
 - **Do not wrap Temporal CLI or kubectl commands in Makefile targets.** Exercise steps that have the user interact with the Temporal cluster (via `temporal` CLI) or Kubernetes (via `kubectl`) should show the raw commands directly so users see the granular steps and build familiarity with the tools. The exception is setup/teardown scaffolding (e.g., `make setup`, `make clean`) that installs the Worker Controller, CRDs, and other boilerplate — those are fine to condense into Makefile helpers.
 
