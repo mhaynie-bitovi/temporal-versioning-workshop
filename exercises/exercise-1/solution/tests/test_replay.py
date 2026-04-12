@@ -7,7 +7,7 @@ from valet.valet_parking_workflow import ValetParkingWorkflow
 
 @pytest.mark.asyncio
 async def test_replay_valet_v1():
-    """Replay a captured V1 workflow history to verify determinism.
+    """Replay a captured v1.0 workflow history to verify determinism.
 
     This test loads a previously captured workflow execution history
     and replays it against the current workflow code. If the workflow

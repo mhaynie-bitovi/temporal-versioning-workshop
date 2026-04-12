@@ -6,14 +6,14 @@
 
 ### Summary
 
-- **Part A:** Run the V1 workflow, export a completed workflow's history, and run a replay test against it.
+- **Part A:** Run the v1.0 workflow, export a completed workflow's history, and run a replay test against it.
 - **Part B:** Add a `notify_owner` activity call to the workflow. Run the replay test — it fails with a non-determinism error.
 - **Part C:** Wrap the new call in `workflow.patched()`. Replay test passes.
 - **Part D:** Restart the worker with patched code. Observe that pre-patch in-flight workflows skip the notification, while new workflows include it.
 
 ---
 
-## Part A — Run V1, capture a history, and write a replay test (~10 min)
+## Part A — Run v1.0, capture a history, and write a replay test (~10 min)
 
 1. Navigate to the exercise folder:
 
@@ -21,7 +21,7 @@
 cd exercises/exercise-1/practice
 ```
 
-2. Examine the V1 `ValetParkingWorkflow` in `valet/valet_parking_workflow.py`. Note the command sequence:
+2. Examine the v1.0 `ValetParkingWorkflow` in `valet/valet_parking_workflow.py`. Note the command sequence:
    - `request_parking_space` → `move_car` (to parking space) → `sleep` → `move_car` (back) → `release_parking_space`
    - The `sleep` simulates the owner's trip — workflows will be "in flight" during this window.
 
@@ -50,7 +50,7 @@ make start-load-simulator
 6. Wait for a workflow to complete (trip durations are 5–30 seconds). Then **stop the load simulator** (Ctrl+C) and export a completed workflow's history:
 
 ```bash
-temporal workflow show --workflow-id <workfolw-id> --output json > history/valet_v1_history.json
+temporal workflow show --workflow-id <WORKFLOW ID HERE> --output json > history/valet_v1_history.json
 ```
 
 > **Tip:** The workflow ID follows the format `valet-<STATE>-<PLATE>` (e.g., `valet-CA-1ABC123`). You can copy a workflow ID from the Temporal Web UI at [http://localhost:8233](http://localhost:8233), or use `temporal workflow list` to find one.

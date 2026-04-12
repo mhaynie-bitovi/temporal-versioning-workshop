@@ -1,6 +1,6 @@
 # Temporal Worker Versioning Workshop
 
-A hands-on workshop teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking domain. Three progressive exercises, ~3.5 hours total (with breaks and slides between).
+A hands-on workshop teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example. Three progressive exercises, ~3.5 hours total (with breaks and slides between).
 
 ## Prerequisites
 
@@ -26,10 +26,41 @@ A hands-on workshop teaching workflow patching, worker versioning, and Kubernete
 
 ## Setup
 
+Create a Python virtual environment:
+
 ```sh
 python3 -m venv env
-env/bin/pip install -r requirements.txt
 ```
+
+Activate it:
+
+```sh
+source env/bin/activate
+```
+
+Install dependencies:
+
+```sh
+pip install -r requirements.txt
+```
+
+You can deactivate the virtual environment now:
+
+```sh
+deactivate
+```
+
+> **Note:** For the rest of the workshop you won't need an activated venv. We'll be using many terminals side by side, and the Makefiles reference the venv's Python binary directly via a relative path — no need to activate it in each terminal or configure your IDE.
+
+## The Example: Valet Parking
+
+All exercises build on an airport valet parking example with two Temporal workflows:
+
+- **`ValetParkingWorkflow`** — Handles a single parking transaction. It requests a space, moves the car to it, waits for the owner's trip (simulated via a sleep), moves the car back, and releases the space. Each exercise evolves this workflow with new features.
+
+- **`ParkingLotWorkflow`** — A long-running workflow that manages 30 parking spaces. Activities interact with it via updates to request and release spaces. It uses `continue_as_new` to keep its history bounded.
+
+Activities like `move_car`, `request_parking_space`, and `release_parking_space` perform the side effects and bridge the two workflows. A load simulator continuously starts `ValetParkingWorkflow` instances with random license plates and trip durations, giving you a stream of in-flight workflows to test against.
 
 ## Exercises
 
@@ -37,11 +68,10 @@ env/bin/pip install -r requirements.txt
 
 Add a `notify_owner` activity call to the workflow — a non-replay-safe change — and learn to catch and fix it.
 
-- **Part A:** Run V1, export a workflow history, run a replay test.
+- **Part A:** Run v1.0, export a workflow history, run a replay test.
 - **Part B:** Add the activity call. Replay test fails with a non-determinism error.
 - **Part C:** Wrap it in `workflow.patched()`. Replay test passes.
 - **Part D:** Restart the worker. Old in-flight workflows skip the notification; new ones include it.
-- **Part E:** Discussion — patching, auto-upgrade, and why there's a cleaner approach.
 
 ### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md) (~45 min)
 
