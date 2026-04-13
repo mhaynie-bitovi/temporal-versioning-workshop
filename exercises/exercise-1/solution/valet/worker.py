@@ -7,6 +7,9 @@ from temporalio.client import Client
 from temporalio.worker import Worker
 from temporalio.worker.workflow_sandbox import SandboxedWorkflowRunner, SandboxRestrictions
 
+from temporalio.common import WorkerDeploymentVersion
+from temporalio.worker import WorkerDeploymentConfig
+
 from valet.activities import (
     bill_customer,
     move_car,

@@ -1,6 +1,8 @@
 from temporalio import workflow
 from temporalio.exceptions import ApplicationError
 
+from temporalio.common import VersioningBehavior
+
 with workflow.unsafe.imports_passed_through():
     from valet.models import ParkingLotInput, ParkingLotOutput
 

@@ -1,9 +1,5 @@
 # Exercise 2: Worker Versioning
 
-**Time:** ~45 minutes
-**Theme:** "In Exercise 1, you used patching to safely deploy a workflow change. Now let's deploy changes using Worker Versioning — where Temporal's infrastructure handles routing instead of conditional code paths."
-**Skills:** Worker Deployments, deployment versions, `PINNED` vs `AUTO_UPGRADE`, `WorkerDeploymentConfig`, emergency rollback
-
 ### Summary
 
 - **Part A:** Enable worker versioning — add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.

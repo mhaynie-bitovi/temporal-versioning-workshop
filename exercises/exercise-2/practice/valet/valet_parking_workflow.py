@@ -2,8 +2,7 @@ from datetime import timedelta
 
 from temporalio import workflow
 
-# TODO(Part A): Import VersioningBehavior:
-# from temporalio.common import VersioningBehavior
+from temporalio.common import VersioningBehavior
 
 with workflow.unsafe.imports_passed_through():
     from valet.activities import (
@@ -11,12 +10,10 @@ with workflow.unsafe.imports_passed_through():
         notify_owner,
         release_parking_space,
         request_parking_space,
-        # TODO(Part B): Import bill_customer
-        # bill_customer,
+        bill_customer,
     )
     from valet.models import (
-        # TODO(Part B): Import BillCustomerInput
-        # BillCustomerInput,
+        BillCustomerInput,
         Location,
         LocationKind,
         MoveCarInput,
@@ -49,7 +46,7 @@ class ValetParkingWorkflow:
             kind=LocationKind.PARKING_SPACE, id=parking_space_result.parking_space_number
         )
 
-        # Notify the owner their car is being parked
+        # Notify the owner their car has been parked
         if workflow.patched("add-notify-owner"):
             await workflow.execute_activity(
                 notify_owner,
@@ -106,5 +103,4 @@ class ValetParkingWorkflow:
 
         # TODO(Part B): Add bill_customer activity call here.
 
-        #   Then return: ValetParkingOutput(total_bill=bill_result.amount)
         return ValetParkingOutput()

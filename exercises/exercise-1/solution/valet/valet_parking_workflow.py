@@ -2,22 +2,26 @@ from datetime import timedelta
 
 from temporalio import workflow
 
+from temporalio.common import VersioningBehavior
+
 with workflow.unsafe.imports_passed_through():
     from valet.activities import (
         move_car,
+        notify_owner,
         release_parking_space,
         request_parking_space,
-        notify_owner
+        bill_customer,
     )
     from valet.models import (
+        BillCustomerInput,
         Location,
         LocationKind,
         MoveCarInput,
+        NotifyOwnerInput,
         ReleaseParkingSpaceInput,
         RequestParkingSpaceInput,
         ValetParkingInput,
         ValetParkingOutput,
-        NotifyOwnerInput
     )
 
 
