@@ -32,52 +32,40 @@ cd exercises/exercise-2/practice
 
 2. Review the starting code. This is the Exercise 1 solution — `ValetParkingWorkflow` already calls `notify_owner` (guarded by `workflow.patched("add-notify-owner")`). The `bill_customer` activity and its models are already defined — you'll use them later.
 
-3. **Make three code changes** (follow the `TODO(Part A)` comments in each file):
+3. **Make three code changes** (follow the `TODO (Part A)` comments in each file):
 
-   **a.** In `valet/valet_parking_workflow.py` — import `VersioningBehavior` and add `versioning_behavior=VersioningBehavior.PINNED` to `@workflow.defn`:
+   **a.** In `valet/valet_parking_workflow.py` add `versioning_behavior=VersioningBehavior.PINNED` to `@workflow.defn`:
 
    ```python
-   from temporalio.common import VersioningBehavior
-
    @workflow.defn(versioning_behavior=VersioningBehavior.PINNED)
    class ValetParkingWorkflow:
    ```
 
    > **Why PINNED?** Each parking transaction should complete on the code version it started on. No mid-execution surprises, no patching needed.
 
-   **b.** In `valet/parking_lot_workflow.py` — import `VersioningBehavior` and add `versioning_behavior=VersioningBehavior.AUTO_UPGRADE` to `@workflow.defn`:
+   **b.** In `valet/parking_lot_workflow.py` add `versioning_behavior=VersioningBehavior.AUTO_UPGRADE` to `@workflow.defn`:
 
    ```python
-   from temporalio.common import VersioningBehavior
-
    @workflow.defn(versioning_behavior=VersioningBehavior.AUTO_UPGRADE)
    class ParkingLotWorkflow:
    ```
 
    > **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton — it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention.
 
-   **c.** In `valet/worker.py` — import `WorkerDeploymentVersion` and `WorkerDeploymentConfig`, create the deployment config from environment variables, and pass it to the `Worker`:
+   **c.** In `valet/worker.py` create the deployment config from environment variables, and pass it to the `Worker`:
 
    ```python
-   from temporalio.common import WorkerDeploymentVersion
-   from temporalio.worker import Worker, WorkerDeploymentConfig
-
-   # ... inside main(), after creating the client:
-
-   deployment_config = WorkerDeploymentConfig(
-       version=WorkerDeploymentVersion(
-           deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],
-           build_id=os.environ["TEMPORAL_WORKER_BUILD_ID"],
-       ),
-       use_worker_versioning=True,
-   )
-
-   worker = Worker(
-       client,
-       task_queue="valet",
-       # ... existing config ...
-       deployment_config=deployment_config,
-   )
+    worker = Worker(
+        # ... other params
+        deployment_config=WorkerDeploymentConfig(
+            version=WorkerDeploymentVersion(
+                deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],
+                build_id=os.environ["TEMPORAL_WORKER_BUILD_ID"],
+            ),
+            use_worker_versioning=True,
+        ),
+        # ... other params
+    )
    ```
 
 4. Start the versioned 1.0 worker (in a **new terminal**):
@@ -123,20 +111,10 @@ make run-load-simulator
 
 **Motivation:** "Product wants billing at the end of the valet workflow. This adds a new activity — a non-replay-safe change. In Exercise 1, you'd have needed a patch. With PINNED versioning, you don't."
 
-1. **Make two code changes** to `valet/valet_parking_workflow.py` (follow the `TODO(Part B)` comments):
-
-   **a.** Capture the return values from both `move_car` calls:
+1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
    ```python
-   move_to_parking_space_result = await workflow.execute_activity(move_car, ...)
-   # ... (sleep) ...
-   move_to_valet_result = await workflow.execute_activity(move_car, ...)
-   ```
-
-   **b.** Add `bill_customer` at the end of the workflow (import `bill_customer` and `BillCustomerInput` at the top):
-
-   ```python
-   bill_result = await workflow.execute_activity(
+   await workflow.execute_activity(
        bill_customer,
        BillCustomerInput(
            license_plate=input.license_plate,
@@ -148,8 +126,6 @@ make run-load-simulator
        ),
        start_to_close_timeout=timedelta(seconds=10),
    )
-
-   return ValetParkingOutput(total_bill=bill_result.amount)
    ```
 
 2. Start a 2.0 worker **alongside** the running 1.0 worker (in a **new terminal**):
@@ -201,6 +177,7 @@ temporal worker deployment describe --name valet
    ```python
    @activity.defn
    async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
+       # ... rest of the function
        tip = input.tip_percentage  # BUG: tip_percentage doesn't exist on BillCustomerInput
        # ... rest of the function
    ```
@@ -288,11 +265,6 @@ New workflows now flow through v3.1 with working billing.
 
 13. Once v2.0 has fully drained, **stop the v2.0 worker** (Ctrl+C) as well.
 
-> **What you've learned:**
-> - **`set-current-version` as an instant rollback** — no code redeploy needed, new workflows immediately go to the safe version.
-> - **Fix-forward with a patch version** (v3.1) rather than permanently rolling back.
-> - **`update-options` to evacuate workflows** — surgically move pinned workflows from a broken version to a working one.
-> - **Blast radius containment with PINNED** — only workflows that started on v3.0 are affected. They can be individually moved.
-> - **Activity-only bugs are safe to move** — the workflow definition didn't change, so there's no history divergence when v2.0 replays v3.0 workflows.
+---
 
-
+> **🎉 Congratulations!** You've completed Exercise 1.

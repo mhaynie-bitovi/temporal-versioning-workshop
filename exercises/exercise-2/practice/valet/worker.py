@@ -38,7 +38,7 @@ async def main():
         task_queue="valet",
         workflows=[ValetParkingWorkflow, ParkingLotWorkflow],
         activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer],
-        # TODO (Part A.3): Add deployment_config here
+        # TODO (Part A): Add deployment_config here
         # deployment_config=WorkerDeploymentConfig(
         #     version=WorkerDeploymentVersion(
         #         deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],
