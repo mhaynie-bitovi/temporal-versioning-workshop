@@ -1,6 +1,6 @@
-# Temporal Worker Versioning Workshop
+# Temporal Versioning Workshop
 
-A hands-on workshop teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example. Three progressive exercises, ~3.5 hours total (with breaks and slides between).
+A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example. Three progressive exercises, ~3.5 hours total (with breaks and slides between).
 
 ## Prerequisites
 
