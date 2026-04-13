@@ -74,6 +74,8 @@ Exercises build upon one another sequentially:
 
 - **Do not wrap Temporal CLI or kubectl commands in Makefile targets.** Exercise steps that have the user interact with the Temporal cluster (via `temporal` CLI) or Kubernetes (via `kubectl`) should show the raw commands directly so users see the granular steps and build familiarity with the tools. The exception is setup/teardown scaffolding (e.g., `make setup`, `make clean`) that installs the Worker Controller, CRDs, and other boilerplate — those are fine to condense into Makefile helpers.
 
+- Never use em dashes (—). Use regular hyphens, commas, or parentheses instead.
+
 ### Environment Variables
 
 | Variable | Default | Purpose |
