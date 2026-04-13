@@ -1,6 +1,7 @@
 from temporalio import workflow
-from temporalio.common import VersioningBehavior
 from temporalio.exceptions import ApplicationError
+
+from temporalio.common import VersioningBehavior
 
 with workflow.unsafe.imports_passed_through():
     from valet.models import ParkingLotInput, ParkingLotOutput
@@ -20,7 +21,6 @@ class ParkingLotWorkflow:
         self.parking_spaces = input.parking_spaces or self.parking_spaces
 
         await workflow.wait_condition(lambda: self._should_continue_as_new)
-
         workflow.continue_as_new(ParkingLotInput(parking_spaces=self.parking_spaces))
 
     @workflow.update

@@ -24,7 +24,7 @@ class ValetParkingInput:
 
 @dataclass
 class ValetParkingOutput:
-    total_bill: float | None = None
+    pass
 
 
 @dataclass

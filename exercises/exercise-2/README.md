@@ -99,12 +99,6 @@ make run-load-simulator
 
 8. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) and watch workflows flow through the versioned 1.0 worker.
 
-> **What you've learned:**
-> - **Worker Deployment:** A named group (e.g., `valet`) that contains versioned workers.
-> - **Worker Deployment Version:** A specific build (e.g., `1.0`) within a deployment, identified by a build ID.
-> - **`WorkerDeploymentConfig`:** How the worker tells Temporal which deployment and build ID it belongs to.
-> - **`set-current-version`:** How you tell Temporal which version should receive new workflow tasks.
-
 ---
 
 ## Part B — Deploy a Breaking Change — No Patching Needed (~15 min)
@@ -157,12 +151,6 @@ temporal worker deployment describe --name valet
 ```
 
 6. Wait until the 1.0 deployment version is explicitly marked as "drained" in the deployment state (see the `Drained` status in the output of `temporal worker deployment describe --name valet`). Only after it is marked as drained, **stop the 1.0 worker** (Ctrl+C in its terminal).
-
-> **What you've learned:**
-> - **Rainbow deployment model:** Multiple versions coexist. Temporal routes traffic between them — new workflows go to the Current Version, and in-flight workflows stay on their pinned version.
-> - **PINNED eliminates patching:** When workflows should complete on the version they started on, you never need `workflow.patched()` to maintain replay compatibility.
-> - **AUTO_UPGRADE for singletons:** Long-lived workflows that should always run the latest code can use AUTO_UPGRADE to migrate automatically.
-> - **Sunsetting a version:** When a version has drained (no more workflows), stop its worker. The old version remains in the deployment but is inert.
 
 ---
 
@@ -267,4 +255,4 @@ New workflows now flow through v3.1 with working billing.
 
 ---
 
-> **🎉 Congratulations!** You've completed Exercise 1.
+> **🎉 Congratulations!** You've completed Exercise 2.

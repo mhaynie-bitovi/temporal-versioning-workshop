@@ -99,6 +99,7 @@ class ValetParkingWorkflow:
             f"Car {input.license_plate} returned to valet zone {input.valet_zone_location.id}."
         )
 
+        # Bill the customer
         # TODO (Part B): Add bill_customer activity call here.
         # await workflow.execute_activity(
         #    bill_customer,

@@ -101,6 +101,7 @@ async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
     minutes = input.duration_seconds / 60
     amount = 5.0 + (0.50 * minutes) + (2.0 * input.total_distance)
     amount = round(amount, 2)
+    # tip = input.tip_percentage  # BUG: tip_percentage doesn't exist on BillCustomerInput
     activity.logger.info(
         f"Billing {input.license_plate}: ${amount} "
         f"({minutes:.1f} min, {input.total_distance:.1f} mi)"
