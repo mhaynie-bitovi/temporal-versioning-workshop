@@ -76,17 +76,9 @@ make run-load-simulator
 
 > **Why Progressive?** A Progressive rollout introduces the new version gradually — starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
 
-1. Switch to Progressive rollout strategy. Examine `k8s/valet-worker-progressive.yaml` first — note the `steps` defining the ramp schedule:
-
-```bash
-kubectl apply -f k8s/valet-worker-progressive.yaml
-```
-
-2. Make the code change in `valet/valet_parking_workflow.py` — add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
+1. Make the code change in `valet/valet_parking_workflow.py` — add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
 
    ```python
-   await workflow.sleep(input.trip_duration_seconds)
-
    # Notify the owner their car is being retrieved
    await workflow.execute_activity(
        notify_owner,
@@ -96,19 +88,37 @@ kubectl apply -f k8s/valet-worker-progressive.yaml
        ),
        start_to_close_timeout=timedelta(seconds=10),
    )
-
-   # Move car from parking space back to the original valet zone
    ```
 
-3. Build and deploy 2.0:
+2. Build the 2.0 image:
 
 ```bash
 make build tag=2.0
-kubectl patch twd valet-worker --type merge \
-  -p '{"spec":{"template":{"spec":{"containers":[{"name":"valet-worker","image":"valet-worker:2.0"}]}}}}'
 ```
 
-4. Watch the progressive rollout unfold:
+3. Update `k8s/valet-worker.yaml` — change the strategy from `AllAtOnce` to `Progressive` with ramp steps, and update the image tag to `2.0`:
+
+   ```yaml
+   rollout:
+     strategy: Progressive
+     steps:
+       - rampPercentage: 25
+         pauseDuration: 30s
+       - rampPercentage: 75
+         pauseDuration: 30s
+   ```
+
+   ```yaml
+   image: valet-worker:2.0
+   ```
+
+4. Apply the updated manifest:
+
+```bash
+kubectl apply -f k8s/valet-worker.yaml
+```
+
+5. Watch the progressive rollout unfold:
 
 ```bash
 kubectl get twd -w
@@ -118,7 +128,7 @@ kubectl get twd -w
    - After 30s, ramps to **75%**
    - After another 30s, reaches **100%** — 2.0 becomes the Current Version
 
-5. While the rollout progresses, observe the rainbow deployment in another terminal:
+6. While the rollout progresses, observe the rainbow deployment in another terminal:
 
 ```bash
 kubectl get deployments
@@ -128,13 +138,13 @@ kubectl get deployments
    - **1.0 workers** continue serving in-flight workflows pinned to version 1.0
    - **2.0 workers** serve new workflow executions (at whatever the current ramp percentage is)
 
-6. Watch individual pods serving their respective versions:
+7. Watch individual pods serving their respective versions:
 
 ```bash
-kubectl get pods -l app=valet-worker --show-labels
+kubectl get pods -l temporal.io/deployment-name=valet-worker --show-labels
 ```
 
-7. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
+8. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
    - New workflows include a "Your car is being retrieved!" notification before the return trip
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish

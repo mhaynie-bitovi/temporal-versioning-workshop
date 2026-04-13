@@ -45,7 +45,7 @@ class ValetParkingWorkflow:
             kind=LocationKind.PARKING_SPACE, id=parking_space_result.parking_space_number
         )
 
-        # Notify the owner their car has been parked
+        # Notify the owner their car is being parked
         if workflow.patched("add-notify-owner"):
             await workflow.execute_activity(
                 notify_owner,

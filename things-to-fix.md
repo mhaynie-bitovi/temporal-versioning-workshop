@@ -6,3 +6,4 @@
 - remove the time estimates from all the readmes - they are cruft and not helpful
 - make sure code snippets work copy pasted (indentation may be off)
 - add hint about configuring columns in the temporal web ui (add Deployment, Deployment Version, Versioning Behavior)
+- remove all the m-dashes, and prohibit them

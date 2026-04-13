@@ -16,5 +16,5 @@ spec:
     spec:
       containers:
         - name: valet-worker
-          image: valet-worker:v1
+          image: valet-worker:1.0
           imagePullPolicy: IfNotPresent

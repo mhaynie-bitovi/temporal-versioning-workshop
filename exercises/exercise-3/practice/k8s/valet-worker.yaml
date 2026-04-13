@@ -10,11 +10,21 @@ spec:
     temporalNamespace: default
   rollout:
     strategy: AllAtOnce
+  # TODO (Part B): Switch to the Progressive rollout strategy
+  # rollout:
+  #   strategy: Progressive
+  #   steps:
+  #     - rampPercentage: 25
+  #       pauseDuration: 30s
+  #     - rampPercentage: 75
+  #       pauseDuration: 30s
   sunset: {}
   replicas: 1
   template:
     spec:
       containers:
         - name: valet-worker
-          image: valet-worker:v1
+          image: valet-worker:1.0
+          # TODO (Part B): Switch to the 2.0 image
+          # image: valet-worker:2.0
           imagePullPolicy: IfNotPresent

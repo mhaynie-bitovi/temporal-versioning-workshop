@@ -50,7 +50,7 @@ class ValetParkingWorkflow:
 
         # TODO (Part B): Add notify_owner activity call here.
 
-        # # Notify the owner their car has been parked
+        # # Notify the owner their car is being parked
         # await workflow.execute_activity(
         #     notify_owner,
         #     NotifyOwnerInput(
