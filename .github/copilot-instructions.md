@@ -40,19 +40,19 @@ make clean               # Tear down K8s resources
 
 ### Core Domain (`valet/` module in each exercise)
 
-- **`workflows.py`** — Two workflows:
+- **`workflows.py`** - Two workflows:
   - `ValetParkingWorkflow`: Handles a single parking transaction (request space → move car → wait for trip → return car → release space). Uses `workflow.patched()` for non-deterministic evolution.
   - `ParkingLotWorkflow`: Long-lived workflow managing 30 parking spaces via workflow updates/queries. Uses `continue-as-new` for history management.
 
-- **`activities.py`** — Side-effect implementations: `move_car`, `request_parking_space`, `release_parking_space`, `notify_owner`. Activities interact with `ParkingLotWorkflow` via Temporal updates.
+- **`activities.py`** - Side-effect implementations: `move_car`, `request_parking_space`, `release_parking_space`, `notify_owner`. Activities interact with `ParkingLotWorkflow` via Temporal updates.
 
-- **`models.py`** — Dataclasses for workflow/activity inputs and outputs.
+- **`models.py`** - Dataclasses for workflow/activity inputs and outputs.
 
-- **`worker.py`** — Registers both workflows and all activities on the `"valet"` task queue.
+- **`worker.py`** - Registers both workflows and all activities on the `"valet"` task queue.
 
-- **`starter.py`** — Starts a single `ValetParkingWorkflow` execution (fire-and-forget). Does not wait for the workflow to complete.
+- **`starter.py`** - Starts a single `ValetParkingWorkflow` execution (fire-and-forget). Does not wait for the workflow to complete.
 
-- **`load_simulator.py`** — Continuously starts `ValetParkingWorkflow` instances with random license plates and trip durations (5–30s).
+- **`load_simulator.py`** - Continuously starts `ValetParkingWorkflow` instances with random license plates and trip durations (5–30s).
 
 ### Testing Patterns
 
@@ -72,9 +72,9 @@ Exercises build upon one another sequentially:
 
 - **Never combine `make run-worker &` and `make run-load-simulator` (or similar) in the same code block.** Each long-running process should be shown as a separate step, instructing the user to open a separate terminal. Backgrounding a process with `&` in a workshop README obscures what's happening and doesn't serve the educational purpose. Show each command in its own block with clear instructions (e.g., "In a new terminal, start the load simulator").
 
-- **Do not wrap Temporal CLI or kubectl commands in Makefile targets.** Exercise steps that have the user interact with the Temporal cluster (via `temporal` CLI) or Kubernetes (via `kubectl`) should show the raw commands directly so users see the granular steps and build familiarity with the tools. The exception is setup/teardown scaffolding (e.g., `make setup`, `make clean`) that installs the Worker Controller, CRDs, and other boilerplate — those are fine to condense into Makefile helpers.
+- **Do not wrap Temporal CLI or kubectl commands in Makefile targets.** Exercise steps that have the user interact with the Temporal cluster (via `temporal` CLI) or Kubernetes (via `kubectl`) should show the raw commands directly so users see the granular steps and build familiarity with the tools. The exception is setup/teardown scaffolding (e.g., `make setup`, `make clean`) that installs the Worker Controller, CRDs, and other boilerplate - those are fine to condense into Makefile helpers.
 
-- Never use em dashes (—). Use regular hyphens (single, not double), commas, or parentheses instead.
+- Never use em dashes (-). Use regular hyphens (single, not double), commas, or parentheses instead.
 
 ### Environment Variables
 
@@ -82,12 +82,12 @@ Exercises build upon one another sequentially:
 |---|---|---|
 | `TEMPORAL_ADDRESS` | `localhost:7233` | Temporal server address |
 | `TEMPORAL_NAMESPACE` | `default` | Temporal namespace |
-| `TEMPORAL_DEPLOYMENT_NAME` | — | Worker versioning deployment name (exercise 2+) |
-| `TEMPORAL_WORKER_BUILD_ID` | — | Worker build ID for versioning (exercise 2+) |
+| `TEMPORAL_DEPLOYMENT_NAME` | - | Worker versioning deployment name (exercise 2+) |
+| `TEMPORAL_WORKER_BUILD_ID` | - | Worker build ID for versioning (exercise 2+) |
 
 ## Key Reference
 
-- [README.md](../README.md) — Top-level project README
-- [exercises/exercise-1/README.md](../exercises/exercise-1/README.md) — Exercise 1: Workflow Patching
-- [exercises/exercise-2/README.md](../exercises/exercise-2/README.md) — Exercise 2: Worker Versioning
-- [exercises/exercise-3/README.md](../exercises/exercise-3/README.md) — Exercise 3: Kubernetes Deployment
+- [README.md](../README.md) - Top-level project README
+- [exercises/exercise-1/README.md](../exercises/exercise-1/README.md) - Exercise 1: Workflow Patching
+- [exercises/exercise-2/README.md](../exercises/exercise-2/README.md) - Exercise 2: Worker Versioning
+- [exercises/exercise-3/README.md](../exercises/exercise-3/README.md) - Exercise 3: Kubernetes Deployment

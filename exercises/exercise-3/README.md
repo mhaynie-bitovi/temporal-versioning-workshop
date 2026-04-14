@@ -23,7 +23,7 @@ Ensure `minikube`, `kubectl`, `helm`, and the `temporal` CLI are installed and a
 temporal server start-dev
 ```
 
-> **Note:** Starting a fresh dev server means we're working with a clean slate — no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise.
+> **Note:** Starting a fresh dev server means we're working with a clean slate - no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise.
 
 2. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
 
@@ -34,15 +34,15 @@ make setup
 
 ---
 
-## Part A — Deploy 1.0 and generate load (~10 min)
+## Part A - Deploy 1.0 and generate load (~10 min)
 
 1. Ensure you're still in the `exercises/exercise-3/practice` directory from Pre-Setup.
 
 2. Examine the k8s manifests:
-   - `k8s/temporal-connection.yaml` — points to the host Temporal server
-   - `k8s/valet-worker.yaml` — `TemporalWorkerDeployment` with `AllAtOnce` strategy
+   - `k8s/temporal-connection.yaml` - points to the host Temporal server
+   - `k8s/valet-worker.yaml` - `TemporalWorkerDeployment` with `AllAtOnce` strategy
 
-> **Note:** The initial manifest uses `AllAtOnce` — every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B.
+> **Note:** The initial manifest uses `AllAtOnce` - every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B.
 
 3. Build and deploy 1.0:
 
@@ -65,19 +65,19 @@ kubectl get pods         # Worker pods are Running
 make run-load-simulator
 ```
 
-   Check the Temporal UI at [http://localhost:8233](http://localhost:8233) — workflows are flowing.
+   Check the Temporal UI at [http://localhost:8233](http://localhost:8233) - workflows are flowing.
 
    **Leave the load simulator running.**
 
 ---
 
-## Part B — Non-replay-safe change with Progressive rollout (~14 min)
+## Part B - Non-replay-safe change with Progressive rollout (~14 min)
 
-**Scenario:** Add a notification when the owner's car is being retrieved. This adds a new activity call to the workflow sequence — a non-replay-safe change. With worker versioning (`PINNED` behavior), each version runs its own code, so the Worker Controller will keep 1.0 workers alive for in-flight workflows while ramping up 2.0 for new ones.
+**Scenario:** Add a notification when the owner's car is being retrieved. This adds a new activity call to the workflow sequence - a non-replay-safe change. With worker versioning (`PINNED` behavior), each version runs its own code, so the Worker Controller will keep 1.0 workers alive for in-flight workflows while ramping up 2.0 for new ones.
 
-> **Why Progressive?** A Progressive rollout introduces the new version gradually — starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
+> **Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
 
-1. Make the code change in `valet/valet_parking_workflow.py` — add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
+1. Make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
 
    ```python
    # Notify the owner their car is being retrieved
@@ -97,7 +97,7 @@ make run-load-simulator
 make build tag=2.0
 ```
 
-3. Update `k8s/valet-worker.yaml` — change the strategy from `AllAtOnce` to `Progressive` with ramp steps, and update the image tag to `2.0`:
+3. Update `k8s/valet-worker.yaml` - change the strategy from `AllAtOnce` to `Progressive` with ramp steps, and update the image tag to `2.0`:
 
    ```yaml
    rollout:
@@ -125,9 +125,9 @@ kubectl apply -f k8s/valet-worker.yaml
 kubectl get twd -w
 ```
 
-   - 2.0 starts at **rampPercentage: 25%** — only 25% of *new* workflow executions go to 2.0
+   - 2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
    - After 30s, ramps to **75%**
-   - After another 30s, reaches **100%** — 2.0 becomes the Current Version
+   - After another 30s, reaches **100%** - 2.0 becomes the Current Version
 
 6. While the rollout progresses, observe the rainbow deployment in another terminal:
 
@@ -150,7 +150,7 @@ kubectl get pods -l temporal.io/deployment-name=valet-worker --show-labels
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
 
-> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. You didn't need to manually manage traffic routing, scale replicas, or coordinate draining — just update the image tag and the controller handles the rest.
+> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. You didn't need to manually manage traffic routing, scale replicas, or coordinate draining - just update the image tag and the controller handles the rest.
 
 ---
 

@@ -2,8 +2,8 @@
 
 ### Summary
 
-- **Part A:** Enable worker versioning — add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.
-- **Part B:** Add `bill_customer` to the workflow (a non-replay-safe change). Deploy v2.0 alongside v1.0. Observe that new workflows bill, in-flight v1.0 workflows complete without it — no patching needed.
+- **Part A:** Enable worker versioning - add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.
+- **Part B:** Add `bill_customer` to the workflow (a non-replay-safe change). Deploy v2.0 alongside v1.0. Observe that new workflows bill, in-flight v1.0 workflows complete without it - no patching needed.
 - **Part C:** Introduce a bug in v3.0 → instant rollback via `set-current-version` → evacuate stuck v3.0 workflows to v2.0 with `update-options` → fix-forward with v3.1.
 
 ---
@@ -16,11 +16,11 @@ If your Temporal dev server is still running from Exercise 1, stop it (Ctrl+C) a
 temporal server start-dev
 ```
 
-> **Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start — every workflow will be versioned from birth.
+> **Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start - every workflow will be versioned from birth.
 
 ---
 
-## Part A — Enable Worker Versioning + Deploy Version 1.0 (~12 min)
+## Part A - Enable Worker Versioning + Deploy Version 1.0 (~12 min)
 
 **Goal:** Configure worker versioning infrastructure and deploy the first versioned worker.
 
@@ -30,7 +30,7 @@ temporal server start-dev
 cd exercises/exercise-2/practice
 ```
 
-2. Review the starting code. This is the Exercise 1 solution — `ValetParkingWorkflow` already calls `notify_owner` (guarded by `workflow.patched("add-notify-owner")`). The `bill_customer` activity and its models are already defined — you'll use them later.
+2. Review the starting code. This is the Exercise 1 solution - `ValetParkingWorkflow` already calls `notify_owner` (guarded by `workflow.patched("add-notify-owner")`). The `bill_customer` activity and its models are already defined - you'll use them later.
 
 3. **Make three code changes** (follow the `TODO (Part A)` comments in each file):
 
@@ -50,7 +50,7 @@ cd exercises/exercise-2/practice
    class ParkingLotWorkflow:
    ```
 
-   > **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton — it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention.
+   > **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton - it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention.
 
    **c.** In `valet/worker.py` create the deployment config from environment variables, and pass it to the `Worker`:
 
@@ -101,9 +101,9 @@ make run-load-simulator
 
 ---
 
-## Part B — Deploy a Breaking Change — No Patching Needed (~15 min)
+## Part B - Deploy a Breaking Change - No Patching Needed (~15 min)
 
-**Motivation:** "Product wants billing at the end of the valet workflow. This adds a new activity — a non-replay-safe change. In Exercise 1, you'd have needed a patch. With PINNED versioning, you don't."
+**Motivation:** "Product wants billing at the end of the valet workflow. This adds a new activity - a non-replay-safe change. In Exercise 1, you'd have needed a patch. With PINNED versioning, you don't."
 
 1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
@@ -138,8 +138,8 @@ temporal worker deployment set-current-version \
 ```
 
 4. **Observe in the Temporal Web UI:**
-   - **New workflows** start on version 2.0 — they include billing.
-   - **In-flight 1.0 workflows** stay pinned to version 1.0 — they complete on the 1.0 worker with no billing, no patching, no replay issues.
+   - **New workflows** start on version 2.0 - they include billing.
+   - **In-flight 1.0 workflows** stay pinned to version 1.0 - they complete on the 1.0 worker with no billing, no patching, no replay issues.
    - **`ParkingLotWorkflow`** (AUTO_UPGRADE) automatically migrates to v2.0 on its next workflow task.
 
    > **This is the "aha" moment.** You just deployed a non-replay-safe change with zero patching. Version isolation replaced the `workflow.patched()` guard from Exercise 1.
@@ -154,11 +154,11 @@ temporal worker deployment describe --name valet
 
 ---
 
-## Part C — Emergency Rollback & Remediation (~10 min)
+## Part C - Emergency Rollback & Remediation (~10 min)
 
-**Motivation:** "Things don't always go smoothly. Let's see what happens when a bad deploy makes it to production — and how Worker Versioning gives you tools to respond immediately."
+**Motivation:** "Things don't always go smoothly. Let's see what happens when a bad deploy makes it to production - and how Worker Versioning gives you tools to respond immediately."
 
-**Scenario:** A developer deploys v3.0 with a bug in the `bill_customer` activity — they reference a field that doesn't exist on the input dataclass.
+**Scenario:** A developer deploys v3.0 with a bug in the `bill_customer` activity - they reference a field that doesn't exist on the input dataclass.
 
 1. **Introduce the bug.** In `valet/activities.py`, add this line to the beginning of `bill_customer`:
 
@@ -187,11 +187,11 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-4. **Watch the damage** in the Temporal Web UI or worker logs — new workflows start on 3.0, but crash at the billing step. The activity retries forever.
+4. **Watch the damage** in the Temporal Web UI or worker logs - new workflows start on 3.0, but crash at the billing step. The activity retries forever.
 
-### Step 1 — Instant rollback (stop the bleeding)
+### Step 1 - Instant rollback (stop the bleeding)
 
-5. Set v2.0 back as current — no code redeploy needed:
+5. Set v2.0 back as current - no code redeploy needed:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -200,9 +200,9 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-**Immediately**, new workflows are routed to v2.0 with working billing. But in-flight v3.0 workflows are still pinned to v3.0 — they're stuck.
+**Immediately**, new workflows are routed to v2.0 with working billing. But in-flight v3.0 workflows are still pinned to v3.0 - they're stuck.
 
-### Step 2 — Evacuate in-flight v3.0 workflows to v2.0
+### Step 2 - Evacuate in-flight v3.0 workflows to v2.0
 
 6. Find the stuck v3.0 workflows using the `WorkerDeploymentVersion` search attribute (format: `<deployment>:<build-id>`):
 
@@ -222,11 +222,11 @@ temporal workflow update-options \
     --yes
 ```
 
-   > **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical — the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors — the workflow just sees "activity not yet completed" and retries.
+   > **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries.
 
 8. **Observe:** the previously-stuck workflows now complete successfully on v2.0.
 
-### Step 3 — Fix the bug and deploy v3.1
+### Step 3 - Fix the bug and deploy v3.1
 
 9. **Fix the bug.** Remove the `tip = input.tip_percentage` line you added in step 1.
 
@@ -247,7 +247,7 @@ temporal worker deployment set-current-version \
 
 New workflows now flow through v3.1 with working billing.
 
-### Step 4 — Clean up
+### Step 4 - Clean up
 
 12. **Stop the v3.0 worker** (Ctrl+C).
 

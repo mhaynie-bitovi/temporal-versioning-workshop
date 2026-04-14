@@ -15,14 +15,14 @@ A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching work
 | **Temporal CLI** | `brew install temporal` or [docs](https://docs.temporal.io/cli#install) |
 | **make** | Pre-installed on macOS (`xcode-select --install` if missing) |
 
-### Exercise 3 (Kubernetes) — additional requirements
+### Exercise 3 (Kubernetes) - additional requirements
 
 | Requirement | Notes |
 |---|---|
 | **Docker** | Needed by minikube for building images |
 | **minikube** | `brew install minikube` |
 | **kubectl** | `brew install kubectl` |
-| **Helm** | `brew install helm` — used to install the Worker Controller |
+| **Helm** | `brew install helm` - used to install the Worker Controller |
 
 ## Setup
 
@@ -50,15 +50,15 @@ You can deactivate the virtual environment now:
 deactivate
 ```
 
-> **Note:** For the rest of the workshop you won't need an activated venv. We'll be using many terminals side by side, and the Makefiles reference the venv's Python binary directly via a relative path — no need to activate it in each terminal or configure your IDE.
+> **Note:** For the rest of the workshop you won't need an activated venv. We'll be using many terminals side by side, and the Makefiles reference the venv's Python binary directly via a relative path - no need to activate it in each terminal or configure your IDE.
 
 ## The Example: Valet Parking
 
 All exercises build on an airport valet parking example with two Temporal workflows:
 
-- **`ValetParkingWorkflow`** — Handles a single parking transaction. It requests a space, moves the car to it, waits for the owner's trip (simulated via a sleep), moves the car back, and releases the space. Each exercise evolves this workflow with new features.
+- **`ValetParkingWorkflow`** - Handles a single parking transaction. It requests a space, moves the car to it, waits for the owner's trip (simulated via a sleep), moves the car back, and releases the space. Each exercise evolves this workflow with new features.
 
-- **`ParkingLotWorkflow`** — A long-running workflow that manages 30 parking spaces. Activities interact with it via updates to request and release spaces. It uses `continue_as_new` to keep its history bounded.
+- **`ParkingLotWorkflow`** - A long-running workflow that manages 30 parking spaces. Activities interact with it via updates to request and release spaces. It uses `continue_as_new` to keep its history bounded.
 
 Activities like `move_car`, `request_parking_space`, and `release_parking_space` perform the side effects and bridge the two workflows. A load simulator continuously starts `ValetParkingWorkflow` instances with random license plates and trip durations, giving you a stream of in-flight workflows to test against.
 
@@ -66,7 +66,7 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 ### [Exercise 1: Patching + Replay Testing](exercises/exercise-1/README.md) (~30 min)
 
-Add a `notify_owner` activity call to the workflow — a non-replay-safe change — and learn to catch and fix it.
+Add a `notify_owner` activity call to the workflow - a non-replay-safe change - and learn to catch and fix it.
 
 - **Part A:** Run v1.0, export a workflow history, run a replay test.
 - **Part B:** Add the activity call. Replay test fails with a non-determinism error.
@@ -75,10 +75,10 @@ Add a `notify_owner` activity call to the workflow — a non-replay-safe change 
 
 ### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md) (~45 min)
 
-Deploy changes using Worker Versioning — Temporal's infrastructure handles routing instead of conditional code paths.
+Deploy changes using Worker Versioning - Temporal's infrastructure handles routing instead of conditional code paths.
 
 - **Part A:** Enable versioning (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`). Deploy v1.0.
-- **Part B:** Add `bill_customer` (non-replay-safe). Deploy v2.0 alongside v1.0 — no patching needed.
+- **Part B:** Add `bill_customer` (non-replay-safe). Deploy v2.0 alongside v1.0 - no patching needed.
 - **Part C:** Introduce a bug in v3.0 → rollback with `set-current-version` → evacuate stuck workflows with `update-options` → fix-forward with v3.1.
 
 ### [Exercise 3: K8s with the Worker Controller](exercises/exercise-3/README.md) (~45 min)

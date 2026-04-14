@@ -3,13 +3,13 @@
 ### Summary
 
 - **Part A:** Run the v1.0 workflow, export a completed workflow's history, and run a replay test against it.
-- **Part B:** Add a `notify_owner` activity call to the workflow. Run the replay test — it fails with a non-determinism error.
+- **Part B:** Add a `notify_owner` activity call to the workflow. Run the replay test - it fails with a non-determinism error.
 - **Part C:** Wrap the new call in `workflow.patched()`. Replay test passes.
 - **Part D:** Restart the worker with patched code. Observe that pre-patch in-flight workflows skip the notification, while new workflows include it.
 
 ---
 
-## Part A — Run v1.0, capture a history, and write a replay test (~10 min)
+## Part A - Run v1.0, capture a history, and write a replay test (~10 min)
 
 1. Navigate to the exercise folder:
 
@@ -19,7 +19,7 @@ cd exercises/exercise-1/practice
 
 2. Examine the v1.0 `ValetParkingWorkflow` in `valet/valet_parking_workflow.py`. Note the command sequence:
    - `request_parking_space` → `move_car` (to parking space) → `sleep` → `move_car` (back) → `release_parking_space`
-   - The `sleep` simulates the owner's trip — workflows will be "in flight" during this window.
+   - The `sleep` simulates the owner's trip - workflows will be "in flight" during this window.
 
 3. Start the Temporal dev server (in a **dedicated terminal**):
 
@@ -35,7 +35,7 @@ temporal server start-dev
 make run-worker
 ```
 
-> **Note:** Keep this worker running — you'll be instructed when to restart it later.
+> **Note:** Keep this worker running - you'll be instructed when to restart it later.
 
 5. Start the load simulator (in a **new terminal** from the same directory):
 
@@ -53,7 +53,7 @@ temporal workflow show --workflow-id <WORKFLOW ID HERE> --output json > history/
 
 7. Open `tests/test_replay.py` and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
 
-8. Run the test — it should **pass**, confirming the replay infrastructure works:
+8. Run the test - it should **pass**, confirming the replay infrastructure works:
 
 ```bash
 make run-tests
@@ -61,7 +61,7 @@ make run-tests
 
 ---
 
-## Part B — Make the NDE-inducing change & see it fail (~8 min)
+## Part B - Make the NDE-inducing change & see it fail (~8 min)
 
 Product wants us to send the car owner a notification when their car is about to be parked. A `notify_owner` activity and its models (`NotifyOwnerInput`, `NotifyOwnerOutput`) are already defined in `valet/activities.py` and `valet/models.py`. Your job is to call it from the workflow.
 
@@ -79,7 +79,7 @@ await workflow.execute_activity(
 )
 ```
 
-2. Run the replay test — **it fails** with a non-determinism error:
+2. Run the replay test - **it fails** with a non-determinism error:
 
 ```bash
 make run-tests
@@ -89,7 +89,7 @@ make run-tests
 
 ---
 
-## Part C — Patch it (~8 min)
+## Part C - Patch it (~8 min)
 
 1. Wrap the new activity call with `workflow.patched()`:
 
@@ -105,7 +105,7 @@ if workflow.patched("add-notify-owner"):
     )
 ```
 
-3. Run the replay test — **it passes**:
+3. Run the replay test - **it passes**:
 
 ```bash
 make run-tests
@@ -115,7 +115,7 @@ make run-tests
 
 ---
 
-## Part D — See it in action (~6 min)
+## Part D - See it in action (~6 min)
 
 The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code and watch a **single worker** handle both old and new executions correctly.
 
@@ -125,7 +125,7 @@ The worker you started in Part A is still running the **original v1.0 code**. Ev
 make run-starter
 ```
 
-   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. The old worker begins executing it with the v1.0 code — no `notify_owner`, no patch marker in the history. The starter sets a 30-second trip, so the workflow is now sitting in `sleep`.
+   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. The old worker begins executing it with the v1.0 code - no `notify_owner`, no patch marker in the history. The starter sets a 30-second trip, so the workflow is now sitting in `sleep`.
 
 2. While that workflow is still sleeping, **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
 
@@ -141,7 +141,7 @@ make run-worker
 make run-starter
 ```
 
-   Note this workflow ID — this is your **post-patch workflow**.
+   Note this workflow ID - this is your **post-patch workflow**.
 
 4. Watch **both** workflows complete in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). The same worker handles both, but the outcomes differ:
 
