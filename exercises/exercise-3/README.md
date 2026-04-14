@@ -41,9 +41,9 @@ make setup
 
 ## Part A - Deploy 1.0 and generate load
 
-Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
-
 **Covers:** `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy
+
+Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
 
 1. Ensure you're still in the `exercises/exercise-3/practice` directory from Pre-Setup.
 
@@ -84,9 +84,9 @@ make run-load-simulator
 
 ## Part B - Non-replay-safe change with Progressive rollout
 
-Another feature request: notify car owners when their car is being retrieved. This is a non-replay-safe change. Instead of cutting over all at once, you'll use a Progressive rollout to ramp traffic gradually while old workflows complete on their original version.
-
 **Covers:** Progressive rollout strategy, ramp steps, rainbow deployment model
+
+Another feature request: notify car owners when their car is being retrieved. This is a non-replay-safe change. Instead of cutting over all at once, you'll use a Progressive rollout to ramp traffic gradually while old workflows complete on their original version.
 
 > **Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
 
@@ -167,9 +167,9 @@ kubectl get deployments
 
 ## Part C - Gate workflow
 
-Progressive rollouts ramp traffic automatically, but what if the new version has a problem? In Exercise 2, a bad deploy hit production and you had to scramble to roll back. A gate workflow catches problems *before* any production traffic is affected.
-
 **Covers:** Gate workflows, pre-deployment validation, non-retryable `ApplicationError`
+
+Progressive rollouts ramp traffic automatically, but what if the new version has a problem? In Exercise 2, a bad deploy hit production and you had to scramble to roll back. A gate workflow catches problems *before* any production traffic is affected.
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
@@ -300,9 +300,9 @@ kubectl get twd -w
 
 ## Part D (Optional) - Testing with synthetic traffic
 
-Not every deployment involves a workflow code change. You might be updating a dependency, rotating credentials, or changing config. Before routing production traffic to the new build, you can test it on real infrastructure using pinned synthetic traffic.
-
 **Covers:** `Manual` rollout strategy, `Inactive` version state, `VersioningOverride` for pinned synthetic traffic
+
+Not every deployment involves a workflow code change. You might be updating a dependency, rotating credentials, or changing config. Before routing production traffic to the new build, you can test it on real infrastructure using pinned synthetic traffic.
 
 > **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test.
 

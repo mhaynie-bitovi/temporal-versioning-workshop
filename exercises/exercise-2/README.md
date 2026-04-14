@@ -40,9 +40,9 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 
 ## Part A - Enable Worker Versioning + Deploy Version 1.0
 
-Before shipping new features, you'll set up the versioning infrastructure. This is a one-time configuration that makes every future deploy safer.
-
 **Covers:** `VersioningBehavior.PINNED`, `VersioningBehavior.AUTO_UPGRADE`, `WorkerDeploymentConfig`, `set-current-version`
+
+Before shipping new features, you'll set up the versioning infrastructure. This is a one-time configuration that makes every future deploy safer.
 
 **Goal:** Configure worker versioning infrastructure and deploy the first versioned worker.
 
@@ -119,9 +119,9 @@ make run-load-simulator
 
 ## Part B - Deploy a Breaking Change - No Patching Needed
 
-Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic.
-
 **Covers:** Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys
+
+Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic.
 
 1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
@@ -176,9 +176,9 @@ temporal worker deployment describe --name valet
 
 ## Part C - Incident: Bad Deploy, Live Traffic
 
-A developer ships v3.0 with a bug in the billing activity. Production traffic is flowing. Workflows start failing. You need to respond - now.
-
 **Covers:** Instant rollback (`set-current-version`), evacuating stuck workflows (`update-options`), fix-forward deployment, `WorkerDeploymentVersion` search attribute
+
+A developer ships v3.0 with a bug in the billing activity. Production traffic is flowing. Workflows start failing. You need to respond - now.
 
 ### The bad deploy
 
@@ -302,15 +302,15 @@ New workflows now flow through v3.1 with working billing. Incident resolved.
 
 ## Part D (Optional) - The AUTO_UPGRADE Catch
 
-In Parts A-C, PINNED versioning meant no patching. But `ParkingLotWorkflow` uses AUTO_UPGRADE - when a new version becomes Current, it automatically migrates. That means it replays its existing history against your new code. If the commands don't match, you get an NDE.
-
 **Covers:** AUTO_UPGRADE replay behavior, patching for auto-upgraded workflows, trampolining concept
 
-Let's see it happen.
+In Parts A-C, PINNED versioning meant no patching. But `ParkingLotWorkflow` uses AUTO_UPGRADE - when a new version becomes Current, it automatically migrates. That means it replays its existing history against your new code. If the commands don't match, you get an NDE.
 
 Let's see it happen.
 
-### Step 1 - Make a non-replay-safe change to ParkingLotWorkflow
+Let's see it happen.
+
+### Make a non-replay-safe change to ParkingLotWorkflow
 
 1. In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized (the `timedelta` import is already available via `temporalio`):
 
@@ -321,7 +321,7 @@ Let's see it happen.
 
    This is a non-replay-safe change: it adds a timer command that doesn't exist in the workflow's current history.
 
-### Step 2 - Deploy and watch it break
+### Deploy and watch it break
 
 2. Start a v4.0 worker (in a **new terminal**):
 
@@ -344,7 +344,7 @@ temporal worker deployment set-current-version \
 
    > **Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE workflows *do* replay old history against new code - that's the whole point of auto-upgrading. So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1.
 
-### Step 3 - Fix it with a patch
+### Fix it with a patch
 
 5. Wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
 
@@ -371,7 +371,7 @@ temporal worker deployment set-current-version \
 
 8. **Observe:** `ParkingLotWorkflow` auto-upgrades to v4.1. This time, `workflow.patched("add-warmup-delay")` returns `False` during replay (no patch marker in the old history), so the sleep is skipped. The workflow continues without an NDE. Future runs (after `continue_as_new`) will include the sleep.
 
-### Step 4 - Clean up
+### Clean up
 
 9. **Stop old workers.** Stop the v3.1 worker once drained. Keep v4.1 running or stop everything if you're done.
 

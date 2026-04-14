@@ -18,9 +18,9 @@ Your valet parking system is running in production. A feature request arrives: n
 
 ## Part A - Run v1.0, capture a history, and write a replay test
 
-Before making any changes, you'll establish a safety net. Run the current v1.0 workflow, capture a completed workflow's history, and set up a replay test that verifies the code is compatible with that history.
-
 **Covers:** Exporting workflow history, replay test infrastructure
+
+Before making any changes, you'll establish a safety net. Run the current v1.0 workflow, capture a completed workflow's history, and set up a replay test that verifies the code is compatible with that history.
 
 1. Navigate to the exercise folder:
 
@@ -74,9 +74,9 @@ make run-tests
 
 ## Part B - Make the NDE-inducing change & see it fail
 
-Now we need to ship the feature. A `notify_owner` activity and its models (`NotifyOwnerInput`, `NotifyOwnerOutput`) are already defined in `valet/activities.py` and `valet/models.py`. Your job is to call it from the workflow - and see what happens when the replay test catches the incompatibility.
-
 **Covers:** Non-replay-safe changes, non-determinism errors
+
+Now we need to ship the feature. A `notify_owner` activity and its models (`NotifyOwnerInput`, `NotifyOwnerOutput`) are already defined in `valet/activities.py` and `valet/models.py`. Your job is to call it from the workflow - and see what happens when the replay test catches the incompatibility.
 
 1. In `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
 
@@ -106,9 +106,9 @@ make run-tests
 
 ## Part C - Patch it
 
-The replay test caught the problem before it reached production. Now fix it using `workflow.patched()`, which lets old executions skip the new code while new executions run it.
-
 **Covers:** `workflow.patched()` for backward-compatible workflow evolution
+
+The replay test caught the problem before it reached production. Now fix it using `workflow.patched()`, which lets old executions skip the new code while new executions run it.
 
 1. Wrap the new activity call with `workflow.patched()`:
 
@@ -136,9 +136,9 @@ make run-tests
 
 ## Part D - See it in action
 
-With the patch in place, a single worker can now handle both old and new workflows. You'll create a pre-patch workflow, restart the worker with the patched code, and watch it handle both correctly.
-
 **Covers:** How `workflow.patched()` behaves at runtime for old vs. new executions
+
+With the patch in place, a single worker can now handle both old and new workflows. You'll create a pre-patch workflow, restart the worker with the patched code, and watch it handle both correctly.
 
 The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code and watch a **single worker** handle both old and new executions correctly.
 
