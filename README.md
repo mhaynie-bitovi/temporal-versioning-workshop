@@ -66,7 +66,7 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 The three exercises tell a single story: you're evolving a production valet parking system, and each exercise introduces a better way to ship changes safely. You'll start with patching - the foundational technique every Temporal developer needs to know - then move to Worker Versioning, which replaces most patching with infrastructure-managed routing, and finally automate the whole deployment lifecycle with the Worker Controller on Kubernetes.
 
-### [Exercise 1: Workflow Patching](exercises/exercise-1/README.md)
+### [Exercise 1: Workflow Patching](exercises/1-workflow-patching/README.md)
 
 Your first feature request arrives: notify car owners when their car is being parked. Adding a `notify_owner` activity call is a non-replay-safe change - you'll learn to catch it with replay testing and fix it with `workflow.patched()`.
 
@@ -75,7 +75,7 @@ Your first feature request arrives: notify car owners when their car is being pa
 - **Part C:** Fix the change with `workflow.patched()` so replay stays safe.
 - **Part D:** Deploy the patched code and observe how in-flight vs. new workflows behave differently.
 
-### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md)
+### [Exercise 2: Worker Versioning](exercises/2-worker-versioning/README.md)
 
 Feature requests keep coming, and patching is starting to accumulate. You switch to Worker Versioning, where Temporal's infrastructure handles routing instead of conditional code paths. Then a bad deploy hits production.
 
@@ -84,7 +84,7 @@ Feature requests keep coming, and patching is starting to accumulate. You switch
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
-### [Exercise 3: Worker Controller](exercises/exercise-3/README.md)
+### [Exercise 3: Worker Controller](exercises/3-worker-controller/README.md)
 
 You've been managing versioned deployments by hand. The Worker Controller automates all of that - progressive rollouts, draining, and pre-deployment checks - so you can ship with confidence and less manual coordination.
 

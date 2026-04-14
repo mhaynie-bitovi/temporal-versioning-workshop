@@ -28,7 +28,7 @@ The `slide-content.md` is a script draft, not a slide deck yet. Before touching 
 ## 4. Tactical Advice (Derived from Existing Workshop Materials)
 
 - **Don't slide the README.** The strategy doc says this explicitly. Slides are for concepts and narrative; READMEs are for instructions. If a slide just says "run this command," delete it.
-- **The Exercise Setup slides are wasted real estate.** "Navigate to exercise-2/practice" doesn't need a slide, it needs a spoken sentence. Replace those slides with the "where are we" progress visual the strategy doc recommends.
+- **The Exercise Setup slides are wasted real estate.** "Navigate to 2-worker-versioning/practice" doesn't need a slide, it needs a spoken sentence. Replace those slides with the "where are we" progress visual the strategy doc recommends.
 - **Trampolining: cut it.** The coverage audit already flags it as Not Covered with no exercise support. Mention it in one bullet on the resources slide. Don't build slides for something you can't demo.
 - **The bridge sections are the danger zones.** Keep them to 10 min max. For each bridge slide, ask: "Does this teach something the exercise didn't, or is it just summarizing?" Cut summaries. Keep only forward-looking motivation ("here's why what you just learned isn't enough").
 

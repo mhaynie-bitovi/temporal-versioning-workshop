@@ -1,10 +1,10 @@
 {
     "executionEnvironments": [
-        { "root": "exercises/exercise-1/practice" },
-        { "root": "exercises/exercise-1/solution" },
-        { "root": "exercises/exercise-2/practice" },
-        { "root": "exercises/exercise-2/solution" },
-        { "root": "exercises/exercise-3/practice" },
-        { "root": "exercises/exercise-3/solution" }
+        { "root": "exercises/1-workflow-patching/practice" },
+        { "root": "exercises/1-workflow-patching/solution" },
+        { "root": "exercises/2-worker-versioning/practice" },
+        { "root": "exercises/2-worker-versioning/solution" },
+        { "root": "exercises/3-worker-controller/practice" },
+        { "root": "exercises/3-worker-controller/solution" }
     ]
 }

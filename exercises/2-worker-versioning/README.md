@@ -25,7 +25,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 1. Navigate to the exercise folder:
 
     ```bash
-    cd exercises/exercise-2/practice
+    cd exercises/2-worker-versioning/practice
     ```
 
 2. If your Temporal dev server is still running from Exercise 1, stop it (Ctrl+C) and restart it so there are no leftover workflow executions:

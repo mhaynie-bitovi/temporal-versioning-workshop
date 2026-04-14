@@ -122,7 +122,7 @@ Three layers, each building on the last:
 ## Slide: Exercise 1 Setup
 
 - Open Instruqt environment
-- Navigate to `exercises/exercise-1/practice`
+- Navigate to `exercises/1-workflow-patching/practice`
 - You'll: run v1.0, capture a history, write a replay test, make a breaking change, see it fail, patch it, see it work
 - ~30 minutes
 
@@ -243,7 +243,7 @@ When things go wrong in production, Worker Versioning gives you tools to respond
 
 ## Slide: Exercise 2 Setup
 
-- Navigate to `exercises/exercise-2/practice`
+- Navigate to `exercises/2-worker-versioning/practice`
 - You'll: enable versioning, deploy v1.0, add a breaking change as v2.0 (no patching!), simulate a bad v3.0 deploy, rollback, evacuate, fix-forward
 - ~30 minutes
 
@@ -319,7 +319,7 @@ Manual: v1 100%, v2 sits at 0% (Inactive) indefinitely until promoted]
 
 ## Slide: Exercise 3 Setup
 
-- Navigate to `exercises/exercise-3/practice`
+- Navigate to `exercises/3-worker-controller/practice`
 - You'll: deploy v1.0 with AllAtOnce, deploy v2.0 with Progressive rollout, set up a gate workflow that catches a bad credential, fix it and watch it pass
 - Optional Part D: test with synthetic traffic using Manual strategy
 - ~30 minutes

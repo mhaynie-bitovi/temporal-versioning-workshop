@@ -33,7 +33,7 @@ temporal server start-dev
 2. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
 
 ```bash
-cd exercises/exercise-3/practice
+cd exercises/3-worker-controller/practice
 make setup
 ```
 
@@ -45,7 +45,7 @@ make setup
 
 Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
 
-1. Ensure you're still in the `exercises/exercise-3/practice` directory from Pre-Setup.
+1. Ensure you're still in the `exercises/3-worker-controller/practice` directory from Pre-Setup.
 
 2. Examine the k8s manifests:
    - `k8s/temporal-connection.yaml` - points to the host Temporal server

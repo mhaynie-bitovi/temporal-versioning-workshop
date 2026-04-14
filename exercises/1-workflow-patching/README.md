@@ -16,7 +16,7 @@ Your valet parking system is running in production. A feature request arrives: n
 
 ---
 
-## Part A - Run v1.0, capture a history, and write a replay test
+## Part A - Export workflow history, and write a replay test
 
 **Covers:** Exporting workflow history, replay test infrastructure
 
@@ -25,7 +25,7 @@ Before making any changes, you'll establish a safety net. Run the current v1.0 w
 1. Navigate to the exercise folder:
 
 ```bash
-cd exercises/exercise-1/practice
+cd exercises/1-workflow-patching/practice
 ```
 
 2. Examine the v1.0 `ValetParkingWorkflow` in `valet/valet_parking_workflow.py`. Note the command sequence:

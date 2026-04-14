@@ -15,7 +15,7 @@ env/bin/pip install -r requirements.txt
 
 ## Commands
 
-All commands are run from within an exercise's `practice/` directory (e.g., `exercises/exercise-1/practice/`).
+All commands are run from within an exercise's `practice/` directory (e.g., `exercises/1-workflow-patching/practice/`).
 
 ```sh
 make run-worker        # Start the Temporal worker
@@ -88,6 +88,6 @@ Exercises build upon one another sequentially:
 ## Key Reference
 
 - [README.md](../README.md) - Top-level project README
-- [exercises/exercise-1/README.md](../exercises/exercise-1/README.md) - Exercise 1: Workflow Patching
-- [exercises/exercise-2/README.md](../exercises/exercise-2/README.md) - Exercise 2: Worker Versioning
-- [exercises/exercise-3/README.md](../exercises/exercise-3/README.md) - Exercise 3: Worker Controller
+- [exercises/1-workflow-patching/README.md](../exercises/1-workflow-patching/README.md) - Exercise 1: Workflow Patching
+- [exercises/2-worker-versioning/README.md](../exercises/2-worker-versioning/README.md) - Exercise 2: Worker Versioning
+- [exercises/3-worker-controller/README.md](../exercises/3-worker-controller/README.md) - Exercise 3: Worker Controller
