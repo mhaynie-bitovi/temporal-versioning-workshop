@@ -6,3 +6,4 @@
 - add hint about configuring columns in the temporal web ui (add Deployment, Deployment Version, Versioning Behavior)
 - why does installing the cert manager during exercise 3 make setup take so long?
 - make sure we've covered the worker deployments tab in the web ui
+- maybe add tip to users about how to "rename" terminals in vs code so they manage them effectively

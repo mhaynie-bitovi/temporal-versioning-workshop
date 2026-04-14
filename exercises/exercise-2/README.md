@@ -22,13 +22,19 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 
 ## Setup: Clean Slate
 
-If your Temporal dev server is still running from Exercise 1, stop it (Ctrl+C) and restart it so there are no leftover workflow executions:
+1. Navigate to the exercise folder:
 
-```bash
-temporal server start-dev
-```
+    ```bash
+    cd exercises/exercise-2/practice
+    ```
 
-> **Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start - every workflow will be versioned from birth.
+2. If your Temporal dev server is still running from Exercise 1, stop it (Ctrl+C) and restart it so there are no leftover workflow executions:
+
+    ```bash
+    temporal server start-dev
+    ```
+
+    > **Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start - every workflow will be versioned from birth.
 
 ---
 
@@ -40,15 +46,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
 **Goal:** Configure worker versioning infrastructure and deploy the first versioned worker.
 
-1. Navigate to the exercise folder:
-
-```bash
-cd exercises/exercise-2/practice
-```
-
-2. Review the starting code. This is the Exercise 1 solution - `ValetParkingWorkflow` already calls `notify_owner` (guarded by `workflow.patched("add-notify-owner")`). The `bill_customer` activity and its models are already defined - you'll use them later.
-
-3. **Make three code changes** (follow the `TODO (Part A)` comments in each file):
+1. **Set the versioning behavior on both workflows** (follow the `TODO (Part A)` comments in each file):
 
    **a.** In `valet/valet_parking_workflow.py` add `versioning_behavior=VersioningBehavior.PINNED` to `@workflow.defn`:
 
@@ -70,7 +68,7 @@ cd exercises/exercise-2/practice
    >
    > **Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D.
 
-   **c.** In `valet/worker.py` create the deployment config from environment variables, and pass it to the `Worker`:
+2. **Configure the worker for versioning.** In `valet/worker.py`, create the deployment config from environment variables and pass it to the `Worker` (follow the `TODO (Part A)` comment):
 
    ```python
     worker = Worker(
@@ -86,13 +84,13 @@ cd exercises/exercise-2/practice
     )
    ```
 
-4. Start the versioned 1.0 worker (in a **new terminal**):
+3. Start the versioned 1.0 worker (in a **new terminal**):
 
 ```bash
 make run-worker BUILD_ID=1.0
 ```
 
-5. Register version 1.0 as the **Current Version** for the deployment:
+4. Register version 1.0 as the **Current Version** for the deployment:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -101,7 +99,7 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-6. Inspect the deployment to confirm:
+5. Inspect the deployment to confirm:
 
 ```bash
 temporal worker deployment describe --name valet
@@ -109,13 +107,13 @@ temporal worker deployment describe --name valet
 
    You should see version 1.0 listed as the Current Version.
 
-7. Start the load simulator (in a **new terminal**):
+6. Start the load simulator (in a **new terminal**):
 
 ```bash
 make run-load-simulator
 ```
 
-8. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) and watch workflows flow through the versioned 1.0 worker.
+7. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) and watch workflows flow through the versioned 1.0 worker.
 
 ---
 
@@ -213,7 +211,7 @@ temporal worker deployment set-current-version \
 
 4. **Watch the damage.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). New workflows are starting on 3.0, hitting the billing step, and failing. Look at the worker logs - you'll see `AttributeError` on every billing attempt, retrying forever. These workflows are stuck. Every few seconds, the load simulator starts another one, and it goes straight into the same failure loop.
 
-### Step 1 - Stop the bleeding
+### Stop the bleeding
 
 The fastest possible response: redirect new traffic away from the broken version. No code redeploy, no CI pipeline, no waiting. One command.
 
@@ -230,7 +228,7 @@ temporal worker deployment set-current-version \
 
    But look closer. The workflows that already started on v3.0 are still there, still failing. They're PINNED to v3.0 - new traffic is safe, but those in-flight workflows are stuck.
 
-### Step 2 - Rescue the stuck workflows
+### Rescue the stuck workflows
 
 7. First, see the damage. List every workflow still stuck on v3.0:
 
@@ -256,7 +254,7 @@ temporal workflow update-options \
 
 9. **Watch them recover.** Go back to the Temporal Web UI. The workflows that were stuck on v3.0 are now completing successfully on v2.0. Those customers just got billed correctly.
 
-### Step 3 - Fix forward
+### Fix forward
 
 Rollback bought you time. Now ship the fix.
 
@@ -281,7 +279,7 @@ New workflows now flow through v3.1 with working billing. Incident resolved.
 
 > **Recap what just happened.** A bad deploy hit production. Within seconds, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level.
 
-### Step 4 - Clean up
+### Clean up
 
 13. **Stop the v3.0 worker** (Ctrl+C).
 

@@ -78,10 +78,10 @@ Now we need to ship the feature. A `notify_owner` activity and its models (`Noti
 
 **Covers:** Non-replay-safe changes, non-determinism errors
 
-1. Insert the activity call into `valet/valet_parking_workflow.py` **after** `request_parking_space` and **before** the first `move_car`:
+1. In `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
 
 ```python
-# After request_parking_space, before move_car:
+# Notify the owner their car is being parked
 await workflow.execute_activity(
     notify_owner,
     NotifyOwnerInput(
