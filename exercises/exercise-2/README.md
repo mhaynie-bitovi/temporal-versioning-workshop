@@ -1,5 +1,16 @@
 # Exercise 2: Worker Versioning
 
+Your valet parking system is growing. The notification feature from Exercise 1 shipped fine, but patching is already adding complexity - and the next feature request (billing) is on the way. Instead of accumulating more conditional branches, you'll switch to Worker Versioning where Temporal's infrastructure handles routing workflows to the right code version. Then, when a bad deploy hits production, you'll learn to respond in seconds.
+
+**Temporal features and patterns covered:**
+- `VersioningBehavior.PINNED`
+- `VersioningBehavior.AUTO_UPGRADE`
+- `WorkerDeploymentConfig`
+- `set-current-version`
+- `update-options`
+- Rainbow deployments
+- Emergency rollback and evacuation
+
 ### Summary
 
 - **Part A:** Enable worker versioning - add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.
@@ -22,6 +33,10 @@ temporal server start-dev
 ---
 
 ## Part A - Enable Worker Versioning + Deploy Version 1.0
+
+Before shipping new features, you'll set up the versioning infrastructure. This is a one-time configuration that makes every future deploy safer.
+
+**Covers:** `VersioningBehavior.PINNED`, `VersioningBehavior.AUTO_UPGRADE`, `WorkerDeploymentConfig`, `set-current-version`
 
 **Goal:** Configure worker versioning infrastructure and deploy the first versioned worker.
 
@@ -106,7 +121,9 @@ make run-load-simulator
 
 ## Part B - Deploy a Breaking Change - No Patching Needed
 
-**Motivation:** "Product wants billing at the end of the valet workflow. This adds a new activity - a non-replay-safe change. In Exercise 1, you'd have needed a patch. With PINNED versioning, you don't."
+Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic.
+
+**Covers:** Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys
 
 1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
@@ -159,9 +176,13 @@ temporal worker deployment describe --name valet
 
 ## Part C - Incident: Bad Deploy, Live Traffic
 
-> **The scenario:** It's deployment day. A developer ships v3.0 with a bug in the billing activity - they reference a field that doesn't exist. The deploy goes out. Production traffic is flowing. Workflows start failing. You need to respond, *now*.
+A developer ships v3.0 with a bug in the billing activity. Production traffic is flowing. Workflows start failing. You need to respond - now.
+
+**Covers:** Instant rollback (`set-current-version`), evacuating stuck workflows (`update-options`), fix-forward deployment, `WorkerDeploymentVersion` search attribute
 
 ### The bad deploy
+
+A developer references a field that doesn't exist on `BillCustomerInput`. The deploy goes out.
 
 1. **Introduce the bug.** In `valet/activities.py`, add this line to the beginning of `bill_customer`:
 
@@ -270,7 +291,11 @@ New workflows now flow through v3.1 with working billing. Incident resolved.
 
 ## Part D (Optional) - The AUTO_UPGRADE Catch
 
-**Motivation:** In Part B, you deployed a non-replay-safe change with zero patching. That felt great. But it only worked because `ValetParkingWorkflow` is **PINNED** - each workflow stays on the version it started on, so old history never meets new code. What about `ParkingLotWorkflow`, which uses **AUTO_UPGRADE**? When you set a new version as Current, the parking lot workflow automatically migrates to the new code. That means it replays its existing history against your new code - and if the commands don't match, you get an NDE.
+In Parts A-C, PINNED versioning meant no patching. But `ParkingLotWorkflow` uses AUTO_UPGRADE - when a new version becomes Current, it automatically migrates. That means it replays its existing history against your new code. If the commands don't match, you get an NDE.
+
+**Covers:** AUTO_UPGRADE replay behavior, patching for auto-upgraded workflows, trampolining concept
+
+Let's see it happen.
 
 Let's see it happen.
 

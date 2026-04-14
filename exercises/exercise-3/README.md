@@ -1,7 +1,13 @@
-# Exercise 3: Deploying on K8s with the Worker Controller
+# Exercise 3: Worker Controller
 
-**Theme:** "You've been managing versioning by hand. The Worker Controller automates all of that."
-**Skills:** TemporalWorkerDeployment CRD, Progressive rollout, rainbow deployments, pre-deployment testing, gate workflows
+In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining old ones, responding to incidents. It worked, but it required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD.
+
+**Temporal features and patterns covered:**
+- `TemporalWorkerDeployment` CRD
+- `AllAtOnce`/`Progressive`/`Manual` rollout strategies
+- Progressive ramping
+- Gate workflows
+- Pre-deployment testing with `VersioningOverride`
 
 ### Summary
 
@@ -34,6 +40,10 @@ make setup
 ---
 
 ## Part A - Deploy 1.0 and generate load
+
+Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
+
+**Covers:** `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy
 
 1. Ensure you're still in the `exercises/exercise-3/practice` directory from Pre-Setup.
 
@@ -72,7 +82,9 @@ make run-load-simulator
 
 ## Part B - Non-replay-safe change with Progressive rollout
 
-**Scenario:** Add a notification when the owner's car is being retrieved. This adds a new activity call to the workflow sequence - a non-replay-safe change. With worker versioning (`PINNED` behavior), each version runs its own code, so the Worker Controller will keep 1.0 workers alive for in-flight workflows while ramping up 2.0 for new ones.
+Another feature request: notify car owners when their car is being retrieved. This is a non-replay-safe change. Instead of cutting over all at once, you'll use a Progressive rollout to ramp traffic gradually while old workflows complete on their original version.
+
+**Covers:** Progressive rollout strategy, ramp steps, rainbow deployment model
 
 > **Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
 
@@ -143,7 +155,7 @@ kubectl get deployments
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
 
-> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. You didn't need to manually manage traffic routing, scale replicas, or coordinate draining - just update the image tag and the controller handles the rest.
+> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest.
 
 > **Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely.
 
@@ -151,7 +163,9 @@ kubectl get deployments
 
 ## Part C - Gate workflow
 
-**Scenario:** Part B showed a Progressive rollout that ramps traffic automatically. But what if the new version has a problem? You want to catch it *before* any production traffic is affected. The Worker Controller's **gate workflow** automates pre-deployment checks: before any traffic ramps, the controller starts a workflow on the new version. If it fails, the rollout is blocked.
+Progressive rollouts ramp traffic automatically, but what if the new version has a problem? In Exercise 2, a bad deploy hit production and you had to scramble to roll back. A gate workflow catches problems *before* any production traffic is affected.
+
+**Covers:** Gate workflows, pre-deployment validation, non-retryable `ApplicationError`
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
@@ -220,7 +234,7 @@ kubectl get twd -w
 
 6. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
-> **Key observation:** Production traffic is still flowing to v2.0. The gate caught the bad credential before any routing change happened.
+> **Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened.
 
 7. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
 
@@ -266,13 +280,15 @@ kubectl get twd -w
 
 12. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
 
-> **Key takeaway:** Instead of running a test script and promoting by hand, the controller runs the gate workflow before any routing changes. When the billing credentials were bad, the gate blocked the rollout and production was unaffected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
+> **Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
 
 ---
 
 ## Part D (Optional) - Testing with synthetic traffic
 
-**Scenario:** Not every deployment involves a workflow code change. You might be updating a dependency, applying a security patch, rotating credentials, or changing an environment variable. Whatever the reason, you want to verify the new build works before routing production traffic to it. Worker Versioning's `Inactive` state is designed for exactly this: workers are polling but only receive workflows explicitly pinned to them via `VersioningOverride`. By combining a `Manual` rollout strategy with pinned synthetic traffic, you can test a new version on real infrastructure without touching production traffic.
+Not every deployment involves a workflow code change. You might be updating a dependency, rotating credentials, or changing config. Before routing production traffic to the new build, you can test it on real infrastructure using pinned synthetic traffic.
+
+**Covers:** `Manual` rollout strategy, `Inactive` version state, `VersioningOverride` for pinned synthetic traffic
 
 > **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test.
 
@@ -335,4 +351,4 @@ make run-synthetic BUILD_ID=4.0-XXXX
 
 ---
 
-> **🎉 Congratulations!** You've completed Exercise 3.
+> **Congratulations!** You've completed Exercise 3.

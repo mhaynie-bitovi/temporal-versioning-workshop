@@ -90,4 +90,4 @@ Exercises build upon one another sequentially:
 - [README.md](../README.md) - Top-level project README
 - [exercises/exercise-1/README.md](../exercises/exercise-1/README.md) - Exercise 1: Workflow Patching
 - [exercises/exercise-2/README.md](../exercises/exercise-2/README.md) - Exercise 2: Worker Versioning
-- [exercises/exercise-3/README.md](../exercises/exercise-3/README.md) - Exercise 3: Kubernetes Deployment
+- [exercises/exercise-3/README.md](../exercises/exercise-3/README.md) - Exercise 3: Worker Controller

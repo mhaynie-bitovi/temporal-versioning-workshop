@@ -52,9 +52,9 @@ deactivate
 
 > **Note:** For the rest of the workshop you won't need an activated venv. We'll be using many terminals side by side, and the Makefiles reference the venv's Python binary directly via a relative path - no need to activate it in each terminal or configure your IDE.
 
-## The Example: Valet Parking
+## The Scenario: Airport Valet Parking
 
-All exercises build on an airport valet parking example with two Temporal workflows:
+All exercises build on an airport valet parking scenario with two Temporal workflows:
 
 - **`ValetParkingWorkflow`** - Handles a single parking transaction. It requests a space, moves the car to it, waits for the owner's trip (simulated via a sleep), moves the car back, and releases the space. Each exercise evolves this workflow with new features.
 
@@ -64,9 +64,11 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 ## Exercises
 
-### [Exercise 1: Patching + Replay Testing](exercises/exercise-1/README.md)
+The three exercises tell a single story: you're evolving a production valet parking system, and each exercise introduces a better way to ship changes safely. You'll start with patching - the foundational technique every Temporal developer needs to know - then move to Worker Versioning, which replaces most patching with infrastructure-managed routing, and finally automate the whole deployment lifecycle with the Worker Controller on Kubernetes.
 
-Add a `notify_owner` activity call to the workflow - a non-replay-safe change - and learn to catch and fix it.
+### [Exercise 1: Workflow Patching](exercises/exercise-1/README.md)
+
+Your first feature request arrives: notify car owners when their car is being parked. Adding a `notify_owner` activity call is a non-replay-safe change - you'll learn to catch it with replay testing and fix it with `workflow.patched()`.
 
 - **Part A:** Run v1.0, export a workflow history, run a replay test.
 - **Part B:** Add the activity call. Replay test fails with a non-determinism error.
@@ -75,16 +77,16 @@ Add a `notify_owner` activity call to the workflow - a non-replay-safe change - 
 
 ### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md)
 
-Deploy changes using Worker Versioning - Temporal's infrastructure handles routing instead of conditional code paths.
+Feature requests keep coming, and patching is starting to accumulate. You switch to Worker Versioning, where Temporal's infrastructure handles routing instead of conditional code paths. Then a bad deploy hits production.
 
 - **Part A:** Enable versioning (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`). Deploy v1.0.
 - **Part B:** Add `bill_customer` (non-replay-safe). Deploy v2.0 alongside v1.0 - no patching needed.
 - **Part C:** Introduce a bug in v3.0 → rollback with `set-current-version` → evacuate stuck workflows with `update-options` → fix-forward with v3.1.
 - **Part D (Optional):** Make a non-replay-safe change to the AUTO_UPGRADE workflow. Discover that AUTO_UPGRADE still requires patching. Teaser: trampolining.
 
-### [Exercise 3: K8s with the Worker Controller](exercises/exercise-3/README.md)
+### [Exercise 3: Worker Controller](exercises/exercise-3/README.md)
 
-The Worker Controller automates versioned deployments on Kubernetes.
+You've been managing versioned deployments by hand. The Worker Controller automates all of that - progressive rollouts, draining, and pre-deployment checks - so you can ship with confidence and less manual coordination.
 
 - **Part A:** Build and deploy v1.0 via a `TemporalWorkerDeployment` CRD (AllAtOnce strategy). Start load.
 - **Part B:** Add `notify_owner` to the workflow (non-replay-safe). Switch the CRD to a Progressive rollout strategy. Deploy v2.0 - watch the controller ramp traffic 25% → 75% → 100% while v1.0 workers drain.
