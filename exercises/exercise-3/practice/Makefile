@@ -72,8 +72,9 @@ run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
 
 ## run-synthetic - send synthetic traffic pinned to a specific version
+## Usage: make run-synthetic BUILD_ID=3.0-9bd4
 run-synthetic:
-	PYTHONPATH=. exec $(PYTHON) valet/test_version.py
+	TEMPORAL_WORKER_BUILD_ID=$(BUILD_ID) PYTHONPATH=. exec $(PYTHON) valet/test_version.py
 
 ## run-tests - run tests
 run-tests:

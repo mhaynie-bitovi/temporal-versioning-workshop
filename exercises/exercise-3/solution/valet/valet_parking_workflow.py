@@ -1,15 +1,16 @@
 from datetime import timedelta
 
 from temporalio import workflow
+
 from temporalio.common import VersioningBehavior
 
 with workflow.unsafe.imports_passed_through():
     from valet.activities import (
-        bill_customer,
         move_car,
         notify_owner,
         release_parking_space,
         request_parking_space,
+        bill_customer,
     )
     from valet.models import (
         BillCustomerInput,
@@ -44,7 +45,7 @@ class ValetParkingWorkflow:
             kind=LocationKind.PARKING_SPACE, id=parking_space_result.parking_space_number
         )
 
-        # Notify the owner their car is being parked
+        # Notify the owner their is being parked
         if workflow.patched("add-notify-owner"):
             await workflow.execute_activity(
                 notify_owner,
@@ -76,6 +77,7 @@ class ValetParkingWorkflow:
         await workflow.sleep(input.trip_duration_seconds)
 
         # Notify the owner their car is being retrieved
+        # TODO (Part B): Notify the owner their car is being retrieved
         await workflow.execute_activity(
             notify_owner,
             NotifyOwnerInput(
@@ -109,16 +111,16 @@ class ValetParkingWorkflow:
 
         # Bill the customer
         await workflow.execute_activity(
-            bill_customer,
-            BillCustomerInput(
-                license_plate=input.license_plate,
-                duration_seconds=input.trip_duration_seconds,
-                total_distance=(
-                    move_to_parking_space_result.distance_driven
-                    + move_to_valet_result.distance_driven
-                ),
-            ),
-            start_to_close_timeout=timedelta(seconds=10),
+           bill_customer,
+           BillCustomerInput(
+               license_plate=input.license_plate,
+               duration_seconds=input.trip_duration_seconds,
+               total_distance=(
+                   move_to_parking_space_result.distance_driven
+                   + move_to_valet_result.distance_driven
+               ),
+           ),
+           start_to_close_timeout=timedelta(seconds=10),
         )
 
         return ValetParkingOutput()

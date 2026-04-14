@@ -7,3 +7,6 @@
 - make sure code snippets work copy pasted (indentation may be off)
 - add hint about configuring columns in the temporal web ui (add Deployment, Deployment Version, Versioning Behavior)
 - remove all the m-dashes, and prohibit them
+- why does installing the cert manager during exercise 3 make setup take so long?
+- make sure we've covered the worker deployments in the web ui
+- address sunsetting with the worker controller (right now versions are just hanging around drained)

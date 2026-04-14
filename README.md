@@ -87,5 +87,5 @@ The Worker Controller automates versioned deployments on Kubernetes.
 
 - **Part A:** Build and deploy v1.0 via a `TemporalWorkerDeployment` CRD (AllAtOnce strategy). Start load.
 - **Part B:** Add `notify_owner` to the workflow (non-replay-safe). Switch the CRD to a Progressive rollout strategy. Deploy v2.0 - watch the controller ramp traffic 25% → 75% → 100% while v1.0 workers drain.
-- **Part C:** Deploy v3.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v3.0, verify the workflow completes, then promote via the CLI.
-- **Part D:** Configure a gate workflow that checks downstream credentials. Deploy v4.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v4.1, and watch it pass.
+- **Part C:** Configure a gate workflow that checks downstream credentials. Deploy v3.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v3.1, and watch it pass.
+- **Part D (Extra):** Deploy v4.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v4.0, verify the workflow completes.

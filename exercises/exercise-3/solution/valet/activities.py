@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from temporalio import activity
 from temporalio.client import Client, WithStartWorkflowOperation
+from temporalio.exceptions import ApplicationError
 from temporalio.common import WorkflowIDConflictPolicy
 
 from valet.models import (
@@ -122,9 +123,13 @@ async def check_notification_service() -> str:
 @activity.defn
 async def check_billing_service() -> str:
     """Verify credentials for the billing service are valid."""
-    # In production, this would authenticate against the billing API
-    # (e.g. verify the API key with a test auth call). A misconfigured
-    # secret or expired key is a permanent failure that won't resolve
-    # on its own - exactly the kind of problem a gate should catch.
+    # Simulate a misconfigured API key after a secret rotation.
+    # This will cause the gate workflow to fail, blocking the rollout.
+    # raise ApplicationError(
+    #     "Billing service: invalid API key",
+    #     type="InvalidCredentials",
+    #     non_retryable=True,
+    # )
+    # TODO (Part C): Remove the error above and uncomment the lines below allowing the gate to pass.
     activity.logger.info("Billing service: credentials valid")
     return "ok"

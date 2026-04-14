@@ -8,8 +8,8 @@
 
 - **Part A:** Build and deploy v1.0 via a `TemporalWorkerDeployment` CRD (AllAtOnce strategy). Start load.
 - **Part B:** Add `notify_owner` to the workflow (non-replay-safe). Switch the CRD to a Progressive rollout strategy. Deploy v2.0 - watch the controller ramp traffic 25% → 75% → 100% while 1.0 workers drain.
-- **Part C:** Deploy v3.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v3.0, verify the workflow completes, then promote via the CLI. (No code changes - the deploy could be a dependency update, config change, etc.)
-- **Part D:** Configure a gate workflow that checks downstream credentials. Deploy v4.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v4.1, and watch it pass.
+- **Part C:** Configure a gate workflow that checks downstream credentials. Deploy v3.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v3.1, and watch it pass.
+- **Part D (Optional):** Deploy v4.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v4.0, verify the workflow completes.
 
 ---
 
@@ -51,12 +51,12 @@ make build tag=1.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-4. Verify:
+4. Verify the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
 
 ```bash
-kubectl get twd          # TemporalWorkerDeployment shows up
-kubectl get deployments  # Controller created a versioned Deployment
-kubectl get pods         # Worker pods are Running
+kubectl get twd
+kubectl get deployments
+kubectl get pods
 ```
 
 5. Start the load simulator:
@@ -139,13 +139,7 @@ kubectl get deployments
    - **1.0 workers** continue serving in-flight workflows pinned to version 1.0
    - **2.0 workers** serve new workflow executions (at whatever the current ramp percentage is)
 
-7. Watch individual pods serving their respective versions:
-
-```bash
-kubectl get pods -l temporal.io/deployment-name=valet-worker --show-labels
-```
-
-8. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
+7. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
    - New workflows include a "Your car is being retrieved!" notification before the return trip
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
@@ -154,90 +148,9 @@ kubectl get pods -l temporal.io/deployment-name=valet-worker --show-labels
 
 ---
 
-## Part C - Testing with synthetic traffic (~10 min)
+## Part C - Gate workflow (~10 min)
 
-**Scenario:** Not every deployment involves a workflow code change. You might be updating a dependency, applying a security patch, rotating credentials, or changing an environment variable. Whatever the reason, you want to verify the new build works before routing production traffic to it. Worker Versioning's `Inactive` state is designed for exactly this: workers are polling but only receive workflows explicitly pinned to them via `VersioningOverride`. By combining a `Manual` rollout strategy with pinned synthetic traffic, you can test a new version on real infrastructure without touching production traffic.
-
-> **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it via the CLI. This gives you time to test.
-
-1. No code changes are needed for this deploy. Build the 3.0 image as-is:
-
-```bash
-make build tag=3.0
-```
-
-   In a real deployment, this new image might contain an updated base image, a dependency bump, or a changed environment variable. The technique is the same regardless of what changed.
-
-2. Update `k8s/valet-worker.yaml` - change the strategy to `Manual` and update the image tag to `3.0`:
-
-   ```yaml
-   rollout:
-     strategy: Manual
-   ```
-
-   ```yaml
-   image: valet-worker:3.0
-   ```
-
-3. Apply the updated manifest:
-
-```bash
-kubectl apply -f k8s/valet-worker.yaml
-```
-
-4. Watch the version state:
-
-```bash
-kubectl get twd
-```
-
-   v3.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v2.0 - the Manual strategy means the controller won't promote automatically.
-
-5. Send synthetic traffic to v3.0:
-
-```bash
-make run-synthetic
-```
-
-   This starts a single `ValetParkingWorkflow` pinned to v3.0 with a short 5-second trip. It runs the full workflow end-to-end on v3.0's workers (parks the car, waits, retrieves it, bills the customer) and prints the result.
-
-   Open `valet/test_version.py` to see how pinning works - the key part is:
-
-   ```python
-   versioning_override=PinnedVersioningOverride(
-       WorkerDeploymentVersion(deployment_name, build_id),
-   ),
-   ```
-
-6. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
-   - Find the `test-3.0` workflow - it completed on v3.0
-   - Run `temporal workflow describe -w test-3.0` to confirm it's pinned to `default/valet-worker.3.0`
-   - Meanwhile, load simulator workflows are still running on v2.0
-
-7. Once satisfied, promote v3.0 to Current via the CLI:
-
-```bash
-temporal worker deployment set-current-version \
-    --deployment-name "default/valet-worker" \
-    --build-id "3.0"
-```
-
-8. Verify the promotion:
-
-```bash
-kubectl get twd
-temporal worker deployment describe --name "default/valet-worker"
-```
-
-   v3.0 is now Current. New workflows go to 3.0. v2.0 starts draining as its pinned workflows complete.
-
-> **Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change.
-
----
-
-## Part D - Gate workflow (~10 min)
-
-**Scenario:** Part C showed manual testing - you ran a workflow and promoted by hand. That's useful for exploratory validation, but you don't want to do that for every deploy. The Worker Controller's **gate workflow** automates pre-deployment checks: before any traffic ramps, the controller starts a workflow on the new version. If it fails, the rollout is blocked.
+**Scenario:** Part B showed a Progressive rollout that ramps traffic automatically. But what if the new version has a problem? You want to catch it *before* any production traffic is affected. The Worker Controller's **gate workflow** automates pre-deployment checks: before any traffic ramps, the controller starts a workflow on the new version. If it fails, the rollout is blocked.
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
@@ -257,17 +170,21 @@ One possible use case for such a gate is verifying credentials after a secret ro
    )
    ```
 
-   The gate workflow and its activities are already registered on the worker (see `valet/worker.py`). The only change needed is telling the controller to run it.
-
 2. Open `valet/activities.py` and look at `check_billing_service`. It's currently rigged to simulate a misconfigured API key:
 
    ```python
-   raise RuntimeError("Billing service: invalid API key")
+   raise ApplicationError(
+       "Billing service: invalid API key",
+       type="InvalidCredentials",
+       non_retryable=True,
+   )
    ```
+
+   The error is raised as a non-retryable `ApplicationError` so the activity fails immediately instead of retrying forever. A bad credential is a permanent failure, not a transient one.
 
    Leave this in place for now - we want to see the gate catch it.
 
-3. Update `k8s/valet-worker.yaml` - switch back to `Progressive` strategy with a `gate`, and update the image tag to `4.0`:
+3. Update `k8s/valet-worker.yaml` - switch to `Progressive` strategy with a `gate`, and update the image tag to `3.0`:
 
    ```yaml
    rollout:
@@ -282,13 +199,13 @@ One possible use case for such a gate is verifying credentials after a secret ro
    ```
 
    ```yaml
-   image: valet-worker:4.0
+   image: valet-worker:3.0
    ```
 
-4. Build and deploy v4.0:
+4. Build and deploy v3.0:
 
 ```bash
-make build tag=4.0
+make build tag=3.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
@@ -298,11 +215,11 @@ kubectl apply -f k8s/valet-worker.yaml
 kubectl get twd -w
 ```
 
-   v4.0 pods start and register, but the gate workflow **fails**. The version stays `Inactive` - no production traffic is affected.
+   v3.0 pods start and register, but the gate workflow **fails**. The version stays `Inactive` - no production traffic is affected.
 
 6. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
-> **Key observation:** Production traffic is still flowing to v3.0. The gate caught the bad credential before any routing change happened.
+> **Key observation:** Production traffic is still flowing to v2.0. The gate caught the bad credential before any routing change happened.
 
 7. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
 
@@ -317,13 +234,13 @@ kubectl get twd -w
 8. Rebuild and redeploy with a new image tag:
 
 ```bash
-make build tag=4.1
+make build tag=3.1
 ```
 
 9. Update `k8s/valet-worker.yaml` to use the fixed image:
 
    ```yaml
-   image: valet-worker:4.1
+   image: valet-worker:3.1
    ```
 
 10. Apply:
@@ -339,13 +256,82 @@ kubectl get twd -w
 ```
 
    Observe the sequence:
-   1. v4.1 pods start and register with Temporal (Inactive)
-   2. The controller starts a `ValetGateWorkflow` on v4.1
+   1. v3.1 pods start and register with Temporal (Inactive)
+   2. The controller starts a `ValetGateWorkflow` on v3.1
    3. The gate checks the notification service - passes
    4. The gate checks the billing service - passes this time
    5. The gate completes successfully
    6. Ramping begins (25% -> 75% -> 100%)
 
-12. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v4.0.
+12. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
 
 > **Key takeaway:** Instead of running a test script and promoting by hand, the controller runs the gate workflow before any routing changes. When the billing credentials were bad, the gate blocked the rollout and production was unaffected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
+
+---
+
+## Part D (Optional) - Testing with synthetic traffic (~10 min)
+
+**Scenario:** Not every deployment involves a workflow code change. You might be updating a dependency, applying a security patch, rotating credentials, or changing an environment variable. Whatever the reason, you want to verify the new build works before routing production traffic to it. Worker Versioning's `Inactive` state is designed for exactly this: workers are polling but only receive workflows explicitly pinned to them via `VersioningOverride`. By combining a `Manual` rollout strategy with pinned synthetic traffic, you can test a new version on real infrastructure without touching production traffic.
+
+> **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test.
+
+1. No code changes are needed for this deploy. Build the 4.0 image as-is:
+
+```bash
+make build tag=4.0
+```
+
+   In a real deployment, this new image might contain an updated base image, a dependency bump, or a changed environment variable. The technique is the same regardless of what changed.
+
+2. Update `k8s/valet-worker.yaml` - change the strategy to `Manual` and update the image tag to `4.0`:
+
+   ```yaml
+   rollout:
+     strategy: Manual
+   ```
+
+   ```yaml
+   image: valet-worker:4.0
+   ```
+
+3. Apply the updated manifest:
+
+```bash
+kubectl apply -f k8s/valet-worker.yaml
+```
+
+4. Watch the version state:
+
+```bash
+kubectl get twd -w
+```
+
+   v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
+
+5. Send synthetic traffic pinned to that version (replace the build ID with yours):
+
+```bash
+make run-synthetic BUILD_ID=4.0-XXXX
+```
+
+   This starts a single `ValetParkingWorkflow` pinned to v4.0 with a short 5-second trip. It runs the full workflow end-to-end on v4.0's workers (parks the car, waits, retrieves it, bills the customer) and waits for it to complete successfully.
+
+   Open `valet/test_version.py` to see how pinning works - the key part is:
+
+   ```python
+   versioning_override=PinnedVersioningOverride(
+       WorkerDeploymentVersion(deployment_name, build_id),
+   ),
+   ```
+
+6. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
+   - Find the `test-4.0-XXXX` workflow - it completed on v4.0
+   - Meanwhile, load simulator workflows are still running on v3.1
+
+> **Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change.
+
+> **How would you promote?** We won't do this in the exercise, but for reference: the simplest way to promote is to change the strategy in `k8s/valet-worker.yaml` from `Manual` to `AllAtOnce` (or `Progressive`) and re-apply with `kubectl apply -f k8s/valet-worker.yaml`. The controller will then promote v4.0 automatically. You could also promote directly via the CLI with `temporal worker deployment set-current-version --deployment-name "default/valet-worker" --build-id 4.0-XXXX`, but be aware that manual CLI changes trigger the controller's [ownership model](https://github.com/temporalio/temporal-worker-controller/blob/main/docs/ownership.md), requiring you to hand control back afterward.
+
+---
+
+> **🎉 Congratulations!** You've completed Exercise 3.
