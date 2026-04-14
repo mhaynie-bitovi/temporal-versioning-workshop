@@ -3,10 +3,6 @@
 - add this is the end of the exercise banner to the end of the exercise readmes
 - make the "voice" of the readme instructions consistent throughout the workshop. sometimes it sounds like it's talking to the author not the audience
 - remove history and test folders from exercises that do not use them.
-- remove the time estimates from all the readmes - they are cruft and not helpful
-- make sure code snippets work copy pasted (indentation may be off)
 - add hint about configuring columns in the temporal web ui (add Deployment, Deployment Version, Versioning Behavior)
-- remove all the m-dashes, and prohibit them
 - why does installing the cert manager during exercise 3 make setup take so long?
-- make sure we've covered the worker deployments in the web ui
-- address sunsetting with the worker controller (right now versions are just hanging around drained)
+- make sure we've covered the worker deployments tab in the web ui

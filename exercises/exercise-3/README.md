@@ -145,6 +145,8 @@ kubectl get deployments
 
 > **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. You didn't need to manually manage traffic routing, scale replicas, or coordinate draining - just update the image tag and the controller handles the rest.
 
+> **Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely.
+
 ---
 
 ## Part C - Gate workflow
