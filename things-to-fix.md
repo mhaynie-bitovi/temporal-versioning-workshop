@@ -10,4 +10,3 @@
 - why does installing the cert manager during exercise 3 make setup take so long?
 - make sure we've covered the worker deployments in the web ui
 - address sunsetting with the worker controller (right now versions are just hanging around drained)
-- make sure to cover (explicitly) that patching is needed for AUTO_UPGRADE behavior (mike nichols)

@@ -91,7 +91,7 @@ Topics are ranked by priority (P1 = must-cover, P2 = should-cover, P3 = nice-to-
 | 2 | **Replay testing with exported history** | Full | Ex1 Parts A-C | Export history JSON, write/run replay test, see it fail/pass. |
 | 3 | **What constitutes a non-deterministic (non-replay-safe) change** | Partial | Ex1 Part B, Ex2 Part B | Demonstrated by example (adding an activity) but not explicitly taught as a category of changes. Could use slides covering the full list (adding/removing/reordering activities, changing timers, etc.). |
 | 4 | **PINNED versioning behavior** | Full | Ex2 Part A, Ex3 all | Configured in code, explained in callout boxes, demonstrated with in-flight isolation. |
-| 5 | **AUTO_UPGRADE versioning behavior** | Partial | Ex2 Part A | Configured on ParkingLotWorkflow with a "why" callout, but users don't deeply observe or test the auto-upgrade happening. Could benefit from a slide or explicit observation step. |
+| 5 | **AUTO_UPGRADE versioning behavior** | Full | Ex2 Part A, Ex2 Part D | Configured on ParkingLotWorkflow with a "why" callout. Part D demonstrates that AUTO_UPGRADE still requires patching by breaking and fixing ParkingLotWorkflow. |
 | 6 | **WorkerDeploymentConfig setup (deployment name, build ID, use_worker_versioning)** | Full | Ex2 Part A | Users wire up env vars and config in worker.py. |
 | 7 | **Deploying a new version alongside an old one (rainbow deployment)** | Full | Ex2 Part B, Ex3 Part B | Both manual (Ex2) and controller-automated (Ex3) rainbow deployments. |
 | 8 | **set-current-version CLI command** | Full | Ex2 Parts A-C | Used repeatedly to promote and rollback versions. |
@@ -121,8 +121,8 @@ Topics are ranked by priority (P1 = must-cover, P2 = should-cover, P3 = nice-to-
 
 | # | Topic | Coverage | Where | Notes |
 |---|---|---|---|---|
-| 25 | **Upgrade-on-Continue-as-New strategy ("trampolining")** | Not Covered | - | Listed in content plan as an area of interest. Not in any exercise. Would need slides or a dedicated mini-example. |
-| 26 | **Patching with auto-upgrade behavior** | Not Covered | - | Listed in content plan. The interaction between patched() and AUTO_UPGRADE is not demonstrated. Could be a slide topic or a brief callout in Ex2 since ParkingLotWorkflow uses AUTO_UPGRADE. |
+| 25 | **Upgrade-on-Continue-as-New strategy ("trampolining")** | Partial | Ex2 Part D (teaser), slides | Explained conceptually in Ex2 Part D closing callout and in slides. Not exercised hands-on. |
+| 26 | **Patching with auto-upgrade behavior** | Full | Ex2 Part D | Part D demonstrates the NDE when making a non-replay-safe change to an AUTO_UPGRADE workflow, fixes it with patching, and teases trampolining as the long-term alternative. |
 | 27 | **Event and Command Mapping (how replay works internally)** | Not Covered | - | LMS objective. Would be a conceptual slide. Not practical to exercise hands-on. |
 | 28 | **Verifying correct Queues are polled / searching for workflow versions** | Partial | Ex2 Part C step 6 | The search attribute query partially covers this. Could be expanded with slides on how to use the UI/CLI to audit which versions are active. |
 | 29 | **Emergency remediation as a recurring theme across exercises** | Not Covered | Ex2 Part C only | The exercise plan notes it would be nice to sprinkle remediation across all exercises. Currently only in Ex2 Part C. Ex1 and Ex3 don't have explicit remediation scenarios. |
@@ -134,15 +134,15 @@ Topics are ranked by priority (P1 = must-cover, P2 = should-cover, P3 = nice-to-
 
 | Rating | Count | Topics |
 |---|---|---|
-| **Full** | 14 | #1, 2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 17, 19, 22 |
-| **Partial** | 11 | #3, 5, 15, 16, 18, 20, 21, 24, 28, 30, 31 |
+| **Full** | 16 | #1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 17, 19, 22, 26 |
+| **Partial** | 10 | #3, 15, 16, 18, 20, 21, 24, 25, 28, 30, 31 |
 | **Slides Only** | 1 | #14 |
-| **Not Covered** | 6 | #23, 25, 26, 27, 29, 32 |
+| **Not Covered** | 4 | #23, 27, 29, 32 |
 
 ### Key Gaps to Address
 
-1. **Slides needed:** Rainbow vs blue-green vs rolling (#14), what changes are safe without versioning (#23), event/command mapping conceptual overview (#27), patching + auto-upgrade interaction (#26).
-2. **Trampolining (#25):** Listed as an area of interest but not covered anywhere. Decide: cut from scope, or add a slide/demo.
+1. **Slides needed:** Rainbow vs blue-green vs rolling (#14), what changes are safe without versioning (#23), event/command mapping conceptual overview (#27).
+2. **Trampolining (#25):** Teased in Ex2 Part D closing callout and covered in slides. Not exercised hands-on - decide if that's sufficient or if a dedicated mini-example is worth the time.
 3. **Emergency remediation breadth (#29):** Currently concentrated in Ex2 Part C. The original plan wanted it sprinkled across all exercises. Consider whether Ex1 or Ex3 could include a remediation moment.
 4. **Sunsetting (#18, #32):** Mentioned but not deeply taught. The controller case (#32) is a known gap in things-to-fix.
-5. **AUTO_UPGRADE observation (#5):** Users configure it but don't clearly see it happen. A small observation step in Ex2 (e.g., checking ParkingLotWorkflow's version in the UI after promoting v2.0) would close this gap cheaply.
+5. **AUTO_UPGRADE observation (#5):** Now fully covered in Ex2 Part D with a break-then-fix loop.

@@ -21,6 +21,11 @@ class ParkingLotWorkflow:
     async def run(self, input: ParkingLotInput) -> ParkingLotOutput:
         self.parking_spaces = input.parking_spaces or self.parking_spaces
 
+
+        # TODO (Part D): Allow a 2-second warmup delay
+        # # Warm-up delay: let external systems sync before accepting requests
+        # await workflow.sleep(2)
+
         await workflow.wait_condition(lambda: self._should_continue_as_new)
         workflow.continue_as_new(ParkingLotInput(parking_spaces=self.parking_spaces))
 

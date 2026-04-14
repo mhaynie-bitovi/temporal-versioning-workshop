@@ -5,6 +5,7 @@
 - **Part A:** Enable worker versioning - add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.
 - **Part B:** Add `bill_customer` to the workflow (a non-replay-safe change). Deploy v2.0 alongside v1.0. Observe that new workflows bill, in-flight v1.0 workflows complete without it - no patching needed.
 - **Part C:** Introduce a bug in v3.0 → instant rollback via `set-current-version` → evacuate stuck v3.0 workflows to v2.0 with `update-options` → fix-forward with v3.1.
+- **Part D (Optional):** Make a non-replay-safe change to the AUTO_UPGRADE workflow. Discover that AUTO_UPGRADE still requires patching, and learn why.
 
 ---
 
@@ -51,6 +52,8 @@ cd exercises/exercise-2/practice
    ```
 
    > **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton - it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention.
+   >
+   > **Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D.
 
    **c.** In `valet/worker.py` create the deployment config from environment variables, and pass it to the `Worker`:
 
@@ -252,6 +255,83 @@ New workflows now flow through v3.1 with working billing.
 12. **Stop the v3.0 worker** (Ctrl+C).
 
 13. Once v2.0 has fully drained, **stop the v2.0 worker** (Ctrl+C) as well.
+
+---
+
+## Part D (Optional) - The AUTO_UPGRADE Catch
+
+**Motivation:** In Part B, you deployed a non-replay-safe change with zero patching. That felt great. But it only worked because `ValetParkingWorkflow` is **PINNED** - each workflow stays on the version it started on, so old history never meets new code. What about `ParkingLotWorkflow`, which uses **AUTO_UPGRADE**? When you set a new version as Current, the parking lot workflow automatically migrates to the new code. That means it replays its existing history against your new code - and if the commands don't match, you get an NDE.
+
+Let's see it happen.
+
+### Step 1 - Make a non-replay-safe change to ParkingLotWorkflow
+
+1. In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized (the `timedelta` import is already available via `temporalio`):
+
+   ```python
+   # Warm-up delay: let external systems sync before accepting requests
+   await workflow.sleep(2)
+   ```
+
+   This is a non-replay-safe change: it adds a timer command that doesn't exist in the workflow's current history.
+
+### Step 2 - Deploy and watch it break
+
+2. Start a v4.0 worker (in a **new terminal**):
+
+```bash
+make run-worker BUILD_ID=4.0
+```
+
+3. Set v4.0 as current:
+
+```bash
+temporal worker deployment set-current-version \
+    --deployment-name valet \
+    --build-id 4.0 \
+    --yes
+```
+
+4. **Watch the v4.0 worker logs.** The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determinism error (NDE). The v4.0 code expects a timer (the 2-second sleep), but the existing history doesn't have one.
+
+   > **Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE workflows *do* replay old history against new code - that's the whole point of auto-upgrading. So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1.
+
+### Step 3 - Fix it with a patch
+
+5. Wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
+
+   ```python
+    # Warm-up delay: let external systems sync before accepting requests
+    if workflow.patched("add-warmup-delay"):
+       await workflow.sleep(2)
+   ```
+
+6. **Stop the v4.0 worker** (Ctrl+C) and start v4.1:
+
+```bash
+make run-worker BUILD_ID=4.1
+```
+
+7. Set v4.1 as current:
+
+```bash
+temporal worker deployment set-current-version \
+    --deployment-name valet \
+    --build-id 4.1 \
+    --yes
+```
+
+8. **Observe:** `ParkingLotWorkflow` auto-upgrades to v4.1. This time, `workflow.patched("add-warmup-delay")` returns `False` during replay (no patch marker in the old history), so the sleep is skipped. The workflow continues without an NDE. Future runs (after `continue_as_new`) will include the sleep.
+
+### Step 4 - Clean up
+
+9. **Stop old workers.** Stop the v3.1 worker once drained. Keep v4.1 running or stop everything if you're done.
+
+> **The takeaway:** PINNED eliminates patching. AUTO_UPGRADE does not. When an AUTO_UPGRADE workflow migrates to new code, it replays its history - so the new code must be replay-compatible. Patching is still the tool for that.
+>
+> **But notice something.** `ParkingLotWorkflow` already uses `continue_as_new`. After the auto-upgrade, the *current run* replays with the patch guard. But the *next run* (after `continue_as_new`) starts fresh on v4.1 with no prior history to conflict with. The patch only matters during the transition of the current run. In a production workflow with frequent `continue_as_new` boundaries, these patches are naturally short-lived - they're only needed for the one run that bridges the version change.
+>
+> This is the core insight behind **trampolining** (upgrade on continue-as-new): if you made `ParkingLotWorkflow` PINNED instead of AUTO_UPGRADE, each run would complete on its original version with zero patching. At the `continue_as_new` boundary, the new run could start on the latest version. No patching, ever - just a clean handoff at the seam. For long-running workflows with natural `continue_as_new` boundaries, this is the best of both worlds.
 
 ---
 

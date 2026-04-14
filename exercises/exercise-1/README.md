@@ -150,6 +150,8 @@ make run-starter
 
 5. Stop the worker when you're satisfied (Ctrl+C).
 
+> **Looking ahead:** Patches work, but they accumulate. Every non-replay-safe change adds another conditional branch. Over time, long-lived workflows can end up with layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how Worker Versioning eliminates patching for workflows - mostly.
+
 ---
 
 > **🎉 Congratulations!** You've completed Exercise 1.
