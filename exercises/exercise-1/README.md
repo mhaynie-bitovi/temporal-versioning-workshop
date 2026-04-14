@@ -150,7 +150,9 @@ make run-starter
 
    Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. The old worker begins executing it with the v1.0 code - no `notify_owner`, no patch marker in the history. The starter sets a 30-second trip, so the workflow is now sitting in `sleep`.
 
-2. While that workflow is still sleeping, **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
+2. Think: the pre-patch workflow has no patch marker in its history. When the new worker replays it, what will `workflow.patched("add-notify-owner")` return? What does that mean for the notification?
+
+   While that workflow is still sleeping, **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
 
 ```bash
 make run-worker

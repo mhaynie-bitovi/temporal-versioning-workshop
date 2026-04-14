@@ -113,7 +113,7 @@ temporal worker deployment describe --name valet
 make run-load-simulator
 ```
 
-7. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233) and watch workflows flow through the versioned 1.0 worker.
+7. Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). Click on a running workflow and check its details - you should see `valet:1.0` as the Worker Deployment Version. This confirms Temporal is routing traffic through your versioned worker.
 
 ---
 
@@ -146,7 +146,9 @@ Your next feature request is adding billing. This adds a new activity to the wor
 make run-worker BUILD_ID=2.0
 ```
 
-3. Set 2.0 as the Current Version:
+3. Think: the load simulator has been creating workflows on v1.0 for a while now. Some are mid-trip. When you set v2.0 as the Current Version, what happens to those in-flight v1.0 workflows?
+
+   Set 2.0 as the Current Version:
 
 ```bash
 temporal worker deployment set-current-version \

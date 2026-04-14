@@ -68,6 +68,8 @@ kubectl get deployments
 kubectl get pods
 ```
 
+   You should see the `valet-worker` TWD, a Deployment named something like `valet-worker-<hash>`, and pods in `Running` status with `1/1` ready. If pods show `0/1` or `CrashLoopBackOff`, check the logs with `kubectl logs <pod-name>`.
+
 5. Start the load simulator:
 
 ```bash
@@ -124,7 +126,9 @@ make build tag=2.0
    image: valet-worker:2.0
    ```
 
-4. Apply the updated manifest:
+4. Think: you're applying a Progressive strategy with 25% as the first ramp step. What percentage of *currently in-flight* v1.0 workflows will move to v2.0? (Hint: they're PINNED.)
+
+   Apply the updated manifest:
 
 ```bash
 kubectl apply -f k8s/valet-worker.yaml
@@ -335,7 +339,9 @@ kubectl get twd -w
 
    v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
-5. Send synthetic traffic pinned to that version (replace the build ID with yours):
+5. Think: the version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?
+
+   Send synthetic traffic pinned to that version (replace the build ID with yours):
 
 ```bash
 make run-synthetic BUILD_ID=4.0-XXXX
