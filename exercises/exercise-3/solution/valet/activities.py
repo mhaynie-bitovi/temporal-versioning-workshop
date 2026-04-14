@@ -125,6 +125,6 @@ async def check_billing_service() -> str:
     # In production, this would authenticate against the billing API
     # (e.g. verify the API key with a test auth call). A misconfigured
     # secret or expired key is a permanent failure that won't resolve
-    # on its own -- exactly the kind of problem a gate should catch.
+    # on its own - exactly the kind of problem a gate should catch.
     activity.logger.info("Billing service: credentials valid")
     return "ok"
