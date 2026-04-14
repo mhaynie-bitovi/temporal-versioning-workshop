@@ -38,9 +38,9 @@
 - You need to ship a code change
 - Some of those workflows started *before* your change - they're mid-execution
 - If the new code produces a different command sequence than their history, you get a non-determinism error (NDE)
-- This is the fundamental deployment challenge of durable execution
+- **This is the fundamental deployment challenge of durable execution**
 
-> Talking point: For stateless services, you deploy and move on. For durable executions, the past is always with you - every running workflow carries a history that your new code must be compatible with.
+> Talking point: For stateless services, you deploy and move on. For durable executions, the past is always with you - every running workflow carries a history that your new code must be compatible with. Remember this slide. By the end of this workshop, you'll have solved this problem three different ways.
 
 ---
 
@@ -260,15 +260,25 @@ When things go wrong in production, Worker Versioning gives you tools to respond
 ## Slide: What You Just Did
 
 - Deployed a non-replay-safe change with zero patching (PINNED + rainbow)
-- Managed version lifecycle manually (start workers, set-current-version, drain, stop)
-- Handled an incident: instant rollback, evacuation, fix-forward
+- Handled a production incident: instant rollback, bulk evacuation, fix-forward
+- Total incident response time: two CLI commands and a code fix
+- The rollback and evacuation didn't require a code deploy - just routing changes at the infrastructure level
 
-> Talking point: It works great, but there's a lot of manual orchestration. Start the new worker, run the CLI command, watch for draining, stop the old worker... Imagine doing that on every deploy in a CI/CD pipeline. That's what the Worker Controller automates.
+> Talking point: Think about how long that incident response would take in your current setup. A bad deploy, you need to revert, rebuild, redeploy, and hope nothing is stuck. Here it was two commands. That's the difference between version routing in your code versus version routing in the infrastructure. [Pause.] Take a break. You earned it.
 
+---
+
+## Slide: But There's a Lot of Manual Work
+
+- Start the new worker, run the CLI command, watch for draining, stop the old worker...
+- Imagine doing that on every deploy in a CI/CD pipeline
+- That's what the Worker Controller automates
 ---
 
 ## Slide: From Manual to Automated - The Worker Controller
 
+- Welcome back. For the last two exercises, you were the ops team. You started workers, ran CLI commands, watched draining, stopped old workers.
+- Now you're going to automate yourself out of that job.
 - Open-source Kubernetes operator for Temporal workers
 - You define a `TemporalWorkerDeployment` CRD with your image tag and rollout strategy
 - The controller handles: creating versioned K8s Deployments, registering versions with Temporal, ramping traffic, draining old versions, cleaning up
@@ -320,6 +330,30 @@ Manual: v1 100%, v2 sits at 0% (Inactive) indefinitely until promoted]
 
 ---
 
+## Slide: Remember the Problem?
+
+- At the start, we said: "You have workflows in production. You need to ship a change. Some of those workflows started before your change."
+- That's the fundamental deployment challenge of durable execution
+- You just solved it three different ways
+
+> Talking point: Let that land for a second. Three hours ago, this was an open problem. Now you have three tools in your belt and you've used each one hands-on.
+
+---
+
+## Slide: What You Built
+
+[DIAGRAM: A progression showing all three exercises as a single journey:
+
+1. "Patching" - a single worker with branching code paths. You caught a breaking change with a replay test, then made it safe with workflow.patched().
+2. "Worker Versioning" - rainbow deployment with multiple workers side by side. You shipped a breaking change with zero patching, then handled a production incident in under a minute.
+3. "Worker Controller" - Kubernetes automating the entire lifecycle. You watched traffic ramp automatically and a gate workflow catch a bad credential before it hit production.
+
+Visual: three panels side by side, each showing the valet parking lot at a different level of sophistication. Panel 1: one valet handling old and new cars with hand signals. Panel 2: multiple valets in labeled lanes. Panel 3: an automated parking garage.]
+
+> Talking point: You started with a single worker and conditional branches. Then you deployed multiple versions side by side and Temporal routed traffic. Then you automated the whole thing on Kubernetes. Each layer builds on the last.
+
+---
+
 ## Slide: The Full Picture
 
 [DIAGRAM: A layered diagram (like a cake or stack):
@@ -361,6 +395,17 @@ Quick reference - changes you can deploy with a simple rolling update:
 - Infrastructure changes (dependencies, environment variables) that don't affect workflow logic
 
 **When in doubt, write a replay test.**
+
+---
+
+## Slide: Your Monday Morning Question
+
+- Think about one workflow you own or work on
+- How long does it run? Minutes? Hours? Days?
+- How often do you deploy changes to it?
+- Which versioning strategy would you use?
+
+> Talking point: Take 30 seconds. Seriously, think about a real workflow. [Pause.] You walked in here with a deployment problem. You're walking out with a strategy. That's the goal.
 
 ---
 

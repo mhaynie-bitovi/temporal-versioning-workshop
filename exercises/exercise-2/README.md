@@ -157,11 +157,11 @@ temporal worker deployment describe --name valet
 
 ---
 
-## Part C - Emergency Rollback & Remediation
+## Part C - Incident: Bad Deploy, Live Traffic
 
-**Motivation:** "Things don't always go smoothly. Let's see what happens when a bad deploy makes it to production - and how Worker Versioning gives you tools to respond immediately."
+> **The scenario:** It's deployment day. A developer ships v3.0 with a bug in the billing activity - they reference a field that doesn't exist. The deploy goes out. Production traffic is flowing. Workflows start failing. You need to respond, *now*.
 
-**Scenario:** A developer deploys v3.0 with a bug in the `bill_customer` activity - they reference a field that doesn't exist on the input dataclass.
+### The bad deploy
 
 1. **Introduce the bug.** In `valet/activities.py`, add this line to the beginning of `bill_customer`:
 
@@ -190,11 +190,13 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-4. **Watch the damage** in the Temporal Web UI or worker logs - new workflows start on 3.0, but crash at the billing step. The activity retries forever.
+4. **Watch the damage.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). New workflows are starting on 3.0, hitting the billing step, and failing. Look at the worker logs - you'll see `AttributeError` on every billing attempt, retrying forever. These workflows are stuck. Every few seconds, the load simulator starts another one, and it goes straight into the same failure loop.
 
-### Step 1 - Instant rollback (stop the bleeding)
+### Step 1 - Stop the bleeding
 
-5. Set v2.0 back as current - no code redeploy needed:
+The fastest possible response: redirect new traffic away from the broken version. No code redeploy, no CI pipeline, no waiting. One command.
+
+5. Set v2.0 back as current:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -203,18 +205,22 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-**Immediately**, new workflows are routed to v2.0 with working billing. But in-flight v3.0 workflows are still pinned to v3.0 - they're stuck.
+6. **Verify it worked.** Check the Temporal Web UI - new workflows should now be starting on v2.0 with working billing. That took seconds, not minutes.
 
-### Step 2 - Evacuate in-flight v3.0 workflows to v2.0
+   But look closer. The workflows that already started on v3.0 are still there, still failing. They're PINNED to v3.0 - new traffic is safe, but those in-flight workflows are stuck.
 
-6. Find the stuck v3.0 workflows using the `WorkerDeploymentVersion` search attribute (format: `<deployment>:<build-id>`):
+### Step 2 - Rescue the stuck workflows
+
+7. First, see the damage. List every workflow still stuck on v3.0:
 
 ```bash
 temporal workflow list \
     --query 'WorkerDeploymentVersion="valet:3.0" AND ExecutionStatus="Running"'
 ```
 
-7. Bulk-reassign all v3.0 workflows to v2.0 using the same query:
+   Count them. Each one is a customer whose car is parked but whose billing is failing in a retry loop.
+
+8. Evacuate them all to v2.0 in one command:
 
 ```bash
 temporal workflow update-options \
@@ -227,19 +233,21 @@ temporal workflow update-options \
 
    > **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries.
 
-8. **Observe:** the previously-stuck workflows now complete successfully on v2.0.
+9. **Watch them recover.** Go back to the Temporal Web UI. The workflows that were stuck on v3.0 are now completing successfully on v2.0. Those customers just got billed correctly.
 
-### Step 3 - Fix the bug and deploy v3.1
+### Step 3 - Fix forward
 
-9. **Fix the bug.** Remove the `tip = input.tip_percentage` line you added in step 1.
+Rollback bought you time. Now ship the fix.
 
-10. Start a v3.1 worker (in a **new terminal**):
+10. **Fix the bug.** Remove the `tip = input.tip_percentage` line you added in step 1.
+
+11. Start a v3.1 worker (in a **new terminal**):
 
 ```bash
 make run-worker BUILD_ID=3.1
 ```
 
-11. Set v3.1 as current:
+12. Set v3.1 as current:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -248,13 +256,15 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-New workflows now flow through v3.1 with working billing.
+New workflows now flow through v3.1 with working billing. Incident resolved.
+
+> **Recap what just happened.** A bad deploy hit production. Within seconds, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level.
 
 ### Step 4 - Clean up
 
-12. **Stop the v3.0 worker** (Ctrl+C).
+13. **Stop the v3.0 worker** (Ctrl+C).
 
-13. Once v2.0 has fully drained, **stop the v2.0 worker** (Ctrl+C) as well.
+14. Once v2.0 has fully drained, **stop the v2.0 worker** (Ctrl+C) as well.
 
 ---
 
