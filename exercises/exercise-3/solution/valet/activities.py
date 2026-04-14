@@ -106,3 +106,25 @@ async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
         f"({minutes:.1f} min, {input.total_distance:.1f} mi)"
     )
     return BillCustomerOutput(amount=amount)
+
+
+@activity.defn
+async def check_notification_service() -> str:
+    """Verify credentials for the notification service are valid."""
+    # In production, this would authenticate against the notification API
+    # (e.g. exchange an API key for a session token). A credential or
+    # configuration problem is permanent, not transient, so catching it
+    # here prevents a broken deploy from ever receiving traffic.
+    activity.logger.info("Notification service: credentials valid")
+    return "ok"
+
+
+@activity.defn
+async def check_billing_service() -> str:
+    """Verify credentials for the billing service are valid."""
+    # In production, this would authenticate against the billing API
+    # (e.g. verify the API key with a test auth call). A misconfigured
+    # secret or expired key is a permanent failure that won't resolve
+    # on its own -- exactly the kind of problem a gate should catch.
+    activity.logger.info("Billing service: credentials valid")
+    return "ok"

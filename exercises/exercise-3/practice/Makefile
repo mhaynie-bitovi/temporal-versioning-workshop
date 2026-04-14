@@ -4,7 +4,7 @@ IMAGE_NAME = valet-worker
 WORKER_CONTROLLER_NAMESPACE = temporal-worker-controller
 WORKER_CONTROLLER_VERSION ?= 0.24.0
 
-.PHONY: setup build deploy get-status get-logs run-load-simulator run-worker run-tests clean
+.PHONY: setup build deploy get-status get-logs run-load-simulator run-synthetic run-worker run-tests clean
 
 ## setup — start minikube, install Worker Controller (assumes Temporal dev server already running)
 setup:
@@ -70,6 +70,10 @@ run-worker:
 ## run-load-simulator — run the load simulator locally (Temporal dev server must be running)
 run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
+
+## run-synthetic — send synthetic traffic pinned to a specific version
+run-synthetic:
+	PYTHONPATH=. exec $(PYTHON) valet/test_version.py
 
 ## run-tests — run tests
 run-tests:

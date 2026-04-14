@@ -9,11 +9,14 @@ from temporalio.worker.workflow_sandbox import SandboxedWorkflowRunner, SandboxR
 
 from valet.activities import (
     bill_customer,
+    check_billing_service,
+    check_notification_service,
     move_car,
     notify_owner,
     release_parking_space,
     request_parking_space,
 )
+from valet.gate_workflow import ValetGateWorkflow
 from valet.parking_lot_workflow import ParkingLotWorkflow
 from valet.valet_parking_workflow import ValetParkingWorkflow
 
@@ -37,8 +40,9 @@ async def main():
     worker = Worker(
         client,
         task_queue="valet",
-        workflows=[ValetParkingWorkflow, ParkingLotWorkflow],
-        activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer],
+        workflows=[ValetParkingWorkflow, ParkingLotWorkflow, ValetGateWorkflow],
+        activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer,
+                   check_notification_service, check_billing_service],
         deployment_config=deployment_config,
         workflow_runner=SandboxedWorkflowRunner(
             # Prevent the sandbox from re-reading workflow code from disk on each run.

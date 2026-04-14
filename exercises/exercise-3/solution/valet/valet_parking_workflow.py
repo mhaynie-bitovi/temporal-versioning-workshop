@@ -103,8 +103,12 @@ class ValetParkingWorkflow:
             start_to_close_timeout=timedelta(seconds=10),
         )
 
+        workflow.logger.info(
+            f"Car {input.license_plate} returned to valet zone {input.valet_zone_location.id}."
+        )
+
         # Bill the customer
-        bill_result = await workflow.execute_activity(
+        await workflow.execute_activity(
             bill_customer,
             BillCustomerInput(
                 license_plate=input.license_plate,
@@ -117,9 +121,4 @@ class ValetParkingWorkflow:
             start_to_close_timeout=timedelta(seconds=10),
         )
 
-        workflow.logger.info(
-            f"Car {input.license_plate} returned to valet zone {input.valet_zone_location.id}. "
-            f"Total bill: ${bill_result.amount}"
-        )
-
-        return ValetParkingOutput(total_bill=bill_result.amount)
+        return ValetParkingOutput()

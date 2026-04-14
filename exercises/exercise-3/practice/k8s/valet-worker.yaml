@@ -18,6 +18,19 @@ spec:
   #       pauseDuration: 30s
   #     - rampPercentage: 75
   #       pauseDuration: 30s
+  # TODO (Part C): Switch to the Manual rollout strategy
+  # rollout:
+  #   strategy: Manual
+  # TODO (Part D): Switch to Progressive with a gate
+  # rollout:
+  #   strategy: Progressive
+  #   steps:
+  #     - rampPercentage: 25
+  #       pauseDuration: 30s
+  #     - rampPercentage: 75
+  #       pauseDuration: 30s
+  #   gate:
+  #     workflowType: "ValetGateWorkflow"
   sunset: {}
   replicas: 1
   template:
