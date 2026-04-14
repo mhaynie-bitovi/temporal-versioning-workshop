@@ -217,7 +217,9 @@ One possible use case for such a gate is verifying credentials after a secret ro
    image: valet-worker:3.0
    ```
 
-4. Build and deploy v3.0:
+4. Think: the gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?
+
+   Build and deploy v3.0:
 
 ```bash
 make build tag=3.0
@@ -232,11 +234,19 @@ kubectl get twd -w
 
    v3.0 pods start and register, but the gate workflow **fails**. The version stays `Inactive` - no production traffic is affected.
 
-6. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
+6. **Verify production is unharmed.** In another terminal, check on live traffic:
+
+```bash
+temporal workflow list --query 'ExecutionStatus="Running"'
+```
+
+   All running workflows are still on v2.0. The bad version never touched production.
+
+7. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 > **Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened.
 
-7. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
+8. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
 
    ```python
    @activity.defn
@@ -246,25 +256,25 @@ kubectl get twd -w
        return "ok"
    ```
 
-8. Rebuild and redeploy with a new image tag:
+9. Rebuild and redeploy with a new image tag:
 
 ```bash
 make build tag=3.1
 ```
 
-9. Update `k8s/valet-worker.yaml` to use the fixed image:
+10. Update `k8s/valet-worker.yaml` to use the fixed image:
 
    ```yaml
    image: valet-worker:3.1
    ```
 
-10. Apply:
+11. Apply:
 
 ```bash
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-11. Watch the rollout this time:
+12. Watch the rollout this time:
 
 ```bash
 kubectl get twd -w
@@ -278,7 +288,7 @@ kubectl get twd -w
    5. The gate completes successfully
    6. Ramping begins (25% -> 75% -> 100%)
 
-12. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
+13. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
 
 > **Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
 

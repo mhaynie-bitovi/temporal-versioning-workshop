@@ -200,7 +200,9 @@ A developer references a field that doesn't exist on `BillCustomerInput`. The de
 make run-worker BUILD_ID=3.0
 ```
 
-3. Set 3.0 as current:
+3. The load simulator is still running. Think: what happens to new workflows the instant you run this command?
+
+   Set 3.0 as current:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -211,11 +213,20 @@ temporal worker deployment set-current-version \
 
 4. **Watch the damage.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). New workflows are starting on 3.0, hitting the billing step, and failing. Look at the worker logs - you'll see `AttributeError` on every billing attempt, retrying forever. These workflows are stuck. Every few seconds, the load simulator starts another one, and it goes straight into the same failure loop.
 
+5. **Count the damage.** Before you fix anything, see exactly how bad it is:
+
+```bash
+temporal workflow list \
+    --query 'WorkerDeploymentVersion="valet:3.0" AND ExecutionStatus="Running"'
+```
+
+   Count the stuck workflows. Each one is a customer whose car is parked but whose billing is failing in a retry loop. Remember this number.
+
 ### Stop the bleeding
 
 The fastest possible response: redirect new traffic away from the broken version. No code redeploy, no CI pipeline, no waiting. One command.
 
-5. Set v2.0 back as current:
+6. Set v2.0 back as current:
 
 ```bash
 temporal worker deployment set-current-version \
@@ -224,20 +235,11 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-6. **Verify it worked.** Check the Temporal Web UI - new workflows should now be starting on v2.0 with working billing. That took seconds, not minutes.
+7. **Verify it worked.** Check the Temporal Web UI - new workflows should now be starting on v2.0 with working billing. That took seconds, not minutes.
 
    But look closer. The workflows that already started on v3.0 are still there, still failing. They're PINNED to v3.0 - new traffic is safe, but those in-flight workflows are stuck.
 
 ### Rescue the stuck workflows
-
-7. First, see the damage. List every workflow still stuck on v3.0:
-
-```bash
-temporal workflow list \
-    --query 'WorkerDeploymentVersion="valet:3.0" AND ExecutionStatus="Running"'
-```
-
-   Count them. Each one is a customer whose car is parked but whose billing is failing in a retry loop.
 
 8. Evacuate them all to v2.0 in one command:
 
@@ -253,6 +255,15 @@ temporal workflow update-options \
    > **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries.
 
 9. **Watch them recover.** Go back to the Temporal Web UI. The workflows that were stuck on v3.0 are now completing successfully on v2.0. Those customers just got billed correctly.
+
+   Run the same query from step 5 again:
+
+```bash
+temporal workflow list \
+    --query 'WorkerDeploymentVersion="valet:3.0" AND ExecutionStatus="Running"'
+```
+
+   Zero results. Every stuck workflow has been rescued.
 
 ### Fix forward
 
@@ -316,7 +327,9 @@ Let's see it happen.
 make run-worker BUILD_ID=4.0
 ```
 
-3. Set v4.0 as current:
+3. Think: `ParkingLotWorkflow` is AUTO_UPGRADE. What happens to it when a new version becomes Current?
+
+   Set v4.0 as current:
 
 ```bash
 temporal worker deployment set-current-version \

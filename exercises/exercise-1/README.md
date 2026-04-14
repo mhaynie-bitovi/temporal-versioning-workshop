@@ -92,13 +92,15 @@ await workflow.execute_activity(
 )
 ```
 
-2. Run the replay test - **it fails** with a non-determinism error:
+2. Before you run the test, think: you just added a new activity call after `request_parking_space`. The captured history doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?
+
+   Run the replay test - **it fails** with a non-determinism error:
 
 ```bash
 make run-tests
 ```
 
-> **This is the "aha" moment.** The old workflow history doesn't have a `notify_owner` command after `request_parking_space`, but the new code expects one. The command sequence doesn't match → non-determinism error.
+> **That error is what production looks like.** If you deployed this code change right now, every in-flight workflow that replays against it would block with this exact error. Not just one - every single workflow that started before your deploy. The replay test just saved you from that.
 
 ---
 
