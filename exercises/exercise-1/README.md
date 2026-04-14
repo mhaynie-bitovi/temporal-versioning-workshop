@@ -7,12 +7,12 @@ Your valet parking system is running in production. A feature request arrives: n
 - Replay testing with exported history
 - Non-determinism errors (NDEs)
 
-### Summary
+## Summary
 
-- **Part A:** Run the v1.0 workflow, export a completed workflow's history, and run a replay test against it.
-- **Part B:** Add a `notify_owner` activity call to the workflow. Run the replay test - it fails with a non-determinism error.
-- **Part C:** Wrap the new call in `workflow.patched()`. Replay test passes.
-- **Part D:** Restart the worker with patched code. Observe that pre-patch in-flight workflows skip the notification, while new workflows include it.
+- **Part A:** Establish a replay-test safety net for the current v1.0 workflow.
+- **Part B:** Make a non-replay-safe change and see the replay test catch it.
+- **Part C:** Fix the change with `workflow.patched()` so replay stays safe.
+- **Part D:** Deploy the patched code and observe how in-flight vs. new workflows behave differently.
 
 ---
 

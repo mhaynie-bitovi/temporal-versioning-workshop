@@ -70,25 +70,25 @@ The three exercises tell a single story: you're evolving a production valet park
 
 Your first feature request arrives: notify car owners when their car is being parked. Adding a `notify_owner` activity call is a non-replay-safe change - you'll learn to catch it with replay testing and fix it with `workflow.patched()`.
 
-- **Part A:** Run v1.0, export a workflow history, run a replay test.
-- **Part B:** Add the activity call. Replay test fails with a non-determinism error.
-- **Part C:** Wrap it in `workflow.patched()`. Replay test passes.
-- **Part D:** Restart the worker. Old in-flight workflows skip the notification; new ones include it.
+- **Part A:** Establish a replay-test safety net for the current v1.0 workflow.
+- **Part B:** Make a non-replay-safe change and see the replay test catch it.
+- **Part C:** Fix the change with `workflow.patched()` so replay stays safe.
+- **Part D:** Deploy the patched code and observe how in-flight vs. new workflows behave differently.
 
 ### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md)
 
 Feature requests keep coming, and patching is starting to accumulate. You switch to Worker Versioning, where Temporal's infrastructure handles routing instead of conditional code paths. Then a bad deploy hits production.
 
-- **Part A:** Enable versioning (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`). Deploy v1.0.
-- **Part B:** Add `bill_customer` (non-replay-safe). Deploy v2.0 alongside v1.0 - no patching needed.
-- **Part C:** Introduce a bug in v3.0 → rollback with `set-current-version` → evacuate stuck workflows with `update-options` → fix-forward with v3.1.
-- **Part D (Optional):** Make a non-replay-safe change to the AUTO_UPGRADE workflow. Discover that AUTO_UPGRADE still requires patching. Teaser: trampolining.
+- **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required.
+- **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
+- **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
 ### [Exercise 3: Worker Controller](exercises/exercise-3/README.md)
 
 You've been managing versioned deployments by hand. The Worker Controller automates all of that - progressive rollouts, draining, and pre-deployment checks - so you can ship with confidence and less manual coordination.
 
-- **Part A:** Build and deploy v1.0 via a `TemporalWorkerDeployment` CRD (AllAtOnce strategy). Start load.
-- **Part B:** Add `notify_owner` to the workflow (non-replay-safe). Switch the CRD to a Progressive rollout strategy. Deploy v2.0 - watch the controller ramp traffic 25% → 75% → 100% while v1.0 workers drain.
-- **Part C:** Configure a gate workflow that checks downstream credentials. Deploy v3.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v3.1, and watch it pass.
-- **Part D (Optional):** Deploy v4.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v4.0, verify the workflow completes.
+- **Part A:** Deploy v1.0 via a `TemporalWorkerDeployment` CRD with an `AllAtOnce` strategy.
+- **Part B:** Ship a non-replay-safe change using a `Progressive` rollout (ramped traffic + automatic draining).
+- **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
+- **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.

@@ -11,12 +11,12 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 - Rainbow deployments
 - Emergency rollback and evacuation
 
-### Summary
+## Summary
 
-- **Part A:** Enable worker versioning - add `PINNED` to `ValetParkingWorkflow`, `AUTO_UPGRADE` to `ParkingLotWorkflow`, configure `WorkerDeploymentConfig` in the worker. Deploy v1.0 and run load.
-- **Part B:** Add `bill_customer` to the workflow (a non-replay-safe change). Deploy v2.0 alongside v1.0. Observe that new workflows bill, in-flight v1.0 workflows complete without it - no patching needed.
-- **Part C:** Introduce a bug in v3.0 → instant rollback via `set-current-version` → evacuate stuck v3.0 workflows to v2.0 with `update-options` → fix-forward with v3.1.
-- **Part D (Optional):** Make a non-replay-safe change to the AUTO_UPGRADE workflow. Discover that AUTO_UPGRADE still requires patching, and learn why.
+- **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required.
+- **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
+- **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
 ---
 

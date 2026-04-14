@@ -9,12 +9,12 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 - Gate workflows
 - Pre-deployment testing with `VersioningOverride`
 
-### Summary
+## Summary
 
-- **Part A:** Build and deploy v1.0 via a `TemporalWorkerDeployment` CRD (AllAtOnce strategy). Start load.
-- **Part B:** Add `notify_owner` to the workflow (non-replay-safe). Switch the CRD to a Progressive rollout strategy. Deploy v2.0 - watch the controller ramp traffic 25% → 75% → 100% while 1.0 workers drain.
-- **Part C:** Configure a gate workflow that checks downstream credentials. Deploy v3.0 with a bad billing API key - watch the gate block the rollout. Fix the credential, redeploy v3.1, and watch it pass.
-- **Part D (Optional):** Deploy v4.0 with a Manual strategy so it stays Inactive. Send synthetic traffic pinned to v4.0, verify the workflow completes.
+- **Part A:** Deploy v1.0 via a `TemporalWorkerDeployment` CRD with an `AllAtOnce` strategy.
+- **Part B:** Ship a non-replay-safe change using a `Progressive` rollout (ramped traffic + automatic draining).
+- **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
+- **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.
 
 ---
 
