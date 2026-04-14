@@ -9,7 +9,7 @@
 
 ---
 
-## Part A - Run v1.0, capture a history, and write a replay test (~10 min)
+## Part A - Run v1.0, capture a history, and write a replay test
 
 1. Navigate to the exercise folder:
 
@@ -61,7 +61,7 @@ make run-tests
 
 ---
 
-## Part B - Make the NDE-inducing change & see it fail (~8 min)
+## Part B - Make the NDE-inducing change & see it fail
 
 Product wants us to send the car owner a notification when their car is about to be parked. A `notify_owner` activity and its models (`NotifyOwnerInput`, `NotifyOwnerOutput`) are already defined in `valet/activities.py` and `valet/models.py`. Your job is to call it from the workflow.
 
@@ -89,7 +89,7 @@ make run-tests
 
 ---
 
-## Part C - Patch it (~8 min)
+## Part C - Patch it
 
 1. Wrap the new activity call with `workflow.patched()`:
 
@@ -115,7 +115,7 @@ make run-tests
 
 ---
 
-## Part D - See it in action (~6 min)
+## Part D - See it in action
 
 The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code and watch a **single worker** handle both old and new executions correctly.
 

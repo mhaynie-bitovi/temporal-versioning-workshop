@@ -20,7 +20,7 @@ temporal server start-dev
 
 ---
 
-## Part A - Enable Worker Versioning + Deploy Version 1.0 (~12 min)
+## Part A - Enable Worker Versioning + Deploy Version 1.0
 
 **Goal:** Configure worker versioning infrastructure and deploy the first versioned worker.
 
@@ -101,7 +101,7 @@ make run-load-simulator
 
 ---
 
-## Part B - Deploy a Breaking Change - No Patching Needed (~15 min)
+## Part B - Deploy a Breaking Change - No Patching Needed
 
 **Motivation:** "Product wants billing at the end of the valet workflow. This adds a new activity - a non-replay-safe change. In Exercise 1, you'd have needed a patch. With PINNED versioning, you don't."
 
@@ -154,7 +154,7 @@ temporal worker deployment describe --name valet
 
 ---
 
-## Part C - Emergency Rollback & Remediation (~10 min)
+## Part C - Emergency Rollback & Remediation
 
 **Motivation:** "Things don't always go smoothly. Let's see what happens when a bad deploy makes it to production - and how Worker Versioning gives you tools to respond immediately."
 

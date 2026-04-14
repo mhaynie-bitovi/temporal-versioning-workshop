@@ -74,3 +74,75 @@ Three exercises, each broken into multiple parts.
   - Execute emergency remediation procedures using the update-options CLI command to move Workflows between versions during critical incidents involving bugs, security vulnerabilities, or urgent fixes
   - Evaluate safe sunsetting procedures that account for active Workflows, query requirements, and proper timing to avoid data loss or service disruption during version retirement
   - Implement pre-deployment testing strategies using versioningOverride to pin test Workflows to pending versions while production traffic continues normally on current versions
+
+---
+
+## Topic Coverage Audit
+
+> **This section needs frequent updates.** It will get out of date as exercises, slides, and READMEs evolve. Re-audit whenever significant content changes are made.
+
+Topics are ranked by priority (P1 = must-cover, P2 = should-cover, P3 = nice-to-have). Coverage is rated as: **Full** (hands-on exercise + explanation), **Partial** (mentioned/explained but not exercised, or exercised but not explained), **Slides Only** (planned for slides/lecture, not in exercises), **Not Covered**.
+
+### P1 - Core Workshop Topics
+
+| # | Topic | Coverage | Where | Notes |
+|---|---|---|---|---|
+| 1 | **workflow.patched() for non-replay-safe changes** | Full | Ex1 Parts B-D | Users add an activity, see the NDE, wrap in patched(), observe old vs new behavior on the same worker. |
+| 2 | **Replay testing with exported history** | Full | Ex1 Parts A-C | Export history JSON, write/run replay test, see it fail/pass. |
+| 3 | **What constitutes a non-deterministic (non-replay-safe) change** | Partial | Ex1 Part B, Ex2 Part B | Demonstrated by example (adding an activity) but not explicitly taught as a category of changes. Could use slides covering the full list (adding/removing/reordering activities, changing timers, etc.). |
+| 4 | **PINNED versioning behavior** | Full | Ex2 Part A, Ex3 all | Configured in code, explained in callout boxes, demonstrated with in-flight isolation. |
+| 5 | **AUTO_UPGRADE versioning behavior** | Partial | Ex2 Part A | Configured on ParkingLotWorkflow with a "why" callout, but users don't deeply observe or test the auto-upgrade happening. Could benefit from a slide or explicit observation step. |
+| 6 | **WorkerDeploymentConfig setup (deployment name, build ID, use_worker_versioning)** | Full | Ex2 Part A | Users wire up env vars and config in worker.py. |
+| 7 | **Deploying a new version alongside an old one (rainbow deployment)** | Full | Ex2 Part B, Ex3 Part B | Both manual (Ex2) and controller-automated (Ex3) rainbow deployments. |
+| 8 | **set-current-version CLI command** | Full | Ex2 Parts A-C | Used repeatedly to promote and rollback versions. |
+| 9 | **Emergency rollback (set-current-version to revert)** | Full | Ex2 Part C step 5 | Instant rollback by setting previous version as current. |
+| 10 | **update-options CLI for evacuating stuck workflows** | Full | Ex2 Part C steps 6-7 | Bulk query + reassign of v3.0 workflows to v2.0. |
+| 11 | **Worker Controller + TemporalWorkerDeployment CRD** | Full | Ex3 Parts A-D | CRD creation, updates, observation of controller behavior. |
+| 12 | **Progressive rollout strategy (ramping)** | Full | Ex3 Part B | 25% -> 75% -> 100% ramp with pause durations, observed via `kubectl get twd -w`. |
+| 13 | **Gate workflow for pre-deployment checks** | Full | Ex3 Part C | Gate blocks bad deploy, passes after fix. Full exercise with failure and success paths. |
+
+### P2 - Important Supporting Topics
+
+| # | Topic | Coverage | Where | Notes |
+|---|---|---|---|---|
+| 14 | **Rainbow vs blue-green vs rolling deployment strategies** | Slides Only | Planned for slides | Not in exercises. Needs a slide explaining why Temporal uses rainbow (multiple coexisting versions). |
+| 15 | **Worker Deployments vs Worker Deployment Versions (concepts)** | Partial | Ex2 Part A (`describe` command) | Users see the output but distinction isn't explicitly taught. Needs a slide or callout. |
+| 16 | **Current Version vs Ramping Version routing concepts** | Partial | Ex2 Part B, Ex3 Part B | Current Version is exercised heavily. Ramping Version is implicitly used in Ex3 Progressive rollout but not called out by name or explained as a distinct routing concept. |
+| 17 | **WorkerDeploymentVersion search attribute for querying** | Full | Ex2 Part C step 6 | Used to find stuck v3.0 workflows. |
+| 18 | **Sunsetting old versions / draining** | Partial | Ex2 Parts B-C | Instructions say "wait until drained, then stop the worker," but safe sunsetting procedures aren't explicitly taught (timing, query requirements, etc.). Noted in things-to-fix for the controller case. |
+| 19 | **Pre-deployment testing with versioningOverride (synthetic traffic)** | Full | Ex3 Part D | Manual strategy + pinned synthetic workflow. Optional but fully fleshed out. |
+| 20 | **continue_as_new for long-running workflows** | Partial | ParkingLotWorkflow code | Present in the example code but not a focus of any exercise step. Could use a brief callout. |
+| 21 | **AllAtOnce rollout strategy** | Partial | Ex3 Part A | Used for initial deploy, briefly noted, but not contrasted with Progressive in the exercise itself. |
+| 22 | **Manual rollout strategy** | Full | Ex3 Part D | Deployed, observed Inactive state, then tested with synthetic traffic. |
+| 23 | **Types of changes safe to deploy without versioning** | Not Covered | - | The LMS objective mentions this. Could be a quick slide (e.g., adding a log line, changing activity internals, adding a new query handler). |
+| 24 | **Temporal Web UI for deployment/version inspection** | Partial | Ex2-3 (observation steps) | Users are told to look at the UI but specific column configuration and deployment views aren't walked through. Noted in things-to-fix. |
+
+### P3 - Nice-to-Have / Advanced
+
+| # | Topic | Coverage | Where | Notes |
+|---|---|---|---|---|
+| 25 | **Upgrade-on-Continue-as-New strategy ("trampolining")** | Not Covered | - | Listed in content plan as an area of interest. Not in any exercise. Would need slides or a dedicated mini-example. |
+| 26 | **Patching with auto-upgrade behavior** | Not Covered | - | Listed in content plan. The interaction between patched() and AUTO_UPGRADE is not demonstrated. Could be a slide topic or a brief callout in Ex2 since ParkingLotWorkflow uses AUTO_UPGRADE. |
+| 27 | **Event and Command Mapping (how replay works internally)** | Not Covered | - | LMS objective. Would be a conceptual slide. Not practical to exercise hands-on. |
+| 28 | **Verifying correct Queues are polled / searching for workflow versions** | Partial | Ex2 Part C step 6 | The search attribute query partially covers this. Could be expanded with slides on how to use the UI/CLI to audit which versions are active. |
+| 29 | **Emergency remediation as a recurring theme across exercises** | Not Covered | Ex2 Part C only | The exercise plan notes it would be nice to sprinkle remediation across all exercises. Currently only in Ex2 Part C. Ex1 and Ex3 don't have explicit remediation scenarios. |
+| 30 | **Promoting from Manual strategy** | Partial | Ex3 Part D (footnote) | Explained in a "How would you promote?" callout but not exercised. Intentional - exercise is already long. |
+| 31 | **Worker Controller ownership model** | Partial | Ex3 Part D (footnote) | Mentioned briefly. Advanced topic, probably fine as a footnote. |
+| 32 | **Controller-managed sunsetting / cleanup of drained versions** | Not Covered | - | Noted in things-to-fix. Drained versions just hang around in Ex3. |
+
+### Coverage Summary
+
+| Rating | Count | Topics |
+|---|---|---|
+| **Full** | 14 | #1, 2, 4, 6, 7, 8, 9, 10, 11, 12, 13, 17, 19, 22 |
+| **Partial** | 11 | #3, 5, 15, 16, 18, 20, 21, 24, 28, 30, 31 |
+| **Slides Only** | 1 | #14 |
+| **Not Covered** | 6 | #23, 25, 26, 27, 29, 32 |
+
+### Key Gaps to Address
+
+1. **Slides needed:** Rainbow vs blue-green vs rolling (#14), what changes are safe without versioning (#23), event/command mapping conceptual overview (#27), patching + auto-upgrade interaction (#26).
+2. **Trampolining (#25):** Listed as an area of interest but not covered anywhere. Decide: cut from scope, or add a slide/demo.
+3. **Emergency remediation breadth (#29):** Currently concentrated in Ex2 Part C. The original plan wanted it sprinkled across all exercises. Consider whether Ex1 or Ex3 could include a remediation moment.
+4. **Sunsetting (#18, #32):** Mentioned but not deeply taught. The controller case (#32) is a known gap in things-to-fix.
+5. **AUTO_UPGRADE observation (#5):** Users configure it but don't clearly see it happen. A small observation step in Ex2 (e.g., checking ParkingLotWorkflow's version in the UI after promoting v2.0) would close this gap cheaply.

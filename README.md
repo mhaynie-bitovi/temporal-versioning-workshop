@@ -1,6 +1,6 @@
 # Temporal Versioning Workshop
 
-A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example. Three progressive exercises, ~3.5 hours total (with breaks and slides between).
+A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example.
 
 ## Prerequisites
 
@@ -64,7 +64,7 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 ## Exercises
 
-### [Exercise 1: Patching + Replay Testing](exercises/exercise-1/README.md) (~30 min)
+### [Exercise 1: Patching + Replay Testing](exercises/exercise-1/README.md)
 
 Add a `notify_owner` activity call to the workflow - a non-replay-safe change - and learn to catch and fix it.
 
@@ -73,7 +73,7 @@ Add a `notify_owner` activity call to the workflow - a non-replay-safe change - 
 - **Part C:** Wrap it in `workflow.patched()`. Replay test passes.
 - **Part D:** Restart the worker. Old in-flight workflows skip the notification; new ones include it.
 
-### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md) (~45 min)
+### [Exercise 2: Worker Versioning](exercises/exercise-2/README.md)
 
 Deploy changes using Worker Versioning - Temporal's infrastructure handles routing instead of conditional code paths.
 
@@ -81,7 +81,7 @@ Deploy changes using Worker Versioning - Temporal's infrastructure handles routi
 - **Part B:** Add `bill_customer` (non-replay-safe). Deploy v2.0 alongside v1.0 - no patching needed.
 - **Part C:** Introduce a bug in v3.0 → rollback with `set-current-version` → evacuate stuck workflows with `update-options` → fix-forward with v3.1.
 
-### [Exercise 3: K8s with the Worker Controller](exercises/exercise-3/README.md) (~45 min)
+### [Exercise 3: K8s with the Worker Controller](exercises/exercise-3/README.md)
 
 The Worker Controller automates versioned deployments on Kubernetes.
 

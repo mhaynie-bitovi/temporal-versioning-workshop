@@ -1,6 +1,5 @@
 # Exercise 3: Deploying on K8s with the Worker Controller
 
-**Time:** ~45 minutes
 **Theme:** "You've been managing versioning by hand. The Worker Controller automates all of that."
 **Skills:** TemporalWorkerDeployment CRD, Progressive rollout, rainbow deployments, pre-deployment testing, gate workflows
 
@@ -34,7 +33,7 @@ make setup
 
 ---
 
-## Part A - Deploy 1.0 and generate load (~10 min)
+## Part A - Deploy 1.0 and generate load
 
 1. Ensure you're still in the `exercises/exercise-3/practice` directory from Pre-Setup.
 
@@ -71,7 +70,7 @@ make run-load-simulator
 
 ---
 
-## Part B - Non-replay-safe change with Progressive rollout (~14 min)
+## Part B - Non-replay-safe change with Progressive rollout
 
 **Scenario:** Add a notification when the owner's car is being retrieved. This adds a new activity call to the workflow sequence - a non-replay-safe change. With worker versioning (`PINNED` behavior), each version runs its own code, so the Worker Controller will keep 1.0 workers alive for in-flight workflows while ramping up 2.0 for new ones.
 
@@ -148,7 +147,7 @@ kubectl get deployments
 
 ---
 
-## Part C - Gate workflow (~10 min)
+## Part C - Gate workflow
 
 **Scenario:** Part B showed a Progressive rollout that ramps traffic automatically. But what if the new version has a problem? You want to catch it *before* any production traffic is affected. The Worker Controller's **gate workflow** automates pre-deployment checks: before any traffic ramps, the controller starts a workflow on the new version. If it fails, the rollout is blocked.
 
@@ -269,7 +268,7 @@ kubectl get twd -w
 
 ---
 
-## Part D (Optional) - Testing with synthetic traffic (~10 min)
+## Part D (Optional) - Testing with synthetic traffic
 
 **Scenario:** Not every deployment involves a workflow code change. You might be updating a dependency, applying a security patch, rotating credentials, or changing an environment variable. Whatever the reason, you want to verify the new build works before routing production traffic to it. Worker Versioning's `Inactive` state is designed for exactly this: workers are polling but only receive workflows explicitly pinned to them via `VersioningOverride`. By combining a `Manual` rollout strategy with pinned synthetic traffic, you can test a new version on real infrastructure without touching production traffic.
 
