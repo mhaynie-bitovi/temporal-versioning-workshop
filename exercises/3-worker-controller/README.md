@@ -22,7 +22,9 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 
 Ensure `minikube`, `kubectl`, `helm`, and the `temporal` CLI are installed and available.
 
-1. In a dedicated terminal, start the Temporal dev server:
+1. Close **all** terminals from the previous exercise, including the Temporal dev server.
+
+2. In a **new terminal**, start a fresh Temporal dev server:
 
 ```bash
 temporal server start-dev
@@ -30,7 +32,7 @@ temporal server start-dev
 
 > _**Note:** Starting a fresh dev server means we're working with a clean slate - no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise._
 
-2. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
+3. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
 
 ```bash
 cd exercises/3-worker-controller/practice

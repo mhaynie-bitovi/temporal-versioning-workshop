@@ -26,6 +26,11 @@ class ParkingLotWorkflow:
     @workflow.update
     async def request_parking_space(self, plate: str) -> str:
         for parking_space, occupant in self.parking_spaces.items():
+            if occupant == plate:
+                workflow.logger.info(f"Plate {plate} already has parking space {parking_space}")
+                return parking_space
+
+        for parking_space, occupant in self.parking_spaces.items():
             if occupant is None:
                 self.parking_spaces[parking_space] = plate
                 workflow.logger.info(f"Assigned parking space {parking_space} to {plate}")
@@ -43,7 +48,7 @@ class ParkingLotWorkflow:
                 self._check_continue_as_new()
                 return
 
-        raise ApplicationError(f"No parking space found for plate {plate}")
+        workflow.logger.info(f"No parking space found for plate {plate}, nothing to release")
 
     @workflow.query
     def get_status(self) -> dict[str, str | None]:

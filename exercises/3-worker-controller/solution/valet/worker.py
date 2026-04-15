@@ -12,14 +12,11 @@ from temporalio.worker import WorkerDeploymentConfig
 
 from valet.activities import (
     bill_customer,
-    check_billing_service,
-    check_notification_service,
     move_car,
     notify_owner,
     release_parking_space,
     request_parking_space,
 )
-from valet.gate_workflow import ValetGateWorkflow
 from valet.parking_lot_workflow import ParkingLotWorkflow
 from valet.valet_parking_workflow import ValetParkingWorkflow
 
@@ -39,9 +36,8 @@ async def main():
     worker = Worker(
         client,
         task_queue="valet",
-        workflows=[ValetParkingWorkflow, ParkingLotWorkflow, ValetGateWorkflow],
-        activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer,
-                   check_notification_service, check_billing_service],
+        workflows=[ValetParkingWorkflow, ParkingLotWorkflow],
+        activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer],
         deployment_config=WorkerDeploymentConfig(
             version=WorkerDeploymentVersion(
                 deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],

@@ -22,13 +22,18 @@ class ParkingLotWorkflow:
 
         # Warm-up delay: let external systems sync before accepting requests
         if workflow.patched("add-warmup-delay"):
-           await workflow.sleep(2)
+            await workflow.sleep(2)
 
         await workflow.wait_condition(lambda: self._should_continue_as_new)
         workflow.continue_as_new(ParkingLotInput(parking_spaces=self.parking_spaces))
 
     @workflow.update
     async def request_parking_space(self, plate: str) -> str:
+        for parking_space, occupant in self.parking_spaces.items():
+            if occupant == plate:
+                workflow.logger.info(f"Plate {plate} already has parking space {parking_space}")
+                return parking_space
+
         for parking_space, occupant in self.parking_spaces.items():
             if occupant is None:
                 self.parking_spaces[parking_space] = plate
@@ -47,7 +52,7 @@ class ParkingLotWorkflow:
                 self._check_continue_as_new()
                 return
 
-        raise ApplicationError(f"No parking space found for plate {plate}")
+        workflow.logger.info(f"No parking space found for plate {plate}, nothing to release")
 
     @workflow.query
     def get_status(self) -> dict[str, str | None]:

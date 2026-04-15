@@ -39,13 +39,13 @@ async def main():
         workflows=[ValetParkingWorkflow, ParkingLotWorkflow],
         activities=[move_car, request_parking_space, release_parking_space, notify_owner, bill_customer],
         # TODO (Part A): Add deployment_config here
-        # deployment_config=WorkerDeploymentConfig(
-        #     version=WorkerDeploymentVersion(
-        #         deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],
-        #         build_id=os.environ["TEMPORAL_WORKER_BUILD_ID"],
-        #     ),
-        #     use_worker_versioning=True,
-        # ),
+        deployment_config=WorkerDeploymentConfig(
+            version=WorkerDeploymentVersion(
+                deployment_name=os.environ["TEMPORAL_DEPLOYMENT_NAME"],
+                build_id=os.environ["TEMPORAL_WORKER_BUILD_ID"],
+            ),
+            use_worker_versioning=True,
+        ),
         workflow_runner=SandboxedWorkflowRunner(
             # Prevent the sandbox from re-reading workflow code from disk on each run.
             # Without this, a running worker would pick up file edits without a restart.
