@@ -2,8 +2,9 @@
 
 ## Format Plan (3.5 hrs)
 
+* 1:30 PM to 5:00 PM (3:30 total duration)
 * 3 30-minute exercises (via instruqt)
-* 1 30-minute break (3:00 - 3:30)
+* 1 30-minute break (3:00 PM - 3:30 PM)
 * Content/slides between
 
 ## Content Plan

@@ -2,6 +2,29 @@
 
 This file provides guidance to GitHub Copilot when working with code in this repository.
 
+## Temporal Docs MCP Server
+
+**Always use the `mcp_temporal-docs_search_temporal_knowledge_sources` tool aggressively.** This is a semantic search tool over Temporal's official documentation and knowledge sources. Use it:
+
+- **Before writing or modifying any Temporal-related code** (workflows, activities, workers, signals, queries, updates, continue-as-new, patching, versioning, etc.). Search for the relevant API or concept first to ensure correctness.
+- **Before answering any question about Temporal** concepts, best practices, SDK behavior, or configuration. Do not rely on training data alone; always verify against the docs.
+- **When debugging Temporal issues** (non-determinism errors, replay failures, worker behavior, etc.). Search for the error or concept to get up-to-date guidance.
+- **When writing or reviewing README/workshop content** that explains Temporal concepts. Search to ensure explanations are accurate and use current terminology.
+- **When unsure about any Temporal API**, parameter, or behavior. Search first, then act.
+
+Make multiple queries if needed to cover different aspects of a task. For example, when working on workflow patching, search for both "workflow.patched Python SDK" and "workflow versioning determinism" to get comprehensive context. Prefer specific, targeted queries over broad ones.
+
+## Temporal Developer Skill
+
+**Always load and use the `temporal-developer` skill** when working on any Temporal-related code or content in this repository. This skill contains structured references for determinism, versioning, patterns, gotchas, troubleshooting, and SDK-specific guidance. Use it:
+
+- **Before writing or modifying workflow/activity code.** Read the relevant `references/python/` and `references/core/` files from the skill for correct patterns.
+- **When debugging non-determinism errors or replay failures.** Consult `references/core/determinism.md` and `references/core/troubleshooting.md` from the skill.
+- **When working on versioning or patching.** Read `references/core/versioning.md` and `references/python/versioning.md` from the skill for up-to-date strategies.
+- **When writing workshop content** that explains Temporal concepts. Cross-reference both the skill references and the MCP docs server to ensure accuracy.
+
+Use **both** the Temporal Docs MCP server and the temporal-developer skill together. The MCP server provides live docs search; the skill provides structured, curated reference material. They complement each other.
+
 ## Project Overview
 
 This is a **Temporal workflow workshop** using a valet parking example as the learning vehicle. The workshop teaches worker versioning, workflow patching, and Kubernetes deployment strategies through three progressive exercises. Each exercise has a `practice/` directory (where users make changes) and a `solution/` reference.
