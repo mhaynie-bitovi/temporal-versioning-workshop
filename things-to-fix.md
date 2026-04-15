@@ -7,3 +7,4 @@
 - why does installing the cert manager during exercise 3 make setup take so long?
 - make sure we've covered the worker deployments tab in the web ui
 - maybe add tip to users about how to "rename" terminals in vs code so they manage them effectively
+- add a note or find a way to fix opening terminals in the same directory to avoid repetative cd steps. Can split.

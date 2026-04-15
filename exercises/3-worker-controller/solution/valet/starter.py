@@ -15,7 +15,6 @@ from valet.valet_parking_workflow import ValetParkingWorkflow
 
 async def main() -> None:
     license_plate = generate_license_plate()
-    print(f"Starting valet parking workflow for {license_plate}")
 
     client = await Client.connect("localhost:7233")
 

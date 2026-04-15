@@ -56,6 +56,7 @@ class ValetParkingWorkflow:
                 start_to_close_timeout=timedelta(seconds=10),
             )
 
+
         # Move car from valet zone to assigned parking space
         await workflow.execute_activity(
             move_car,

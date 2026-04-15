@@ -18,7 +18,7 @@ Your valet parking system is running in production. A feature request arrives: n
 
 ## Part A - Export workflow history, and write a replay test
 
-**Covers:** Exporting workflow history, replay test infrastructure
+*__Covers:__ Exporting workflow history, replay test infrastructure*
 
 Before making any changes, you'll establish a safety net. Run the current v1.0 workflow, capture a completed workflow's history, and set up a replay test that verifies the code is compatible with that history.
 
@@ -28,7 +28,7 @@ Before making any changes, you'll establish a safety net. Run the current v1.0 w
 cd exercises/1-workflow-patching/practice
 ```
 
-2. Examine the v1.0 `ValetParkingWorkflow` in `valet/valet_parking_workflow.py`. Note the command sequence:
+2. Examine `valet/valet_parking_workflow.py`. Note the command sequence:
    - `request_parking_space` → `move_car` (to parking space) → `sleep` → `move_car` (back) → `release_parking_space`
    - The `sleep` simulates the owner's trip - workflows will be "in flight" during this window.
 
@@ -38,7 +38,7 @@ cd exercises/1-workflow-patching/practice
 temporal server start-dev
 ```
 
-> **Note:** Keep this running for the entire exercise.
+> _**Note:** Keep this running for the entire exercise._
 
 4. Start the worker (in a **new terminal** from the same directory):
 
@@ -46,25 +46,27 @@ temporal server start-dev
 make run-worker
 ```
 
-> **Note:** Keep this worker running - you'll be instructed when to restart it later.
+> _**Note:** Keep this worker running - you'll be instructed when to restart it later._
 
-5. Start the load simulator (in a **new terminal** from the same directory):
+5. Start a single workflow (in a **new terminal** from the same directory):
 
 ```bash
-make run-load-simulator
+make run-starter
 ```
 
-6. Wait for a workflow to complete (trip durations are 5–30 seconds). Then **stop the load simulator** (Ctrl+C) and export a completed workflow's history:
+   Note the workflow ID in the output (e.g. `valet-CA-1ABC123`). Wait for it to complete (about 30 seconds). You can check its status in the Temporal Web UI at [http://localhost:8233](http://localhost:8233).
+
+6. Export the completed workflow's history:
 
 ```bash
 temporal workflow show --workflow-id <WORKFLOW ID HERE> --output json > history/valet_v1_history.json
 ```
 
-> **Tip:** The workflow ID follows the format `valet-<STATE>-<PLATE>` (e.g., `valet-CA-1ABC123`). You can copy a workflow ID from the Temporal Web UI at [http://localhost:8233](http://localhost:8233), or use `temporal workflow list` to find one.
+7. Briefly open `history/valet_v1_history.json` and skim the exported history. Each entry in the `events` array represents something the workflow did - starting activities, recording results, firing timers, etc. This is the sequence of commands the replayer will compare against your code.
 
-7. Open `tests/test_replay.py` and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
+8. Briefly open `tests/test_replay.py` and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
 
-8. Run the test - it should **pass**, confirming the replay infrastructure works:
+9. Run the test - it should **pass**, confirming the replay infrastructure works:
 
 ```bash
 make run-tests
@@ -72,11 +74,11 @@ make run-tests
 
 ---
 
-## Part B - Make the NDE-inducing change & see it fail
+## Part B - Add a new activity and break replay
 
-**Covers:** Non-replay-safe changes, non-determinism errors
+*__Covers:__ Non-replay-safe changes, non-determinism errors*
 
-Now we need to ship the feature. A `notify_owner` activity and its models (`NotifyOwnerInput`, `NotifyOwnerOutput`) are already defined in `valet/activities.py` and `valet/models.py`. Your job is to call it from the workflow - and see what happens when the replay test catches the incompatibility.
+Now we need to ship the feature. A `notify_owner` activity is already defined. Your job is to call it from the workflow - and see what happens when the replay test catches the incompatibility.
 
 1. In `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
 
@@ -92,25 +94,25 @@ await workflow.execute_activity(
 )
 ```
 
-2. Before you run the test, think: you just added a new activity call after `request_parking_space`. The captured history doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?
+> _**Think:** You just added a new activity call after `request_parking_space`. The captured history doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?_
 
-   Run the replay test - **it fails** with a non-determinism error:
+2. Run the replay test - **it fails** with a non-determinism error:
 
 ```bash
 make run-tests
 ```
 
-> **That error is what production looks like.** If you deployed this code change right now, every in-flight workflow that replays against it would block with this exact error. Not just one - every single workflow that started before your deploy. The replay test just saved you from that.
+   **That error is exactly what would happen in production.** If you deployed this change, every in-flight workflow that replayed against the new code would fail with this same error. Not just one - every workflow that started before your deploy. The replay test caught it before it got that far.
 
 ---
 
-## Part C - Patch it
+## Part C - Patch the workflow
 
-**Covers:** `workflow.patched()` for backward-compatible workflow evolution
+*__Covers:__ `workflow.patched()` for backward-compatible workflow evolution*
 
-The replay test caught the problem before it reached production. Now fix it using `workflow.patched()`, which lets old executions skip the new code while new executions run it.
+The replay test caught the problem before it reached production. Now we'll fix it using `workflow.patched()`. This tells Temporal: "this code is newer." In-flight workflows will skip it, while workflows started after the deploy will run it.
 
-1. Wrap the new activity call with `workflow.patched()`:
+1. In `valet/valet_parking_workflow.py`, wrap the new activity call with `workflow.patched()`:
 
 ```python
 if workflow.patched("add-notify-owner"):
@@ -130,13 +132,11 @@ if workflow.patched("add-notify-owner"):
 make run-tests
 ```
 
-> Old histories skip the patched block. New executions run it. The `workflow.patched()` marker tells the replayer "this code was added after the history was captured."
-
 ---
 
 ## Part D - See it in action
 
-**Covers:** How `workflow.patched()` behaves at runtime for old vs. new executions
+*__Covers:__ How `workflow.patched()` behaves at runtime for old vs. new executions*
 
 With the patch in place, a single worker can now handle both old and new workflows. You'll create a pre-patch workflow, restart the worker with the patched code, and watch it handle both correctly.
 
@@ -148,35 +148,34 @@ The worker you started in Part A is still running the **original v1.0 code**. Ev
 make run-starter
 ```
 
-   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**. The old worker begins executing it with the v1.0 code - no `notify_owner`, no patch marker in the history. The starter sets a 30-second trip, so the workflow is now sitting in `sleep`.
+   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **pre-patch workflow**.
 
-2. Think: the pre-patch workflow has no patch marker in its history. When the new worker replays it, what will `workflow.patched("add-notify-owner")` return? What does that mean for the notification?
-
-   While that workflow is still sleeping, **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
+2. Immediately **stop the old worker** (Ctrl+C in the worker terminal) and restart it to pick up your patched code:
 
 ```bash
 make run-worker
 ```
-
-   The restarted worker now has your Part C code with `workflow.patched("add-notify-owner")`.
 
 3. Start a **second** workflow:
 
 ```bash
 make run-starter
 ```
+   Note the workflow ID (e.g. `valet-CA-1ABC123`). This is your **post-patch workflow**.
 
-   Note this workflow ID - this is your **post-patch workflow**.
+4. Open up the Temporal Web UI at [http://localhost:8233](http://localhost:8233). Find both workflow executions and open their detail pages side by side so you can compare their event histories. They should both complete within about 30 seconds.
 
-4. Watch **both** workflows complete in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). The same worker handles both, but the outcomes differ:
+5. Compare the two executions. The same worker handled both, but the histories differ:
 
-   - **Pre-patch workflow:** Completes **without** `notify_owner`. When the new worker replays this workflow's history, it finds no patch marker, so `workflow.patched()` returns `False` and the notification block is skipped.
-   - **Post-patch workflow:** Includes `notify_owner` right after `request_parking_space`. This is a fresh execution, so `workflow.patched()` returns `True` and writes a marker into the history.
+   - **Pre-patch workflow:** Completes **without** `notify_owner`. When the new worker replayed this workflow's history, it found no patch marker, so `workflow.patched()` returned `False` and the notification block was skipped. You won't see a `notify_owner` activity in this history.
+   - **Post-patch workflow:** Includes `notify_owner` right after `request_parking_space`. This was a fresh execution, so `workflow.patched()` returned `True`, wrote a marker into the history, and ran the notification activity. You'll see the extra `notify_owner` activity in this history.
 
-5. Stop the worker when you're satisfied (Ctrl+C).
+   Notice how a single deploy of the same code produced two different execution paths. That's the power of `workflow.patched()` - it lets one worker safely handle both old and new workflows without breaking replay.
 
-> **Looking ahead:** The notification feature is shipped and working. But notice the cost: you added a conditional branch to the workflow. Every future non-replay-safe change adds another one. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how Worker Versioning can eliminate patching entirely for most workflows.
+6. Stop the worker when you're satisfied (Ctrl+C).
+
+> _**Looking ahead:** The notification feature is shipped and working. But notice the cost: you added a conditional branch to the workflow. Every future non-replay-safe change adds another one. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how Worker Versioning can eliminate patching entirely for most workflows._
 
 ---
 
-> **🎉 Congratulations!** You've completed Exercise 1.
+> _**🎉 Congratulations!** You've completed Exercise 1._

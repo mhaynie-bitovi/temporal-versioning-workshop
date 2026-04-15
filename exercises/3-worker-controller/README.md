@@ -28,7 +28,7 @@ Ensure `minikube`, `kubectl`, `helm`, and the `temporal` CLI are installed and a
 temporal server start-dev
 ```
 
-> **Note:** Starting a fresh dev server means we're working with a clean slate - no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise.
+> _**Note:** Starting a fresh dev server means we're working with a clean slate - no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise._
 
 2. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
 
@@ -41,7 +41,7 @@ make setup
 
 ## Part A - Deploy 1.0 and generate load
 
-**Covers:** `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy
+*__Covers:__ `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy*
 
 Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
 
@@ -51,7 +51,7 @@ Your valet parking system is moving to Kubernetes. Get the first version running
    - `k8s/temporal-connection.yaml` - points to the host Temporal server
    - `k8s/valet-worker.yaml` - `TemporalWorkerDeployment` with `AllAtOnce` strategy
 
-> **Note:** The initial manifest uses `AllAtOnce` - every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B.
+> _**Note:** The initial manifest uses `AllAtOnce` - every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B._
 
 3. Build and deploy 1.0:
 
@@ -84,11 +84,11 @@ make run-load-simulator
 
 ## Part B - Non-replay-safe change with Progressive rollout
 
-**Covers:** Progressive rollout strategy, ramp steps, rainbow deployment model
+*__Covers:__ Progressive rollout strategy, ramp steps, rainbow deployment model*
 
 Another feature request: notify car owners when their car is being retrieved. This is a non-replay-safe change. Instead of cutting over all at once, you'll use a Progressive rollout to ramp traffic gradually while old workflows complete on their original version.
 
-> **Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
+> _**Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it._
 
 1. Make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
 
@@ -159,21 +159,21 @@ kubectl get deployments
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
 
-> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest.
+> _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
 
-> **Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely.
+> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely._
 
 ---
 
 ## Part C - Gate workflow
 
-**Covers:** Gate workflows, pre-deployment validation, non-retryable `ApplicationError`
+*__Covers:__ Gate workflows, pre-deployment validation, non-retryable `ApplicationError`*
 
 Progressive rollouts ramp traffic automatically, but what if the new version has a problem? In Exercise 2, a bad deploy hit production and you had to scramble to roll back. A gate workflow catches problems *before* any production traffic is affected.
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
-> **How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers while the version is still `Inactive`. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version stays `Inactive` and production is unaffected.
+> _**How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers while the version is still `Inactive`. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version stays `Inactive` and production is unaffected._
 
 1. Open `valet/gate_workflow.py` and read through the `ValetGateWorkflow`. It runs connectivity checks against the downstream services the valet workflow depends on:
 
@@ -248,7 +248,7 @@ temporal workflow list --query 'ExecutionStatus="Running"'
 
 7. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
-> **Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened.
+> _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
 
 8. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
 
@@ -294,17 +294,17 @@ kubectl get twd -w
 
 13. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
 
-> **Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
+> _**Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically._
 
 ---
 
 ## Part D (Optional) - Testing with synthetic traffic
 
-**Covers:** `Manual` rollout strategy, `Inactive` version state, `VersioningOverride` for pinned synthetic traffic
+*__Covers:__ `Manual` rollout strategy, `Inactive` version state, `VersioningOverride` for pinned synthetic traffic*
 
 Not every deployment involves a workflow code change. You might be updating a dependency, rotating credentials, or changing config. Before routing production traffic to the new build, you can test it on real infrastructure using pinned synthetic traffic.
 
-> **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test.
+> _**Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test._
 
 1. No code changes are needed for this deploy. Build the 4.0 image as-is:
 
@@ -361,10 +361,10 @@ make run-synthetic BUILD_ID=4.0-XXXX
    - Find the `test-4.0-XXXX` workflow - it completed on v4.0
    - Meanwhile, load simulator workflows are still running on v3.1
 
-> **Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change.
+> _**Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change._
 
-> **How would you promote?** We won't do this in the exercise, but for reference: the simplest way to promote is to change the strategy in `k8s/valet-worker.yaml` from `Manual` to `AllAtOnce` (or `Progressive`) and re-apply with `kubectl apply -f k8s/valet-worker.yaml`. The controller will then promote v4.0 automatically. You could also promote directly via the CLI with `temporal worker deployment set-current-version --deployment-name "default/valet-worker" --build-id 4.0-XXXX`, but be aware that manual CLI changes trigger the controller's [ownership model](https://github.com/temporalio/temporal-worker-controller/blob/main/docs/ownership.md), requiring you to hand control back afterward.
+> _**How would you promote?** We won't do this in the exercise, but for reference: the simplest way to promote is to change the strategy in `k8s/valet-worker.yaml` from `Manual` to `AllAtOnce` (or `Progressive`) and re-apply with `kubectl apply -f k8s/valet-worker.yaml`. The controller will then promote v4.0 automatically. You could also promote directly via the CLI with `temporal worker deployment set-current-version --deployment-name "default/valet-worker" --build-id 4.0-XXXX`, but be aware that manual CLI changes trigger the controller's [ownership model](https://github.com/temporalio/temporal-worker-controller/blob/main/docs/ownership.md), requiring you to hand control back afterward._
 
 ---
 
-> **Congratulations!** You've completed Exercise 3.
+> _**Congratulations!** You've completed Exercise 3._

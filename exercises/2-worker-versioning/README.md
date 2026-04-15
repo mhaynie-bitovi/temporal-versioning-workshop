@@ -34,13 +34,13 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
     temporal server start-dev
     ```
 
-    > **Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start - every workflow will be versioned from birth.
+    > _**Note:** Keep this running for the entire exercise. All code changes in this exercise happen before any workers or workflows start - every workflow will be versioned from birth._
 
 ---
 
 ## Part A - Enable Worker Versioning + Deploy Version 1.0
 
-**Covers:** `VersioningBehavior.PINNED`, `VersioningBehavior.AUTO_UPGRADE`, `WorkerDeploymentConfig`, `set-current-version`
+*__Covers:__ `VersioningBehavior.PINNED`, `VersioningBehavior.AUTO_UPGRADE`, `WorkerDeploymentConfig`, `set-current-version`*
 
 Before shipping new features, you'll set up the versioning infrastructure. This is a one-time configuration that makes every future deploy safer.
 
@@ -55,7 +55,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
    class ValetParkingWorkflow:
    ```
 
-   > **Why PINNED?** Each parking transaction should complete on the code version it started on. No mid-execution surprises, no patching needed.
+   > _**Why PINNED?** Each parking transaction should complete on the code version it started on. No mid-execution surprises, no patching needed._
 
    **b.** In `valet/parking_lot_workflow.py` add `versioning_behavior=VersioningBehavior.AUTO_UPGRADE` to `@workflow.defn`:
 
@@ -64,9 +64,9 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
    class ParkingLotWorkflow:
    ```
 
-   > **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton - it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention.
+   > _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton - it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention._
    >
-   > **Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D.
+   > _**Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D._
 
 2. **Configure the worker for versioning.** In `valet/worker.py`, create the deployment config from environment variables and pass it to the `Worker` (follow the `TODO (Part A)` comment):
 
@@ -119,7 +119,7 @@ make run-load-simulator
 
 ## Part B - Deploy a Breaking Change - No Patching Needed
 
-**Covers:** Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys
+*__Covers:__ Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys*
 
 Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic.
 
@@ -162,7 +162,7 @@ temporal worker deployment set-current-version \
    - **In-flight 1.0 workflows** stay pinned to version 1.0 - they complete on the 1.0 worker with no billing, no patching, no replay issues.
    - **`ParkingLotWorkflow`** (AUTO_UPGRADE) automatically migrates to v2.0 on its next workflow task.
 
-   > **This is the "aha" moment.** You just deployed a non-replay-safe change with zero patching. Version isolation replaced the `workflow.patched()` guard from Exercise 1.
+   > _**This is the "aha" moment.** You just deployed a non-replay-safe change with zero patching. Version isolation replaced the `workflow.patched()` guard from Exercise 1._
 
 5. Verify the deployment state:
 
@@ -176,7 +176,7 @@ temporal worker deployment describe --name valet
 
 ## Part C - Incident: Bad Deploy, Live Traffic
 
-**Covers:** Instant rollback (`set-current-version`), evacuating stuck workflows (`update-options`), fix-forward deployment, `WorkerDeploymentVersion` search attribute
+*__Covers:__ Instant rollback (`set-current-version`), evacuating stuck workflows (`update-options`), fix-forward deployment, `WorkerDeploymentVersion` search attribute*
 
 A developer ships v3.0 with a bug in the billing activity. Production traffic is flowing. Workflows start failing. You need to respond - now.
 
@@ -254,7 +254,7 @@ temporal workflow update-options \
     --yes
 ```
 
-   > **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries.
+   > _**Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries._
 
 9. **Watch them recover.** Go back to the Temporal Web UI. The workflows that were stuck on v3.0 are now completing successfully on v2.0. Those customers just got billed correctly.
 
@@ -290,7 +290,7 @@ temporal worker deployment set-current-version \
 
 New workflows now flow through v3.1 with working billing. Incident resolved.
 
-> **Recap what just happened.** A bad deploy hit production. Within seconds, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level.
+> _**Recap what just happened.** A bad deploy hit production. Within seconds, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level._
 
 ### Clean up
 
@@ -302,7 +302,7 @@ New workflows now flow through v3.1 with working billing. Incident resolved.
 
 ## Part D (Optional) - The AUTO_UPGRADE Catch
 
-**Covers:** AUTO_UPGRADE replay behavior, patching for auto-upgraded workflows, trampolining concept
+*__Covers:__ AUTO_UPGRADE replay behavior, patching for auto-upgraded workflows, trampolining concept*
 
 In Parts A-C, PINNED versioning meant no patching. But `ParkingLotWorkflow` uses AUTO_UPGRADE - when a new version becomes Current, it automatically migrates. That means it replays its existing history against your new code. If the commands don't match, you get an NDE.
 
@@ -342,7 +342,7 @@ temporal worker deployment set-current-version \
 
 4. **Watch the v4.0 worker logs.** The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determinism error (NDE). The v4.0 code expects a timer (the 2-second sleep), but the existing history doesn't have one.
 
-   > **Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE workflows *do* replay old history against new code - that's the whole point of auto-upgrading. So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1.
+   > _**Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE workflows *do* replay old history against new code - that's the whole point of auto-upgrading. So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1._
 
 ### Fix it with a patch
 
@@ -375,12 +375,12 @@ temporal worker deployment set-current-version \
 
 9. **Stop old workers.** Stop the v3.1 worker once drained. Keep v4.1 running or stop everything if you're done.
 
-> **The takeaway:** PINNED eliminates patching. AUTO_UPGRADE does not. When an AUTO_UPGRADE workflow migrates to new code, it replays its history - so the new code must be replay-compatible. Patching is still the tool for that.
+> _**The takeaway:** PINNED eliminates patching. AUTO_UPGRADE does not. When an AUTO_UPGRADE workflow migrates to new code, it replays its history - so the new code must be replay-compatible. Patching is still the tool for that._
 >
-> **But notice something.** `ParkingLotWorkflow` already uses `continue_as_new`. After the auto-upgrade, the *current run* replays with the patch guard. But the *next run* (after `continue_as_new`) starts fresh on v4.1 with no prior history to conflict with. The patch only matters during the transition of the current run. In a production workflow with frequent `continue_as_new` boundaries, these patches are naturally short-lived - they're only needed for the one run that bridges the version change.
+> _**But notice something.** `ParkingLotWorkflow` already uses `continue_as_new`. After the auto-upgrade, the *current run* replays with the patch guard. But the *next run* (after `continue_as_new`) starts fresh on v4.1 with no prior history to conflict with. The patch only matters during the transition of the current run. In a production workflow with frequent `continue_as_new` boundaries, these patches are naturally short-lived - they're only needed for the one run that bridges the version change._
 >
-> This is the core insight behind **trampolining** (upgrade on continue-as-new): if you made `ParkingLotWorkflow` PINNED instead of AUTO_UPGRADE, each run would complete on its original version with zero patching. At the `continue_as_new` boundary, the new run could start on the latest version. No patching, ever - just a clean handoff at the seam. For long-running workflows with natural `continue_as_new` boundaries, this is the best of both worlds.
+> _This is the core insight behind **trampolining** (upgrade on continue-as-new): if you made `ParkingLotWorkflow` PINNED instead of AUTO_UPGRADE, each run would complete on its original version with zero patching. At the `continue_as_new` boundary, the new run could start on the latest version. No patching, ever - just a clean handoff at the seam. For long-running workflows with natural `continue_as_new` boundaries, this is the best of both worlds._
 
 ---
 
-> **🎉 Congratulations!** You've completed Exercise 2.
+> _**🎉 Congratulations!** You've completed Exercise 2._
