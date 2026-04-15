@@ -26,7 +26,7 @@ with workflow.unsafe.imports_passed_through():
 
 
 # TODO (Part A): Add versioning_behavior=VersioningBehavior.PINNED to @workflow.defn
-@workflow.defn(versioning_behavior=VersioningBehavior.PINNED)
+@workflow.defn
 class ValetParkingWorkflow:
 
     @workflow.run
@@ -101,17 +101,17 @@ class ValetParkingWorkflow:
 
         # Bill the customer
         # TODO (Part B): Add bill_customer activity call here.
-        await workflow.execute_activity(
-           bill_customer,
-           BillCustomerInput(
-               license_plate=input.license_plate,
-               duration_seconds=input.trip_duration_seconds,
-               total_distance=(
-                   move_to_parking_space_result.distance_driven
-                   + move_to_valet_result.distance_driven
-               ),
-           ),
-           start_to_close_timeout=timedelta(seconds=10),
-        )
+        # await workflow.execute_activity(
+        #    bill_customer,
+        #    BillCustomerInput(
+        #        license_plate=input.license_plate,
+        #        duration_seconds=input.trip_duration_seconds,
+        #        total_distance=(
+        #            move_to_parking_space_result.distance_driven
+        #            + move_to_valet_result.distance_driven
+        #        ),
+        #    ),
+        #    start_to_close_timeout=timedelta(seconds=10),
+        # )
 
         return ValetParkingOutput()

@@ -8,28 +8,6 @@ spec:
     connectionRef:
       name: cluster-default
     temporalNamespace: default
-  # Initial rollout strategy (Part A)
-  # rollout:
-  #   strategy: AllAtOnce
-  # TODO (Part B): Switch to the Progressive rollout strategy
-  # rollout:
-  #   strategy: Progressive
-  #   steps:
-  #     - rampPercentage: 25
-  #       pauseDuration: 30s
-  #     - rampPercentage: 75
-  #       pauseDuration: 30s
-  # TODO (Part C): Switch to Progressive with a gate
-  # rollout:
-  #  strategy: Progressive
-  #  steps:
-  #    - rampPercentage: 25
-  #      pauseDuration: 30s
-  #    - rampPercentage: 75
-  #      pauseDuration: 30s
-  #  gate:
-  #    workflowType: "ValetGateWorkflow"
-  # TODO (Part D): Switch to the Manual rollout strategy
   rollout:
     strategy: Manual
   sunset:
@@ -40,8 +18,5 @@ spec:
     spec:
       containers:
         - name: valet-worker
-          # TODO (Part B): Switch to the 2.0 image
-          # TODO (Part C): Switch to the 3.0 image
-          # TODO (Part D): Switch to the 4.0 image
           image: valet-worker:4.0
           imagePullPolicy: IfNotPresent

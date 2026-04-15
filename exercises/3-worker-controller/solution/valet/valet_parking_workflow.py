@@ -45,7 +45,7 @@ class ValetParkingWorkflow:
             kind=LocationKind.PARKING_SPACE, id=parking_space_result.parking_space_number
         )
 
-        # Notify the owner their car is being parked
+        # Notify the owner their is being parked
         if workflow.patched("add-notify-owner"):
             await workflow.execute_activity(
                 notify_owner,
@@ -75,6 +75,16 @@ class ValetParkingWorkflow:
         # indicating they're ready for their car to be retrieved.
         # Here we simulate the owner's trip with a hardcoded timer.
         await workflow.sleep(input.trip_duration_seconds)
+
+        # Notify the owner their car is being retrieved
+        await workflow.execute_activity(
+            notify_owner,
+            NotifyOwnerInput(
+                license_plate=input.license_plate,
+                message="Your car is being retrieved!",
+            ),
+            start_to_close_timeout=timedelta(seconds=10),
+        )
 
         # Move car from parking space back to the original valet zone
         move_to_valet_result = await workflow.execute_activity(

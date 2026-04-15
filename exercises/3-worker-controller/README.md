@@ -24,45 +24,53 @@ Ensure `minikube`, `kubectl`, `helm`, and the `temporal` CLI are installed and a
 
 1. Close **all** terminals from the previous exercise, including the Temporal dev server.
 
-2. In a **new terminal**, start a fresh Temporal dev server:
+2. In a **new terminal**, navigate to the exercise directory:
+
+```bash
+cd exercises/3-worker-controller/practice
+```
+
+3. In another terminal, start a fresh Temporal dev server:
 
 ```bash
 temporal server start-dev
 ```
 
-> _**Note:** Starting a fresh dev server means we're working with a clean slate - no history from previous exercises. The code picks up where Exercise 2 left off, but we'll number our builds from 1.0 again so it's easy to track where we are in this exercise._
+> _**Note**: Keep this running for the rest of the exercise._
 
-3. In a new terminal, navigate to the exercise directory and run setup (starts minikube, installs the Worker Controller CRDs and controller, and applies the Temporal connection config):
+4. In another terminal, setup the minikube environment:
 
 ```bash
-cd exercises/3-worker-controller/practice
 make setup
 ```
 
+   This does three things:
+   - **Starts minikube** (if not already running) - a local, single-node Kubernetes cluster on your machine.
+   - **Installs the [Temporal Worker Controller](https://github.com/temporalio/temporal-worker-controller)** via Helm - a Kubernetes operator that watches for `TemporalWorkerDeployment` custom resources and manages versioned worker rollouts automatically. Helm is a package manager for Kubernetes.
+   - **Applies a `TemporalClusterConnection` resource** - a configuration object that tells the controller how to reach the Temporal dev server running on your host machine.
+
 ---
 
-## Part A - Deploy 1.0 and generate load
+## Part A - Deploy on Kubernetes
 
 *__Covers:__ `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy*
 
-Your valet parking system is moving to Kubernetes. Get the first version running via the Worker Controller and generate traffic so you have in-flight workflows to test against in later parts.
+Your valet parking system is moving to Kubernetes. Instead of starting workers by hand like you did in Exercises 1 and 2, you'll declare the desired state in a `TemporalWorkerDeployment` manifest and let the Worker Controller handle the rest - creating versioned Deployments, registering build IDs with Temporal, and managing pod lifecycles.
 
-1. Ensure you're still in the `exercises/3-worker-controller/practice` directory from Pre-Setup.
-
-2. Examine the k8s manifests:
-   - `k8s/temporal-connection.yaml` - points to the host Temporal server
-   - `k8s/valet-worker.yaml` - `TemporalWorkerDeployment` with `AllAtOnce` strategy
+1. Briefly examine the k8s manifests:
+   - `k8s/temporal-connection.yaml` - points to the host Temporal server. We will not not modify this manifest during this exercise.
+   - `k8s/valet-worker.yaml` -  This is the main manifest we'll modify throughout this exercise - updating it and re-applying is how we'll interact with the Kubernetes cluster.
 
 > _**Note:** The initial manifest uses `AllAtOnce` - every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B._
 
-3. Build and deploy 1.0:
+2. Build and deploy 1.0:
 
 ```bash
 make build tag=1.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-4. Verify the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
+3. Verify the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
 
 ```bash
 kubectl get twd
@@ -70,17 +78,17 @@ kubectl get deployments
 kubectl get pods
 ```
 
-   You should see the `valet-worker` TWD, a Deployment named something like `valet-worker-<hash>`, and pods in `Running` status with `1/1` ready. If pods show `0/1` or `CrashLoopBackOff`, check the logs with `kubectl logs <pod-name>`.
+   You should see the `valet-worker` TWD, a Deployment named something like `valet-worker-<build-id>-<hash>`, and pods in `Running` status with `1/1` ready.
 
-5. Start the load simulator:
+4. Start the load simulator:
 
 ```bash
 make run-load-simulator
 ```
 
-   Check the Temporal UI at [http://localhost:8233](http://localhost:8233) - workflows are flowing.
+> _**Note**: Keep this running for the rest of the exercise._
 
-   **Leave the load simulator running.**
+5. Check the Temporal UI at [http://localhost:8233](http://localhost:8233) - workflows are flowing.
 
 ---
 
@@ -106,7 +114,7 @@ Another feature request: notify car owners when their car is being retrieved. Th
    )
    ```
 
-2. Build the 2.0 image:
+2. Build the 2.0 image (in a new terminal):
 
 ```bash
 make build tag=2.0
@@ -128,9 +136,9 @@ make build tag=2.0
    image: valet-worker:2.0
    ```
 
-4. Think: you're applying a Progressive strategy with 25% as the first ramp step. What percentage of *currently in-flight* v1.0 workflows will move to v2.0? (Hint: they're PINNED.)
+> _**Think:** You're applying a Progressive strategy with 25% as the first ramp step. What percentage of *currently in-flight* v1.0 workflows will move to v2.0? (Hint: they're PINNED.)_
 
-   Apply the updated manifest:
+4. Apply the updated manifest:
 
 ```bash
 kubectl apply -f k8s/valet-worker.yaml
@@ -177,7 +185,7 @@ One possible use case for such a gate is verifying credentials after a secret ro
 
 > _**How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers while the version is still `Inactive`. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version stays `Inactive` and production is unaffected._
 
-1. Open `valet/gate_workflow.py` and read through the `ValetGateWorkflow`. It runs connectivity checks against the downstream services the valet workflow depends on:
+1. Briefly open `valet/gate_workflow.py` and read through the `ValetGateWorkflow`. It runs connectivity checks against the downstream services the valet workflow depends on:
 
    ```python
    await workflow.execute_activity(
@@ -191,7 +199,7 @@ One possible use case for such a gate is verifying credentials after a secret ro
    )
    ```
 
-2. Open `valet/activities.py` and look at `check_billing_service`. It's currently rigged to simulate a misconfigured API key:
+2. Briefly open `valet/activities.py` and look at `check_billing_service`. It's currently rigged to simulate a misconfigured API key:
 
    ```python
    raise ApplicationError(
@@ -223,36 +231,22 @@ One possible use case for such a gate is verifying credentials after a secret ro
    image: valet-worker:3.0
    ```
 
-4. Think: the gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?
+> _**Think:** The gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?_
 
-   Build and deploy v3.0:
+4. Build and deploy v3.0:
 
 ```bash
 make build tag=3.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-5. Watch the version state:
-
-```bash
-kubectl get twd -w
-```
-
-   v3.0 pods start and register, but the gate workflow **fails**. The version stays `Inactive` - no production traffic is affected.
-
-6. **Verify production is unharmed.** In another terminal, check on live traffic:
-
-```bash
-temporal workflow list --query 'ExecutionStatus="Running"'
-```
-
-   All running workflows are still on v2.0. The bad version never touched production.
-
-7. Find the failed gate workflow in the Temporal UI at [http://localhost:8233](http://localhost:8233). Open it and look at the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
+5. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
+   - Open the **Deployments** tab - v3.0 should show as `Inactive`. Production traffic is still routing to v2.0.
+   - Find the failed gate workflow and open it - the error shows `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 > _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
 
-8. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
+6. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
 
    ```python
    @activity.defn
@@ -262,25 +256,25 @@ temporal workflow list --query 'ExecutionStatus="Running"'
        return "ok"
    ```
 
-9. Rebuild and redeploy with a new image tag:
+7. Rebuild with a new image tag:
 
 ```bash
 make build tag=3.1
 ```
 
-10. Update `k8s/valet-worker.yaml` to use the fixed image:
+8. Update `k8s/valet-worker.yaml` to use the fixed image:
 
    ```yaml
    image: valet-worker:3.1
    ```
 
-11. Apply:
+9. Apply:
 
 ```bash
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-12. Watch the rollout this time:
+10. Watch the rollout this time:
 
 ```bash
 kubectl get twd -w
@@ -294,7 +288,7 @@ kubectl get twd -w
    5. The gate completes successfully
    6. Ramping begins (25% -> 75% -> 100%)
 
-13. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
+11. Find the successful gate workflow in the Temporal UI. Compare it to the failed one from v3.0.
 
 > _**Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically._
 
@@ -341,9 +335,9 @@ kubectl get twd -w
 
    v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
-5. Think: the version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?
+> _**Think:** The version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?_
 
-   Send synthetic traffic pinned to that version (replace the build ID with yours):
+5. Send synthetic traffic pinned to that version (replace the build ID with yours):
 
 ```bash
 make run-synthetic BUILD_ID=4.0-XXXX
@@ -351,7 +345,7 @@ make run-synthetic BUILD_ID=4.0-XXXX
 
    This starts a single `ValetParkingWorkflow` pinned to v4.0 with a short 5-second trip. It runs the full workflow end-to-end on v4.0's workers (parks the car, waits, retrieves it, bills the customer) and waits for it to complete successfully.
 
-   Open `valet/test_version.py` to see how pinning works - the key part is:
+5. Briefly open `valet/test_version.py` to see how pinning works - the key part is:
 
    ```python
    versioning_override=PinnedVersioningOverride(
@@ -359,7 +353,7 @@ make run-synthetic BUILD_ID=4.0-XXXX
    ),
    ```
 
-6. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
+7. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
    - Find the `test-4.0-XXXX` workflow - it completed on v4.0
    - Meanwhile, load simulator workflows are still running on v3.1
 

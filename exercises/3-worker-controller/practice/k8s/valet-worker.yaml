@@ -41,7 +41,7 @@ spec:
       containers:
         - name: valet-worker
           # TODO (Part B): Switch to the 2.0 image
-          # TODO (Part C): Switch to the 3.0 image
+          # TODO (Part C): Switch to the 3.0 image (and then, later, the 3.1 image)
           # TODO (Part D): Switch to the 4.0 image
           image: valet-worker:1.0
           imagePullPolicy: IfNotPresent

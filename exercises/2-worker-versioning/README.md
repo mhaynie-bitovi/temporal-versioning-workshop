@@ -373,7 +373,7 @@ temporal worker deployment set-current-version \
 
 ### Fix it with a patch
 
-5. Wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
+5. In `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
 
    ```python
     # Warm-up delay: let external systems sync before accepting requests

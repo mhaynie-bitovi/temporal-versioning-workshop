@@ -8,7 +8,7 @@ with workflow.unsafe.imports_passed_through():
 
 
 # TODO (Part A): Add versioning_behavior=VersioningBehavior.AUTO_UPGRADE to @workflow.defn
-@workflow.defn(versioning_behavior=VersioningBehavior.AUTO_UPGRADE)
+@workflow.defn
 class ParkingLotWorkflow:
 
     def __init__(self) -> None:
@@ -24,8 +24,7 @@ class ParkingLotWorkflow:
 
         # TODO (Part D): Allow a 2-second warmup delay
         # Warm-up delay: let external systems sync before accepting requests
-        if workflow.patched("add-warmup-delay"):
-            await workflow.sleep(2)
+        # await workflow.sleep(2)
 
         await workflow.wait_condition(lambda: self._should_continue_as_new)
         workflow.continue_as_new(ParkingLotInput(parking_spaces=self.parking_spaces))

@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from temporalio import activity
 from temporalio.client import Client, WithStartWorkflowOperation
+from temporalio.exceptions import ApplicationError
 from temporalio.common import WorkflowIDConflictPolicy
 
 from valet.models import (
@@ -106,3 +107,22 @@ async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
         f"({minutes:.1f} min, {input.total_distance:.1f} mi)"
     )
     return BillCustomerOutput(amount=amount)
+
+
+@activity.defn
+async def check_notification_service() -> str:
+    """Verify credentials for the notification service are valid."""
+    # In production, this would authenticate against the notification API
+    # (e.g. exchange an API key for a session token). A credential or
+    # configuration problem is permanent, not transient, so catching it
+    # here prevents a broken deploy from ever receiving traffic.
+    activity.logger.info("Notification service: credentials valid")
+    return "ok"
+
+
+@activity.defn
+async def check_billing_service() -> str:
+    """Verify credentials for the billing service are valid."""
+    # Simulate a misconfigured API key after a secret rotation.
+    activity.logger.info("Billing service: credentials valid")
+    return "ok"
