@@ -20,7 +20,7 @@ Now, normally when you deploy new code, the old code just... goes away. Your new
 
 If they don't match - if your new code tries to schedule an activity that the history doesn't have, or skips one that it does - you get a Non-Determinism Error. The workflow is stuck. It can't make progress. And this isn't one workflow. It's *every* workflow that started before your deploy and tries to replay against your new code.
 
-So picture this. You're running the valet parking system at the airport. Right now, 47 cars are parked. Each one has an active workflow - waiting for the owner to come back from their trip. Your client calls and says "we want to notify owners when their car is being parked." Sounds simple, right? Just add an activity call. But if you deploy that change, those 47 in-flight workflows are going to replay against your new code, hit that extra activity call, and blow up. 47 angry customers. 47 stuck cars.
+So picture this. You're running the valet parking system at the airport. Right now, 23 cars are parked. Each one has an active workflow - waiting for the owner to come back from their trip. Your client calls and says "we want to notify owners when their car is being parked." Sounds simple, right? Just add an activity call. But if you deploy that change, those 23 in-flight workflows are going to replay against your new code, hit that extra activity call, and blow up. 23 angry customers. 23 stuck cars.
 
 That's the problem we're solving today.
 
@@ -76,7 +76,7 @@ Here's the good news: a lot of changes are totally safe. You can change what hap
 
 There's a quick two-question test from the Temporal courses. One: does this change affect the sequence of commands? Two: will there be open executions when you deploy? If the answer to both is yes, you need versioning. If either is no, you're fine.
 
-In our valet example, we're adding a `notify_owner` activity call. That's a new command. And there are 47 cars parked - 47 open executions. So yes, we need versioning.
+In our valet example, we're adding a `notify_owner` activity call. That's a new command. And there are 23 cars parked - 23 open executions. So yes, we need versioning.
 
 ### Replay Testing (~3 min)
 
@@ -104,7 +104,7 @@ There's a lifecycle to patches - you put them in, eventually deprecate them when
 
 *[Slide: just the question]*
 
-"You just deployed new code. 47 cars are currently parked. What happens to the workflows that started on the old code?"
+"You just deployed new code. 23 cars are currently parked. What happens to the workflows that started on the old code?"
 
 *[Let the audience think for 10-15 seconds before moving on.]*
 
@@ -304,23 +304,7 @@ Thank you. Go ship some changes safely.
 
 > Mental model for the entire workshop. Shows progression from manual/code-level to automated/infrastructure-level.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '16px', 'background': '#ffffff', 'primaryColor': '#B0D4F1', 'primaryTextColor': '#333', 'lineColor': '#666', 'textColor': '#333'}}}%%
-graph LR
-    subgraph spectrum[" "]
-        direction LR
-        A["<b>Patching</b><br/>Code-level branching<br/><i>workflow.patched()</i>"]
-        B["<b>Worker Versioning</b><br/>Infrastructure routing<br/><i>PINNED / AUTO_UPGRADE</i>"]
-        C["<b>Worker Controller</b><br/>Automated deployments<br/><i>K8s operator + CRD</i>"]
-    end
-
-    A -->|"Less automation<br/>More code changes"| B
-    B -->|"More automation<br/>Less manual ops"| C
-
-    style A fill:#FFE4B5,stroke:#E8A317,stroke-width:2px,color:#333
-    style B fill:#B0D4F1,stroke:#4682B4,stroke-width:2px,color:#333
-    style C fill:#B5E6B5,stroke:#2E8B57,stroke-width:2px,color:#333
-```
+*[TODO: diagram]*
 
 ---
 
@@ -328,50 +312,7 @@ graph LR
 
 > THE diagram for Exercise 1. Show initial execution storing events, then replay checking commands against history. Invest time here.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff', 'actorBkg': '#B0D4F1', 'actorTextColor': '#333', 'signalColor': '#333', 'signalTextColor': '#333', 'noteBkgColor': '#fff3cd', 'noteTextColor': '#333', 'activationBorderColor': '#4682B4'}}}%%
-sequenceDiagram
-    participant WC as Workflow Code
-    participant SDK as Temporal SDK
-    participant S as Temporal Server
-
-    Note over WC,S: ── Initial Execution ──
-
-    WC->>SDK: execute_activity(request_space)
-    SDK->>S: ScheduleActivityTask
-    S-->>SDK: ActivityTaskScheduled ✓
-    S-->>SDK: ActivityTaskCompleted (result)
-    SDK-->>WC: return result
-
-    WC->>SDK: execute_activity(move_car)
-    SDK->>S: ScheduleActivityTask
-    S-->>SDK: ActivityTaskScheduled ✓
-    S-->>SDK: ActivityTaskCompleted (result)
-    SDK-->>WC: return result
-
-    WC->>SDK: sleep(trip_duration)
-    SDK->>S: StartTimer
-    S-->>SDK: TimerStarted ✓
-
-    Note over WC,S: ⏳ Owner away on trip...
-    Note over WC,S: ── Worker restarts, Replay begins ──
-
-    WC->>SDK: execute_activity(request_space)
-    SDK->>S: Check history position 1
-    S-->>SDK: ActivityTaskScheduled ✓ (match!)
-    SDK-->>WC: return stored result (no re-execution)
-
-    WC->>SDK: execute_activity(move_car)
-    SDK->>S: Check history position 2
-    S-->>SDK: ActivityTaskScheduled ✓ (match!)
-    SDK-->>WC: return stored result (no re-execution)
-
-    WC->>SDK: sleep(trip_duration)
-    SDK->>S: Check history position 3
-    S-->>SDK: TimerStarted ✓ (match!)
-
-    Note over WC,S: ✅ All commands match history - replay successful
-```
+*[TODO: diagram]*
 
 ---
 
@@ -379,29 +320,7 @@ sequenceDiagram
 
 > Companion to Diagram 2. Shows what happens when new code produces a different command than the history expects.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff', 'actorBkg': '#B0D4F1', 'actorTextColor': '#333', 'signalColor': '#333', 'signalTextColor': '#333', 'noteBkgColor': '#fff3cd', 'noteTextColor': '#333', 'activationBorderColor': '#4682B4'}}}%%
-sequenceDiagram
-    participant WC as New Workflow Code
-    participant SDK as Temporal SDK
-    participant S as History (from v1.0)
-
-    Note over WC,S: ── Replay with CHANGED code ──
-
-    WC->>SDK: execute_activity(request_space)
-    SDK->>S: Check history position 1
-    S-->>SDK: ActivityTaskScheduled ✓ (match!)
-    SDK-->>WC: return stored result
-
-    WC->>SDK: execute_activity(notify_owner) ⚡ NEW
-    SDK->>S: Check history position 2
-    S-->>SDK: Expected: ActivityTaskScheduled(move_car)
-
-    Note over WC,S: ❌ MISMATCH!<br/>Code says: schedule notify_owner<br/>History says: schedule move_car
-
-    SDK--xWC: Non-Determinism Error!
-    Note over WC,S: 💥 Workflow is STUCK.<br/>Cannot make progress.
-```
+*[TODO: diagram]*
 
 ---
 
@@ -409,42 +328,7 @@ sequenceDiagram
 
 > Shows how multiple worker versions coexist with Temporal routing traffic to the right version.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff', 'primaryColor': '#B0D4F1', 'primaryTextColor': '#333', 'lineColor': '#666', 'textColor': '#333'}}}%%
-graph TB
-    subgraph TS["Temporal Server"]
-        Router["Task Queue Router<br/><i>valet task queue</i>"]
-        Config["Routing Config<br/>Current: v2.0"]
-    end
-
-    subgraph V1["v1.0 Workers (Draining)"]
-        W1A["Worker"]
-        W1B["Worker"]
-    end
-
-    subgraph V2["v2.0 Workers (Current)"]
-        W2A["Worker"]
-        W2B["Worker"]
-        W2C["Worker"]
-    end
-
-    subgraph WF["Workflows"]
-        Old1["🅿️ Parked car #12<br/><i>Started on v1.0</i><br/><b>PINNED to v1.0</b>"]
-        Old2["🅿️ Parked car #23<br/><i>Started on v1.0</i><br/><b>PINNED to v1.0</b>"]
-        New1["🆕 Parked car #45<br/><i>Started on v2.0</i><br/><b>PINNED to v2.0</b>"]
-        New2["🆕 Parked car #46<br/><i>Started on v2.0</i><br/><b>PINNED to v2.0</b>"]
-    end
-
-    Config --> Router
-    Old1 --> Router --> V1
-    Old2 --> Router
-    New1 --> Router --> V2
-    New2 --> Router
-
-    style V1 fill:#FFE4B5,stroke:#E8A317,stroke-width:2px
-    style V2 fill:#B0D4F1,stroke:#4682B4,stroke-width:2px
-    style TS fill:#f5f5f5,stroke:#999,stroke-width:2px
-```
+*[TODO: diagram]*
 
 ---
 
@@ -452,41 +336,7 @@ graph TB
 
 > Shows the progression of a version through its states.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff', 'primaryColor': '#B0D4F1', 'primaryTextColor': '#333', 'lineColor': '#666', 'textColor': '#333', 'labelColor': '#333'}}}%%
-stateDiagram-v2
-    [*] --> Inactive : Worker polls with Build ID
-    Inactive --> Active : set-current-version<br/>or ramping begins
-
-    state Active {
-        Current : Current Version<br/>All new workflows route here
-        Ramping : Ramping Version<br/>Gets % of new workflows
-    }
-
-    Active --> Draining : New version becomes Current
-    Draining --> Drained : All PINNED workflows complete
-
-    Drained --> [*] : Safe to shut down workers
-
-    note right of Inactive
-        No production traffic.
-        Can receive workflows
-        via VersioningOverride only.
-    end note
-
-    note right of Draining
-        No new workflows.
-        In-flight PINNED workflows
-        still running.
-    end note
-
-    note right of Drained
-        All work complete.
-        May still need workers
-        for queries within
-        retention period.
-    end note
-```
+*[TODO: diagram]*
 
 ---
 
@@ -494,37 +344,7 @@ stateDiagram-v2
 
 > Shows the relationship between the TWD CRD, the controller, and the versioned K8s Deployments.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '14px', 'background': '#ffffff', 'primaryColor': '#B0D4F1', 'primaryTextColor': '#333', 'lineColor': '#666', 'textColor': '#333'}}}%%
-graph TB
-    subgraph K8s["Kubernetes Cluster"]
-        TWD["TemporalWorkerDeployment<br/><i>valet-worker</i><br/>image: valet:2.0<br/>strategy: Progressive"]
-
-        CTL["Worker Controller<br/><i>watches TWD resources</i>"]
-
-        subgraph Deps["Versioned Deployments (managed by controller)"]
-            D1["K8s Deployment<br/><b>valet:1.0</b><br/><i>2 pods, draining</i>"]
-            D2["K8s Deployment<br/><b>valet:2.0</b><br/><i>3 pods, ramping</i>"]
-        end
-    end
-
-    subgraph Temporal["Temporal Server"]
-        TQ["Task Queue: valet<br/>Current: 1.0 → 2.0<br/>Ramp: 75%"]
-    end
-
-    TWD -->|"reconcile"| CTL
-    CTL -->|"create/scale"| D1
-    CTL -->|"create/scale"| D2
-    CTL -->|"set-current-version<br/>manage ramp %"| TQ
-    D1 -->|"poll (build_id=1.0)"| TQ
-    D2 -->|"poll (build_id=2.0)"| TQ
-
-    style TWD fill:#E8D5F5,stroke:#7B2D8E,stroke-width:2px,color:#333
-    style CTL fill:#f5f5f5,stroke:#666,stroke-width:2px
-    style D1 fill:#FFE4B5,stroke:#E8A317,stroke-width:2px
-    style D2 fill:#B0D4F1,stroke:#4682B4,stroke-width:2px
-    style TQ fill:#B5E6B5,stroke:#2E8B57,stroke-width:2px,color:#333
-```
+*[TODO: diagram]*
 
 ---
 
@@ -532,35 +352,7 @@ graph TB
 
 > This is the slide people will photograph. Make it clear and opinionated.
 
-```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'fontSize': '13px', 'background': '#ffffff', 'primaryColor': '#B0D4F1', 'primaryTextColor': '#333', 'lineColor': '#666', 'textColor': '#333'}}}%%
-flowchart TD
-    A["Deploying a workflow<br/>code change?"] --> B{"Running workflows<br/>when you deploy?"}
-    B -->|No| DEPLOY["✅ Just deploy.<br/>No versioning needed."]
-    B -->|Yes| C{"Non-replay-safe<br/>change?"}
-    C -->|No| DEPLOY
-    C -->|Yes| D{"Can run multiple<br/>worker versions?"}
-    D -->|No| PATCH["🔧 <b>Patching</b><br/>workflow.patched()<br/><i>Works everywhere</i>"]
-    D -->|Yes| E{"Workflow<br/>lifetime?"}
-    E -->|"Short/Medium<br/>(completes between deploys)"| PINNED["📌 <b>PINNED</b><br/>No patching needed<br/><i>Old versions drain naturally</i>"]
-    E -->|"Long-running"| F{"Uses<br/>continue-as-new?"}
-    F -->|Yes| CAN["📌 <b>PINNED + Upgrade on CaN</b><br/>No patching within a run<br/><i>Upgrades at CaN boundary</i>"]
-    F -->|No| AUTO["🔄 <b>AUTO_UPGRADE + Patching</b><br/>Moves to new version<br/><i>Still needs replay-safe code</i>"]
-
-    PINNED --> G{"On Kubernetes?"}
-    CAN --> G
-    AUTO --> G
-    G -->|Yes| CTRL["🤖 <b>+ Worker Controller</b><br/>Automates rollouts,<br/>gates, draining"]
-    G -->|No| CLI["🖥️ <b>Manual CLI</b><br/>set-current-version,<br/>monitor, drain"]
-
-    style DEPLOY fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#333
-    style PATCH fill:#FFE4B5,stroke:#E8A317,stroke-width:2px,color:#333
-    style PINNED fill:#B0D4F1,stroke:#4682B4,stroke-width:2px,color:#333
-    style CAN fill:#B0D4F1,stroke:#4682B4,stroke-width:2px,color:#333
-    style AUTO fill:#E8D5F5,stroke:#7B2D8E,stroke-width:2px,color:#333
-    style CTRL fill:#B5E6B5,stroke:#2E8B57,stroke-width:2px,color:#333
-    style CLI fill:#f5f5f5,stroke:#666,stroke-width:2px
-```
+*[TODO: diagram]*
 
 ---
 
@@ -584,7 +376,7 @@ flowchart TD
 - **Transition:** "So what does that look like in practice?"
 
 ### Slide 3: The Problem (continued) - Valet Framing
-- **Notes:** "You're the valet parking team. 47 cars parked right now. Client wants a new feature. How do you ship it without breaking those 47 in-flight transactions? That's the problem we're solving today."
+- **Notes:** "You're the valet parking team. 23 cars parked right now. Client wants a new feature. How do you ship it without breaking those 23 in-flight transactions? That's the problem we're solving today."
 - **Time:** 1.5 min
 - **Transition:** "Let me show you the system."
 
@@ -647,7 +439,7 @@ flowchart TD
 - **Transition:** Pause and think slide
 
 ### Slide 13: Pause and Think
-- **Notes:** [Read the question, then wait 10-15 seconds of silence.] "You just deployed new code. 47 cars are currently parked. What happens to the workflows that started on the old code?"
+- **Notes:** [Read the question, then wait 10-15 seconds of silence.] "You just deployed new code. 23 cars are currently parked. What happens to the workflows that started on the old code?"
 - **Visual:** Just the question on screen. Nothing else.
 - **Time:** 30s
 - **Transition:** "Let's find out. Open your exercise."

@@ -1,6 +1,6 @@
 # Exercise 3: Worker Controller
 
-In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining old ones, responding to incidents. It worked, but it required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD.
+In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining old ones, responding to incidents. It worked, but durable execution never sleeps, and managing it manually required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD.
 
 **Temporal features and patterns covered:**
 - `TemporalWorkerDeployment` CRD

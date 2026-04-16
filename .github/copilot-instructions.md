@@ -29,6 +29,8 @@ Use **both** the Temporal Docs MCP server and the temporal-developer skill toget
 
 This is a **Temporal workflow workshop** using a valet parking example as the learning vehicle. The workshop teaches worker versioning, workflow patching, and Kubernetes deployment strategies through three progressive exercises. Each exercise has a `practice/` directory (where users make changes) and a `solution/` reference.
 
+After this workshop, the audience should believe that every workflow deploy is a versioning decision - and feel equipped with a graduated playbook that makes the right choice obvious and the execution mechanical.
+
 ## Setup
 
 ```sh
@@ -120,3 +122,4 @@ Exercises build upon one another sequentially:
 - [slide-strategy.md](../slide-strategy.md) - Guidelines for what belongs on slides vs. READMEs, plus an AI-assisted production pipeline
 - [slide-production-kit.md](../slide-production-kit.md) - Generated narrative scripts, Mermaid diagrams, speaker notes, and cheat sheet content
 - [slide-preparation-guide.md](../slide-preparation-guide.md) - Practical guide for building the slide deck: preparation phases, dry-run methodology, and tactical advice
+- [slide-visual-guidelines.md](../slide-visual-guidelines.md) - Five slide types (diagram, concept, narrative, question, progress) with concrete rules for what each slide should look like

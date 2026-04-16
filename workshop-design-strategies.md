@@ -10,7 +10,7 @@
 
 **Concrete decisions for this workshop:**
 
-- **Engineer a peak moment.** The best candidate is Exercise 2, Part C: the incident simulation. This is the dramatic scene of the workshop, where things go wrong and the audience fixes it live. Lean into the drama. When v3.0 breaks, make the audience *feel* the urgency. Use language like "production is down, workflows are stuck, let's go." This should feel like the climax of a movie.
+- **Engineer a peak moment.** The best candidate is Exercise 2, Part C: the incident simulation. This is the dramatic scene of the workshop, where things go wrong and the audience fixes it live. Lean into the drama. When v3.0 breaks, make the audience *feel* the urgency. Use language like "production is down, workflows are stuck, you need to act now." This should feel like the climax of a movie.
 - **Engineer the ending.** The wrap-up is currently a decision framework and resources slide. That's forgettable. Instead, end with a callback to the opening problem and a moment of reflection: "At the start, we said deploying to durable executions is the fundamental challenge. You just solved it with two versioning strategies, then automated the deployment lifecycle." Then a brief, genuinely impressive demo or visualization of what they built across all three exercises. People should walk out feeling competent and powerful, not just informed.
 - **Don't waste energy flattening the experience.** A mediocre middle is fine if the peak and ending land. Put production polish budget into the incident simulation and the closing.
 
@@ -22,9 +22,10 @@
 
 **Concrete decisions:**
 
-- **Frame the entire workshop as one story:** "You're the valet parking team. You have a production system. Over the next 3.5 hours, you're going to ship three releases, each one harder than the last, and you're going to handle a production incident." Not "Exercise 1, Exercise 2, Exercise 3."
-- **Use the valet metaphor ruthlessly.** Right now it's a learning vehicle. Make it the *setting*. "Your airport client just called. They want owner notifications before car retrieval. You need to ship this without breaking the 47 cars currently parked." Every exercise becomes a business requirement arriving, not an academic exercise.
-- **Rising stakes, not just rising complexity.** Exercise 1: you're figuring things out (low stakes, safety net of replay tests). Exercise 2: you're running in production with live traffic (medium stakes, then the incident). Exercise 3: you're automating so this never requires manual intervention again (high stakes, but now you have power). The emotional arc is: learning -> crisis -> mastery.
+- **Durable execution is the hero AND the villain.** Start with genuine wonder: durable execution is incredible - workflows survive anything. Then reveal the complication: the same durability that protects you is what makes deploying changes dangerous. This creates a single thematic engine that drives every beat of the workshop: each setback is caused by the same property that makes Temporal amazing.
+- **Oscillate between relief and sting.** Don't front-load the problem and go linear. Set up a repeating rhythm: learn a strategy, feel relief, then feel durability bite again at a higher level. Beat 1: durability is magic. Beat 2: ...it replays your code (sting). Beat 3: patching saves you (relief). Beat 4: ...patches accumulate because durability demands compatibility (sting). Beat 5: worker versioning eliminates patching (relief). Beat 6: ...durability pins broken workflows to broken code (THE PEAK). Beat 7: remediation tools. Beat 8: ...you're manually managing what durability demands (sting). Beat 9: automation (resolution).
+- **Use the valet metaphor ruthlessly.** It's not a learning vehicle - it's the *setting*. "Your airport client just called. They want owner notifications before car retrieval. Durable execution is keeping 23 parking transactions alive right now. You need to ship your change without breaking them." Every exercise becomes a business requirement arriving, not an academic exercise.
+- **The emotional arc is: wonder -> humility -> competence -> crisis -> mastery.** Exercise 1: durable execution is amazing, but it demands compatibility - here's how to handle it (learning, safety net of replay tests). Exercise 2: the tools get powerful, but durability's stakes keep rising - then the incident (crisis). Exercise 3: automate what durability demands (mastery, empowerment).
 
 ---
 
@@ -113,7 +114,7 @@ Workshop quality is usually improved more by cutting than by adding:
 
 ## Summary: The Five Things That Will Make This Legendary
 
-1. **Narrative arc** - one story with rising stakes, not three exercises
+1. **Narrative arc** - durable execution as hero and villain, oscillating between relief and sting, not three disconnected exercises
 2. **Engineered peak** - the Exercise 2 incident simulation should be unforgettable
 3. **Engineered ending** - close with reflection and empowerment, not a resource list
 4. **Let things break** - the failure-then-fix loop is the superpower; lean into it

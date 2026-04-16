@@ -1,6 +1,6 @@
 # Exercise 1: Workflow Patching
 
-Your valet parking system is running in production. A feature request arrives: notify car owners when their car is being parked. It sounds simple, but adding a new activity call is a non-replay-safe change - it will break any workflow that tries to replay against the new code. In this exercise, you'll learn to catch that with replay testing and fix it with `workflow.patched()`.
+Your valet parking system is running in production. Durable execution is keeping every parking transaction alive - through restarts, crashes, whatever you throw at it. Then a feature request arrives: notify car owners when their car is being parked. It sounds simple, but adding a new activity call is a non-replay-safe change - the same replay mechanism that makes your workflows durable will break if the new code doesn't match the recorded history. In this exercise, you'll learn to catch that with replay testing and fix it with `workflow.patched()`.
 
 **Temporal features and patterns covered:**
 - `workflow.patched()`
@@ -174,7 +174,7 @@ make run-starter
 
 6. Stop the worker when you're satisfied (Ctrl+C).
 
-> _**Looking ahead:** The notification feature is shipped and working. But notice the cost: you added a conditional branch to the workflow. Every future non-replay-safe change adds another one. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how Worker Versioning can eliminate patching entirely for most workflows._
+> _**Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open execution, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how Worker Versioning can eliminate patching entirely for most workflows._
 
 ---
 

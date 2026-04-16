@@ -1,6 +1,6 @@
 # Exercise 2: Worker Versioning
 
-Your valet parking system is growing. The notification feature from Exercise 1 shipped fine, but patching is already adding complexity - and the next feature request (billing) is on the way. Instead of accumulating more conditional branches, you'll switch to Worker Versioning where Temporal's infrastructure handles routing workflows to the right code version. Then, when a bad deploy hits production, you'll learn to respond in seconds.
+Your valet parking system is growing. The notification feature from Exercise 1 shipped fine - durable execution kept everything alive, and patching kept it compatible. But durability is demanding: every non-replay-safe change adds another conditional branch, and the next feature request (billing) is on the way. Instead of accumulating more compatibility code, you'll switch to Worker Versioning where Temporal's infrastructure handles routing workflows to the right code version. Then, when a bad deploy hits production, you'll discover that the same durability that protects your workflows can also trap them - and learn to respond in seconds.
 
 **Temporal features and patterns covered:**
 - `VersioningBehavior.PINNED`

@@ -75,7 +75,7 @@ Record yourself doing a dry run. Use AI to:
 - **Invest heavily in:** The replay diagram. This is THE concept for Exercise 1. Show what happens when a workflow replays, show the event history, show where the NDE happens. This one diagram teaches more than 10 bullet-point slides
 - **Keep light:** Patching API (one slide with a before/after code snippet, max). TDD/replay testing setup (one slide showing the test pattern)
 - **Skip on slides:** The full list of non-replay-safe changes (mention 2-3 examples verbally, promise a reference link). How to export history JSON (that's a README step)
-- **"Pause and think" moment:** "You just deployed new code. 47 cars are parked. What happens to the workflows that started on the old code?"
+- **"Pause and think" moment:** "You just deployed new code. 23 cars are parked. What happens to the workflows that started on the old code?"
 
 ### Exercise 2 Concepts (30 min) - This is the biggest and most important bridge
 - **Invest heavily in:** The rainbow deployment diagram (why multiple versions coexist), the Current vs. Ramping routing visual, the "what happens to in-flight workflows" animation
