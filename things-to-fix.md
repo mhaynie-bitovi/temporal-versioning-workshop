@@ -1,3 +1,6 @@
+# Things to Fix
+
+## Exercises
 - make sure imports are already setup
 - make sure TODO (Part X.3) formatting is consistent throughout workshop
 - add this is the end of the exercise banner to the end of the exercise readmes
@@ -8,3 +11,10 @@
 - make sure we've covered the worker deployments tab in the web ui
 - maybe add tip to users about how to "rename" terminals in vs code so they manage them effectively
 - add a note or find a way to fix opening terminals in the same directory to avoid repetative cd steps. Can split.
+
+
+## slides
+- title page title
+- agenda content/placement
+- section/sub-section titles continuity, story, narrative, arc
+- graphics for versioning strategies in miro

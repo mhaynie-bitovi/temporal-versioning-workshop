@@ -67,9 +67,9 @@ Record yourself doing a dry run. Use AI to:
 ## Striking the Balance: Specific Recommendations Per Section
 
 ### Opening (10 min) - 5-6 slides max
-- **Keep:** The problem framing ("you have production workflows, you need to change code, what could go wrong?"), the valet scenario intro, the 3-strategy overview (patching, worker versioning, controller)
+- **Keep:** The problem framing ("you have production workflows, you need to change code, what could go wrong?"), the valet scenario intro, the 3-strategy overview (workflow type versioning, patching, worker versioning) and how the controller automates worker versioning
 - **Cut:** Anything that's a "definition". Don't define what a workflow is - the audience is intermediate/expert
-- **Key slide:** A single visual showing "the versioning spectrum" from patching (simple, manual) to controller (automated, complex). This is the mental model for the whole workshop
+- **Key slide:** A single visual showing "the versioning spectrum" from manual/code-level (type versioning, patching) to infrastructure-managed (worker versioning) to automated (worker controller). This is the mental model for the whole workshop
 
 ### Exercise 1 Concepts (20 min) - 8-10 slides max
 - **Invest heavily in:** The replay diagram. This is THE concept for Exercise 1. Show what happens when a workflow replays, show the event history, show where the NDE happens. This one diagram teaches more than 10 bullet-point slides
@@ -91,7 +91,7 @@ Record yourself doing a dry run. Use AI to:
 - **Key slide:** Side-by-side of "Exercise 2: you typed 6 CLI commands" vs "Exercise 3: the controller does it for you"
 
 ### Wrap-up (15 min)
-- **The callback:** "At 1:30, we said deploying changes to durable executions is hard. You just did it three ways."
+- **The callback:** "At 1:30, we said deploying changes to durable executions is hard. You just solved it with two versioning strategies, then automated the deployment lifecycle."
 - **Decision framework:** The "which strategy when?" flowchart. Make it practical and opinionated
 - **"Monday morning" moment:** "Think about one workflow you own. Which strategy?" Give 30 seconds of silence
 - **Resources slide:** Links, not explanations

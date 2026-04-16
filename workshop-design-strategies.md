@@ -11,7 +11,7 @@
 **Concrete decisions for this workshop:**
 
 - **Engineer a peak moment.** The best candidate is Exercise 2, Part C: the incident simulation. This is the dramatic scene of the workshop, where things go wrong and the audience fixes it live. Lean into the drama. When v3.0 breaks, make the audience *feel* the urgency. Use language like "production is down, workflows are stuck, let's go." This should feel like the climax of a movie.
-- **Engineer the ending.** The wrap-up is currently a decision framework and resources slide. That's forgettable. Instead, end with a callback to the opening problem and a moment of reflection: "At the start, we said deploying to durable executions is the fundamental challenge. You just solved it three different ways." Then a brief, genuinely impressive demo or visualization of what they built across all three exercises. People should walk out feeling competent and powerful, not just informed.
+- **Engineer the ending.** The wrap-up is currently a decision framework and resources slide. That's forgettable. Instead, end with a callback to the opening problem and a moment of reflection: "At the start, we said deploying to durable executions is the fundamental challenge. You just solved it with two versioning strategies, then automated the deployment lifecycle." Then a brief, genuinely impressive demo or visualization of what they built across all three exercises. People should walk out feeling competent and powerful, not just informed.
 - **Don't waste energy flattening the experience.** A mediocre middle is fine if the peak and ending land. Put production polish budget into the incident simulation and the closing.
 
 ---

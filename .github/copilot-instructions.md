@@ -114,3 +114,9 @@ Exercises build upon one another sequentially:
 - [exercises/1-workflow-patching/README.md](../exercises/1-workflow-patching/README.md) - Exercise 1: Workflow Patching
 - [exercises/2-worker-versioning/README.md](../exercises/2-worker-versioning/README.md) - Exercise 2: Worker Versioning
 - [exercises/3-worker-controller/README.md](../exercises/3-worker-controller/README.md) - Exercise 3: Worker Controller
+- [workshop-plan.md](../workshop-plan.md) - Workshop format, schedule, exercise plan, learning objectives, and topic coverage audit
+- [workshop-design-strategies.md](../workshop-design-strategies.md) - Research-backed decisions on cognitive load, flow state, narrative arc, and engagement techniques
+- [slide-content.md](../slide-content.md) - Full slide content outline with schedule, per-section talking points, and diagram specs
+- [slide-strategy.md](../slide-strategy.md) - Guidelines for what belongs on slides vs. READMEs, plus an AI-assisted production pipeline
+- [slide-production-kit.md](../slide-production-kit.md) - Generated narrative scripts, Mermaid diagrams, speaker notes, and cheat sheet content
+- [slide-preparation-guide.md](../slide-preparation-guide.md) - Practical guide for building the slide deck: preparation phases, dry-run methodology, and tactical advice

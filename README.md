@@ -1,6 +1,6 @@
 # Temporal Versioning Workshop
 
-A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching workflow patching, worker versioning, and Kubernetes deployment strategies through a valet parking example.
+A hands-on workshop for [Replay 2026](https://replay.temporal.io/) teaching Temporal's versioning strategies (workflow patching and worker versioning) and automated deployment with the Worker Controller, through a valet parking example.
 
 ## Prerequisites
 
@@ -64,7 +64,9 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 ## Exercises
 
-The three exercises tell a single story: you're evolving a production valet parking system, and each exercise introduces a better way to ship changes safely. You'll start with patching - the foundational technique every Temporal developer needs to know - then move to Worker Versioning, which replaces most patching with infrastructure-managed routing, and finally automate the whole deployment lifecycle with the Worker Controller on Kubernetes.
+The three exercises tell a single story: you're evolving a production valet parking system, and the stakes rise as you go. You'll start with workflow patching - the foundational versioning technique every Temporal developer needs to know - then move to Worker Versioning, where Temporal's infrastructure handles routing between multiple simultaneously deployed worker versions (eliminating most patching). Finally, you'll automate the Worker Versioning deployment lifecycle with the Worker Controller on Kubernetes.
+
+> **The three versioning strategies.** Temporal offers three ways to handle non-replay-safe changes: (1) **Workflow Type Versioning** - create a new workflow type for each incompatible version, (2) **Workflow Patching** - use the patching API to branch execution based on markers in the event history, and (3) **Worker Versioning** - deploy multiple worker versions simultaneously and let Temporal route workflow tasks accordingly. This workshop focuses on Patching (Exercise 1) and Worker Versioning (Exercises 2-3). The Worker Controller in Exercise 3 is not a separate versioning strategy - it's automation tooling that manages the Worker Versioning deployment lifecycle on Kubernetes.
 
 ### [Exercise 1: Workflow Patching](exercises/1-workflow-patching/README.md)
 
