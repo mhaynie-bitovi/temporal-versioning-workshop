@@ -19,16 +19,15 @@ All animation code lives in `animations/` at the repo root.
 ```
 animations/
   src/
+    <scene-name>.ts                 # Project file (auto-discovered by vite.config.ts)
+    <scene-name>.meta               # Project metadata (auto-generated, includes exporter settings)
     styles/theme.ts                 # Shared colors, fonts, sizes
     scenes/
       <scene-name>/
         <scene-name>.tsx            # The scene code
-        <scene-name>.meta           # Motion Canvas metadata (auto-generated)
+        <scene-name>.meta           # Scene metadata (auto-generated)
         <scene-name>.spec.md        # LLM-readable description of the animation
-    project.ts                      # Registers all scenes
-  scripts/
-    render.mjs                      # Playwright-based headless renderer
-  vite.config.ts                    # Vite + Motion Canvas + ffmpeg plugin
+  vite.config.ts                    # Vite + Motion Canvas + ffmpeg plugin (auto-discovers src/*.ts)
   package.json
   output/                           # Rendered videos (gitignored)
 ```
@@ -106,15 +105,25 @@ export default makeScene2D(function* (view) {
 });
 ```
 
-### Step 4: Register in project.ts
+### Step 4: Create the project file
 
+Create `src/<scene-name>.ts` (at the `src/` root, not inside the scene folder):
 ```ts
+import { makeProject } from "@motion-canvas/core";
+
 import newScene from "./scenes/<scene-name>/<scene-name>?scene";
 
 export default makeProject({
-  scenes: [...existingScenes, newScene],
+  name: "<scene-name>",
+  scenes: [newScene],
 });
 ```
+
+The `name` field determines both the route URL in the dev server and the output filename.
+
+### Step 5: Verify in dev server
+
+The `vite.config.ts` uses a glob (`./src/*.ts`) to auto-discover all project files in `src/`. Just restart the dev server and the new project will appear on the home page.
 
 ## Animation Patterns
 
@@ -177,27 +186,54 @@ These color meanings are consistent across all animations:
 ```sh
 cd animations
 
-# Start dev server (preview at http://localhost:9000)
+# Start dev server (preview at http://localhost:5173)
 npm run dev
-# or: ./node_modules/.bin/vite
-
-# Render all scenes to video (skips unchanged)
-npm run render
-
-# Force re-render all scenes
-npm run render:force
-
-# Render a specific scene
-node scripts/render.mjs replay-flow
 ```
+
+## Rendering
+
+Rendering is done manually through the Motion Canvas web UI:
+
+1. Start the dev server with `npm run dev`
+2. Open the URL printed by Vite (typically `http://localhost:5173/`) in a browser
+3. The home page (`/`) shows a project index listing all scenes - select one
+4. The exporter is pre-configured to FFmpeg video in each project's `.meta` file
+5. Click the **Render** button
+6. Output videos are written to the `output/` directory, named after the project (e.g., `output/replay-flow.mp4`)
+
+### Exporter Configuration
+
+The default exporter is set in each `src/<scene-name>.meta` file under `rendering.exporter`:
+```json
+{
+  "rendering": {
+    "fps": 60,
+    "resolutionScale": 1,
+    "exporter": {
+      "name": "@motion-canvas/ffmpeg",
+      "options": {
+        "fastStart": true,
+        "includeAudio": true
+      }
+    }
+  }
+}
+```
+
+**Important notes:**
+- The `.meta` files are also editable from the Video Settings panel in the dev server UI.
+- `resolutionScale` multiplies the output resolution (2 = 3840x2160 output). Keep at 1 for ~500KB files; bump to 2 for better antialiasing if needed (~1MB files). Either size is fine for Google Slides (100MB limit per presentation).
+- Each project's `name` field in `makeProject()` determines the output filename. Without it, all projects would write to `project.mp4` and clobber each other.
 
 ## Key Conventions
 
-1. **One scene per folder** - scene file, meta file, and spec file together
-2. **Always use the shared theme** - never hardcode colors or font families
-3. **Write the spec.md first** - describe the animation before coding it
-4. **Keep animations simple** - boxes, arrows, labels, movement. No complex shapes.
-5. **Total duration 8-20 seconds** - these are slide accompaniments, not standalone videos
-6. **Meaningful color** - green=success, red=error
-7. **Dark background** - all scenes use `colors.bg` as the fill
-8. **Use kebab-case** for scene folder and file names (e.g., `replay-flow`, not `replayFlow`)
+1. **One scene per folder** - scene file, meta file, and spec file together under `src/scenes/<name>/`
+2. **Project files live at `src/` root** - `src/<name>.ts` and `src/<name>.meta`, not inside scene folders. This keeps route URLs top-level so the home button in the dev server UI works correctly.
+3. **Always use the shared theme** - never hardcode colors or font families
+4. **Write the spec.md first** - describe the animation before coding it
+5. **Keep animations simple** - boxes, arrows, labels, movement. No complex shapes.
+6. **Total duration 8-20 seconds** - these are slide accompaniments, not standalone videos
+7. **Meaningful color** - green=success, red=error
+8. **Dark background** - all scenes use `colors.bg` as the fill
+9. **Use kebab-case** for scene folder and file names (e.g., `replay-flow`, not `replayFlow`)
+10. **Set the `name` field** in `makeProject()` to match the scene name - this controls both the dev server route and the output filename

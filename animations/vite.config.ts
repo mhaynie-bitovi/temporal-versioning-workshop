@@ -7,9 +7,7 @@ const ffmpeg = typeof ffmpegModule === "function" ? ffmpegModule : (ffmpegModule
 
 export default defineConfig({
   plugins: [
-    motionCanvas({
-      project: ["./src/project.ts"],
-    }),
+    motionCanvas({ project: "./src/*.ts" }),
     ffmpeg(),
   ],
 });
