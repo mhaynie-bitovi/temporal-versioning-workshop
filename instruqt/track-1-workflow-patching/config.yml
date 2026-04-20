@@ -1,0 +1,5 @@
+version: "3"
+containers:
+- name: workstation
+  image: ubuntu:22.04
+  shell: /bin/bash

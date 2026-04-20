@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+
+# Kill any running Temporal processes
+pkill -f "temporal server" || true
+pkill -f "python" || true

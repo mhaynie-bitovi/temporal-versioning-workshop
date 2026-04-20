@@ -1,0 +1,23 @@
+slug: worker-versioning
+id: ""
+type: track
+title: "Worker Versioning"
+teaser: "Deploy non-replay-safe changes without patching using Temporal Worker Versioning"
+description: |-
+  Your valet parking system is growing. The notification feature shipped fine, but every
+  non-replay-safe change adds another conditional branch. The next feature (billing) is
+  on the way.
+
+  Instead of accumulating more compatibility code, you'll switch to Worker Versioning
+  where Temporal's infrastructure handles routing workflows to the right code version.
+  Then, when a bad deploy hits production, you'll discover that the same durability that
+  protects your workflows can also trap them - and learn to respond in seconds.
+icon: ""
+tags:
+- temporal
+- python
+- worker-versioning
+- rainbow-deploy
+owner: ORGANIZATION_SLUG
+developers: []
+maintenance: true

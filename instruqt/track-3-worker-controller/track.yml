@@ -1,0 +1,23 @@
+slug: worker-controller
+id: ""
+type: track
+title: "Worker Controller"
+teaser: "Automate versioned worker deployments on Kubernetes with the Temporal Worker Controller"
+description: |-
+  In the previous exercise, you managed versioned deployments by hand - starting workers,
+  setting current versions, draining old ones, responding to incidents. It worked, but
+  managing it manually required constant attention.
+
+  The Worker Controller automates all of that: progressive rollouts, draining, and
+  pre-deployment checks, all driven by a Kubernetes CRD. You'll deploy on minikube and
+  see how infrastructure-level automation handles what you did manually.
+icon: ""
+tags:
+- temporal
+- python
+- kubernetes
+- worker-controller
+- progressive-rollout
+owner: ORGANIZATION_SLUG
+developers: []
+maintenance: true

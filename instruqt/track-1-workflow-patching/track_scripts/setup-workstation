@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+
+# Wait for Instruqt bootstrap to complete
+until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
+    sleep 1
+done
+
+# ── System packages ──────────────────────────────────────────────────────────
+apt-get update -qq
+apt-get install -y -qq python3 python3-pip python3-venv git make curl > /dev/null
+
+# ── Temporal CLI ─────────────────────────────────────────────────────────────
+curl -sSf https://temporal.download/cli.sh | sh
+export PATH="$HOME/.temporalio/bin:$PATH"
+echo 'export PATH="$HOME/.temporalio/bin:$PATH"' >> /root/.bashrc
+
+# ── Clone the workshop repo ─────────────────────────────────────────────────
+git clone https://github.com/bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
+
+# ── Python virtual environment ───────────────────────────────────────────────
+cd /root/temporal-versioning-workshop
+python3 -m venv env
+env/bin/pip install -q -r requirements.txt
+
+# ── Start Temporal dev server (background) ───────────────────────────────────
+nohup temporal server start-dev > /tmp/temporal-server.log 2>&1 &
+
+# Wait for Temporal to be ready
+echo "Waiting for Temporal server..."
+for i in $(seq 1 30); do
+    if temporal workflow list --namespace default > /dev/null 2>&1; then
+        echo "Temporal server is ready."
+        break
+    fi
+    sleep 2
+done
+
+# ── Set default working directory ────────────────────────────────────────────
+echo 'cd /root/temporal-versioning-workshop/exercises/1-workflow-patching/practice' >> /root/.bashrc
+echo 'source /root/temporal-versioning-workshop/env/bin/activate' >> /root/.bashrc

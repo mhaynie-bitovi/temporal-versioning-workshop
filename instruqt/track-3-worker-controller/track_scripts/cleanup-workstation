@@ -1,0 +1,13 @@
+#!/bin/bash
+set -euo pipefail
+
+# Clean up Kubernetes resources
+cd /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
+make clean || true
+
+# Kill any running Temporal processes
+pkill -f "temporal server" || true
+pkill -f "python" || true
+
+# Stop minikube
+minikube stop || true

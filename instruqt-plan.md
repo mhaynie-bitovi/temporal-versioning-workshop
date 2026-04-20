@@ -144,6 +144,8 @@ Since you can't push to Instruqt directly, here are the options for closing the 
 4. Contact shares the track play URL back to you for testing
 5. Iterate
 
+`instruqt track push` handles both creation and updates. When the `id` field in `track.yml` is empty (`""`), the first push creates the track on Instruqt and populates the `id` field automatically. The contact should commit the updated `track.yml` (with the assigned ID) back to the repo so subsequent pushes update the same track rather than creating duplicates.
+
 **Pros:** Simple, no setup needed. **Cons:** Manual, requires contact for every iteration.
 
 ### Option B: GitHub Actions CI/CD (recommended long-term)
