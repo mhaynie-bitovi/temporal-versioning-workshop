@@ -33,7 +33,7 @@ rm minikube-linux-amd64
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 # ── Clone the workshop repo ─────────────────────────────────────────────────
-git clone https://github.com/bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
+git clone https://github.com/mhaynie-bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
 
 # ── Python virtual environment ───────────────────────────────────────────────
 cd /root/temporal-versioning-workshop

@@ -16,7 +16,7 @@ export PATH="$HOME/.temporalio/bin:$PATH"
 echo 'export PATH="$HOME/.temporalio/bin:$PATH"' >> /root/.bashrc
 
 # ── Clone the workshop repo ─────────────────────────────────────────────────
-git clone https://github.com/bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
+git clone https://github.com/mhaynie-bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
 
 # ── Python virtual environment ───────────────────────────────────────────────
 cd /root/temporal-versioning-workshop
