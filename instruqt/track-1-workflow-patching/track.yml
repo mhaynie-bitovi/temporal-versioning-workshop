@@ -18,6 +18,6 @@ tags:
 - python
 - workflow-patching
 - durable-execution
-owner: ORGANIZATION_SLUG
+owner: temporal
 developers: []
 maintenance: true

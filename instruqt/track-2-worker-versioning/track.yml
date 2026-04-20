@@ -18,6 +18,6 @@ tags:
 - python
 - worker-versioning
 - rainbow-deploy
-owner: ORGANIZATION_SLUG
+owner: temporal
 developers: []
 maintenance: true

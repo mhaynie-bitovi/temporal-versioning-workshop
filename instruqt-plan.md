@@ -140,11 +140,10 @@ Since you can't push to Instruqt directly, here are the options for closing the 
 
 1. You author all Instruqt files in `instruqt/` in this repo
 2. You commit and push to GitHub
-3. Contact pulls the repo and runs `instruqt track push` from each track directory
-4. Contact shares the track play URL back to you for testing
-5. Iterate
-
-`instruqt track push` handles both creation and updates. When the `id` field in `track.yml` is empty (`""`), the first push creates the track on Instruqt and populates the `id` field automatically. The contact should commit the updated `track.yml` (with the assigned ID) back to the repo so subsequent pushes update the same track rather than creating duplicates.
+3. Contact pulls the repo and runs `instruqt track push` from each track directory (this handles both creation and updates - when the `id` field in `track.yml` is empty, the first push creates the track and populates the `id` automatically)
+4. **Contact commits the updated `track.yml` files back to the repo** (they now contain the assigned IDs - without this, the next push creates duplicate tracks instead of updating)
+5. Contact shares the track play URL back to you for testing
+6. Iterate
 
 **Pros:** Simple, no setup needed. **Cons:** Manual, requires contact for every iteration.
 

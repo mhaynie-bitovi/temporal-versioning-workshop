@@ -18,6 +18,6 @@ tags:
 - kubernetes
 - worker-controller
 - progressive-rollout
-owner: ORGANIZATION_SLUG
+owner: temporal
 developers: []
 maintenance: true
