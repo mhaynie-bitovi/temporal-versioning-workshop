@@ -9,7 +9,7 @@ WORKER_CONTROLLER_VERSION ?= 0.24.0
 ## setup - start minikube, install Worker Controller (assumes Temporal dev server already running)
 setup:
 	@echo "==> Starting minikube..."
-	minikube start --driver=docker --cpus=2 --memory=2048
+	minikube start --driver=docker --cpus=2 --memory=2048 --force
 	@echo "==> Installing Worker Controller CRDs..."
 	kubectl create namespace $(WORKER_CONTROLLER_NAMESPACE) --dry-run=client -o yaml | kubectl apply -f -
 	helm upgrade --install temporal-worker-controller-crds \
