@@ -6,12 +6,14 @@ Convert the 3 workshop exercises into 3 Instruqt tracks, authored as code in thi
 
 ## Architecture Decisions
 
-### 3 Separate Tracks (not 1 mega-track)
+### 3 Separate Tracks, 1 Challenge Each
 
-- Each exercise has different infra needs (Exercise 3 needs minikube/nested virtualization)
-- Students can restart individual exercises independently
-- Instructor can assign tracks at the right workshop timeslot
-- Hot start pools can be managed per-track for the live event
+Each exercise maps to one Instruqt track with a **single challenge** containing the full exercise content (all Parts A-D). This avoids two problems with multi-challenge tracks:
+
+1. **Lifecycle scripts per challenge:** The exercises were designed with whole-exercise solutions, not per-part solutions. Splitting into per-part challenges would require writing granular setup/check/solve scripts for each part, which the exercises don't support.
+2. **Persistent terminals across challenges:** The exercises require long-running processes (workers, load simulators) that span multiple parts. Instruqt doesn't cleanly support persistent terminal sessions across challenge boundaries.
+
+A single challenge per track keeps the exercise content in its natural form and avoids these issues.
 
 ### Sandbox Types
 
@@ -21,14 +23,14 @@ Convert the 3 workshop exercises into 3 Instruqt tracks, authored as code in thi
 ### Code Delivery
 
 - Track setup script clones this repo into the sandbox
-- Each challenge's setup script navigates to the correct `practice/` directory
-- Solve scripts apply solution code to enable skip-ahead
+- Track setup script configures the working directory and Python venv activation in `.bashrc`
+- The single challenge's assignment.md contains the full exercise README content
 
 ### Assignment Content
 
-- Existing exercise README.md files split by Part into per-challenge `assignment.md` files
-- Pre-setup steps become the first challenge or are handled by track setup scripts
-- Each challenge gets tabs: 2-3 Terminals, 1 Code Editor (pointing at `practice/`), 1 Service tab (Temporal Web UI on port 8233)
+- Each track's single challenge `assignment.md` contains the full exercise README content, lightly adapted for the Instruqt environment (references to tabs instead of "new terminal", removal of "navigate to folder" and "start dev server" steps that are handled by track setup)
+- The exercise README.md files are the source of truth - the assignment.md files are derived from them
+- Each challenge gets tabs: 2-4 Terminals, 1 Code Editor (pointing at `practice/`), 1 Service tab (Temporal Web UI on port 8233)
 
 ---
 
@@ -39,96 +41,53 @@ instruqt/
 ├── track-1-workflow-patching/
 │   ├── track.yml
 │   ├── config.yml
-│   ├── assets/                              # Optional images/diagrams
 │   ├── track_scripts/
 │   │   ├── setup-workstation
 │   │   └── cleanup-workstation
-│   ├── 01-export-history-and-replay-tests/
-│   │   ├── assignment.md
-│   │   ├── setup-workstation
-│   │   ├── check-workstation
-│   │   └── solve-workstation
-│   ├── 02-break-replay-safety/
-│   │   ├── assignment.md
-│   │   ├── setup-workstation
-│   │   ├── check-workstation
-│   │   └── solve-workstation
-│   ├── 03-patch-for-safety/
-│   │   ├── assignment.md
-│   │   ├── setup-workstation
-│   │   ├── check-workstation
-│   │   └── solve-workstation
-│   └── 04-deploy-and-observe/
-│       ├── assignment.md
-│       ├── setup-workstation
-│       ├── check-workstation
-│       └── solve-workstation
+│   └── 01-workflow-patching/
+│       ├── assignment.md           # Full exercise content (Parts A-D)
+│       ├── setup-workstation       # Placeholder (exit 0)
+│       ├── check-workstation       # Placeholder (exit 0)
+│       └── solve-workstation       # Placeholder (exit 0)
 ├── track-2-worker-versioning/
 │   ├── track.yml
 │   ├── config.yml
 │   ├── track_scripts/
 │   │   ├── setup-workstation
 │   │   └── cleanup-workstation
-│   ├── 01-configure-versioning/
-│   ├── 02-rainbow-deploy/
-│   ├── 03-incident-response/
-│   └── 04-auto-upgrade-gotcha/
+│   └── 01-worker-versioning/
+│       ├── assignment.md           # Full exercise content (Parts A-D)
+│       ├── setup-workstation
+│       ├── check-workstation
+│       └── solve-workstation
 └── track-3-worker-controller/
     ├── track.yml
     ├── config.yml
     ├── track_scripts/
     │   ├── setup-workstation
     │   └── cleanup-workstation
-    ├── 01-deploy-on-kubernetes/
-    ├── 02-progressive-rollout/
-    ├── 03-gate-workflow/
-    └── 04-manual-pre-testing/
+    └── 01-worker-controller/
+        ├── assignment.md           # Full exercise content (Parts A-D)
+        ├── setup-workstation
+        ├── check-workstation
+        └── solve-workstation
 ```
-
-Each challenge directory under tracks 2 and 3 follows the same pattern as track 1 (assignment.md + setup/check/solve scripts).
 
 ---
 
-## Implementation Phases
+## Implementation Status
 
-### Phase 1: Scaffolding
+### Done
 
-1. Create the `instruqt/` directory with the 3 track subdirectories
-2. Write `track.yml` for each track (title, teaser, description, owner, `maintenance: true` until ready)
-3. Write `config.yml` for each track:
-   - Tracks 1-2: single container host named `workstation` (Ubuntu image, bash shell)
-   - Track 3: single VM host named `workstation` (Ubuntu 20.04+, `n1-standard-4`, `nested_virtualization: true`, bash shell)
+1. **Scaffolding:** `instruqt/` directory with 3 track subdirectories, `track.yml`, and `config.yml` for each track.
+2. **Track setup scripts:** `track_scripts/setup-workstation` and `cleanup-workstation` for all 3 tracks. These install dependencies, clone the repo, start the Temporal dev server, and configure the shell environment.
+3. **Challenge content:** Single `assignment.md` per track containing the full exercise README, adapted for Instruqt (tab references, pre-configured environment notes).
+4. **Lifecycle scripts:** Placeholder `exit 0` scripts for each challenge's setup, check, and solve. These can be revisited later if automated checking is desired.
 
-### Phase 2: Track Setup Scripts
+### Remaining
 
-4. Write `track_scripts/setup-workstation` for **tracks 1-2**:
-   - Wait for Instruqt bootstrap (`/opt/instruqt/bootstrap/host-bootstrap-completed`)
-   - Install Python 3, pip, git, make
-   - Install Temporal CLI
-   - Clone this repo
-   - Create Python venv and install requirements
-   - Start `temporal server start-dev` as a background process
-   - Health-check: wait for Temporal to respond on port 7233
-
-5. Write `track_scripts/setup-workstation` for **track 3**:
-   - Same as above, plus install Docker, minikube, kubectl, Helm
-   - Run `make setup` (minikube start + Worker Controller install)
-   - Health-check: verify minikube and Temporal are running
-
-### Phase 3: Challenge Content
-
-6. Split each exercise README.md by Part into per-challenge `assignment.md` files:
-   - YAML frontmatter: slug, type (`challenge`), title, tabs config, difficulty, timelimit
-   - Tabs: 2-3 Terminal tabs (`workstation`), 1 Code Editor tab (path: `/root/workshop/exercises/N/practice`), 1 Service tab (Temporal Web UI, port 8233)
-   - Markdown body: instructions from the corresponding Part of the README
-
-### Phase 4: Lifecycle Scripts (deferred)
-
-Create placeholder scripts (no-op `exit 0`) for each challenge's setup, check, and solve scripts. Revisit once exercise solutions are finalized and the specific checks/solves are clear.
-
-### Phase 5: Handoff & Workflow
-
-7. Document the handoff process in `instruqt/README.md`
+5. **Handoff & iteration:** Push tracks to Instruqt via CLI, test, and iterate (see Development Loop below).
+6. **Lifecycle script implementation (optional):** Write real check/solve scripts if automated validation or skip-ahead is desired.
 
 ---
 
@@ -160,7 +119,7 @@ Since you can't push to Instruqt directly, here are the options for closing the 
 
 1. Contact creates track shells via Web UI
 2. You describe changes, contact applies them
-3. 12+ challenges with scripts makes this impractical
+3. Even with single-challenge tracks, managing scripts and content via the Web UI is impractical
 
 **Recommendation:** Start with Option A for rapid iteration during development. Move to Option B before the workshop goes live so future updates are automated.
 
