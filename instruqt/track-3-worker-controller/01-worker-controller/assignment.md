@@ -8,12 +8,15 @@ tabs:
 - type: terminal
   title: Terminal 1
   hostname: workstation
+  working_directory: /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
 - type: terminal
   title: Terminal 2
   hostname: workstation
+  working_directory: /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
 - type: terminal
   title: Load Simulator
   hostname: workstation
+  working_directory: /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
 - type: code
   title: Code Editor
   hostname: workstation

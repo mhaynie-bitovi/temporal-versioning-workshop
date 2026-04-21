@@ -1,61 +1,73 @@
 #!/bin/bash
 set -euo pipefail
 
+log() { echo "===> [$(date +%H:%M:%S)] $*"; }
+
 # Wait for Instruqt bootstrap to complete
 until [ -f /opt/instruqt/bootstrap/host-bootstrap-completed ]; do
     sleep 1
 done
 
 # ── System packages ──────────────────────────────────────────────────────────
+log "Installing system packages..."
 apt-get update -qq
 apt-get install -y -qq python3 python3-pip python3-venv git make curl \
     apt-transport-https ca-certificates gnupg lsb-release > /dev/null
 
 # ── Temporal CLI ─────────────────────────────────────────────────────────────
+log "Installing Temporal CLI..."
 curl -sSf https://temporal.download/cli.sh | sh
 export PATH="$HOME/.temporalio/bin:$PATH"
 echo 'export PATH="$HOME/.temporalio/bin:$PATH"' >> /root/.bashrc
 
-# ── Docker ───────────────────────────────────────────────────────────────────
-curl -fsSL https://get.docker.com | sh
+# ── Helm ─────────────────────────────────────────────────────────────────────
+log "Installing Helm..."
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 # ── kubectl ──────────────────────────────────────────────────────────────────
+log "Installing kubectl..."
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
 
 # ── minikube ─────────────────────────────────────────────────────────────────
+log "Installing minikube..."
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 install minikube-linux-amd64 /usr/local/bin/minikube
 rm minikube-linux-amd64
 
-# ── Helm ─────────────────────────────────────────────────────────────────────
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
 # ── Clone the workshop repo ─────────────────────────────────────────────────
+log "Cloning workshop repo..."
 git clone https://github.com/mhaynie-bitovi/temporal-versioning-workshop.git /root/temporal-versioning-workshop
 
 # ── Python virtual environment ───────────────────────────────────────────────
+log "Setting up Python venv..."
 cd /root/temporal-versioning-workshop
 python3 -m venv env
 env/bin/pip install -q -r requirements.txt
 
 # ── Start Temporal dev server (background) ───────────────────────────────────
+log "Starting Temporal dev server..."
 nohup temporal server start-dev --ip 0.0.0.0 > /tmp/temporal-server.log 2>&1 &
 
 # Wait for Temporal to be ready
-echo "Waiting for Temporal server..."
+log "Waiting for Temporal server..."
 for i in $(seq 1 60); do
     if temporal workflow list --namespace default --address 127.0.0.1:7233 2>/dev/null | head -n1 > /dev/null 2>&1; then
-        echo "Temporal server is ready."
+        log "Temporal server is ready."
         break
+    fi
+    if [ "$i" -eq 60 ]; then
+        log "WARNING: Temporal server did not become ready in 60s, continuing anyway..."
     fi
     sleep 1
 done
 
 # ── Minikube + Worker Controller setup ───────────────────────────────────────
+log "Running make setup (minikube + Worker Controller)..."
 cd /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
 make setup
+log "make setup completed."
 
 # ── Set default working directory ────────────────────────────────────────────
 echo 'cd /root/temporal-versioning-workshop/exercises/3-worker-controller/practice' >> /root/.bashrc

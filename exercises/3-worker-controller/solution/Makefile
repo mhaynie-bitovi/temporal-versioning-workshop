@@ -22,14 +22,14 @@ setup:
 		--namespace cert-manager \
 		--create-namespace \
 		--set crds.enabled=true \
-		--wait
+		--wait --timeout 5m
 	@echo "==> Installing Worker Controller..."
 	helm upgrade --install temporal-worker-controller \
 		oci://docker.io/temporalio/temporal-worker-controller \
 		--version $(WORKER_CONTROLLER_VERSION) \
 		--namespace $(WORKER_CONTROLLER_NAMESPACE) \
 		--set replicas=1 \
-		--wait
+		--wait --timeout 5m
 	@echo "==> Applying TemporalConnection..."
 	kubectl apply -f k8s/temporal-connection.yaml
 	@echo "==> Setup complete. Verifying pods..."

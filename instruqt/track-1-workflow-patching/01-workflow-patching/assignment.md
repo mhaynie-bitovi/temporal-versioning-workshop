@@ -8,9 +8,11 @@ tabs:
 - type: terminal
   title: Worker
   hostname: workstation
+  working_directory: /root/temporal-versioning-workshop/exercises/1-workflow-patching/practice
 - type: terminal
   title: Terminal
   hostname: workstation
+  working_directory: /root/temporal-versioning-workshop/exercises/1-workflow-patching/practice
 - type: code
   title: Code Editor
   hostname: workstation
