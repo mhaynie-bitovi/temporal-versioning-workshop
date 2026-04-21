@@ -28,12 +28,12 @@ nohup temporal server start-dev --ip 0.0.0.0 > /tmp/temporal-server.log 2>&1 &
 
 # Wait for Temporal to be ready
 echo "Waiting for Temporal server..."
-for i in $(seq 1 30); do
-    if temporal workflow list --namespace default > /dev/null 2>&1; then
+for i in $(seq 1 60); do
+    if temporal workflow list --namespace default --address 127.0.0.1:7233 2>/dev/null | head -n1 > /dev/null 2>&1; then
         echo "Temporal server is ready."
         break
     fi
-    sleep 2
+    sleep 1
 done
 
 # ── Set default working directory ────────────────────────────────────────────

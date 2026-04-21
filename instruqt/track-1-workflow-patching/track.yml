@@ -21,3 +21,5 @@ tags:
 owner: temporal
 developers: []
 maintenance: false
+timelimit: 18000
+idle_timeout: 18000
