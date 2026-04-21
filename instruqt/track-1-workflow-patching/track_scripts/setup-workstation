@@ -24,7 +24,7 @@ python3 -m venv env
 env/bin/pip install -q -r requirements.txt
 
 # ── Start Temporal dev server (background) ───────────────────────────────────
-nohup temporal server start-dev > /tmp/temporal-server.log 2>&1 &
+nohup temporal server start-dev --ip 0.0.0.0 > /tmp/temporal-server.log 2>&1 &
 
 # Wait for Temporal to be ready
 echo "Waiting for Temporal server..."
