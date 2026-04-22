@@ -75,6 +75,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 > - Use the **Code Editor** tab to make changes to the code
 > - Use the various terminal tabs to run the commands found in the instructions
 > - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than boilerplate. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
+> - Avoid refreshing your host browser tab as it can interrupt the exercise environment. Use the refresh button at the top of the **Temporal UI** tab, or the refresh buttons within the Temporal Web UI itself.
 
 ---
 

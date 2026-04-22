@@ -11,9 +11,9 @@ with workflow.unsafe.imports_passed_through():
 class ValetGateWorkflow:
     """Pre-deployment gate: verifies downstream services are reachable.
 
-    The controller runs this workflow on the new version's workers while they
-    are still Inactive. If any check fails, the rollout is blocked and
-    production traffic is unaffected.
+    The controller runs this workflow on the new version's workers before
+    any production traffic is routed to them. If any check fails, the rollout
+    is blocked and production traffic is unaffected.
     """
 
     @workflow.run

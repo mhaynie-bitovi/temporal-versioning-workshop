@@ -3,14 +3,10 @@ slug: worker-controller
 id: ""
 type: challenge
 title: "Worker Controller"
-teaser: "Automate versioned worker deployments on Kubernetes with the Temporal Worker Controller"
+teaser: "In this track, you will automate versioned worker deployments on Kubernetes with the Temporal Worker Controller."
 tabs:
 - type: terminal
-  title: Terminal 1
-  hostname: workstation
-  working_directory: /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
-- type: terminal
-  title: Terminal 2
+  title: Terminal
   hostname: workstation
   working_directory: /root/temporal-versioning-workshop/exercises/3-worker-controller/practice
 - type: terminal
@@ -31,7 +27,7 @@ timelimit: 6000
 
 # Exercise 3: Worker Controller
 
-In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining old ones, responding to incidents. It worked, but durable execution never sleeps, and managing it manually required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD.
+In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining and stopping old ones. It worked, but durable execution never sleeps, and managing it manually required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD (Custom Resource Definition).
 
 **Temporal features and patterns covered:**
 - `TemporalWorkerDeployment` CRD
@@ -47,30 +43,43 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 - **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
 - **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.
 
-> **Note:** The Temporal dev server is already running in the background. minikube, kubectl, Helm, and the Worker Controller have been pre-installed and configured by the track setup. Your terminals start in the exercise's `practice/` directory with the Python virtual environment activated.
-
+> **Sandbox Notes:**
+> - Use the **Temporal UI** tab to interact with the Temporal Web UI
+> - Use the **Code Editor** tab to make changes to the code
+> - Use the **Terminal** tab to run the commands found in the instructions
+> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than boilerplate. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
+> - Avoid refreshing your host browser tab as it can interrupt the exercise environment. Use the refresh button at the top of the **Temporal UI** tab, or the refresh buttons within the Temporal Web UI itself.
 ---
 
 ## Part A - Deploy on Kubernetes
 
 *__Covers:__ `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy*
 
-Your valet parking system is moving to Kubernetes. Instead of starting workers by hand like you did in Exercises 1 and 2, you'll declare the desired state in a `TemporalWorkerDeployment` manifest and let the Worker Controller handle the rest - creating versioned Deployments, registering build IDs with Temporal, and managing pod lifecycles.
+Your valet parking system is moving to Kubernetes. Instead of starting workers by hand like you did in Exercises 1 and 2, you'll declare the desired state in a `TemporalWorkerDeployment` k8s manifest and let the Worker Controller handle the rest - creating versioned Deployments, registering build IDs with Temporal, and managing pod lifecycles.
 
 1. Briefly examine the k8s manifests in the **Code Editor** tab:
    - `k8s/temporal-connection.yaml` - points to the host Temporal server. We will not modify this manifest during this exercise.
-   - `k8s/valet-worker.yaml` - This is the main manifest we'll modify throughout this exercise - updating it and re-applying is how we'll interact with the Kubernetes cluster.
+   - `k8s/valet-worker.yaml` - This is the main manifest we'll modify throughout this exercise - updating it and re-applying it is how we'll make changes to the Kubernetes cluster.
 
-> _**Note:** The initial manifest uses `AllAtOnce` - every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B._
+> _**Note:** Initially, this manifest uses the `AllAtOnce` rollout strategy where every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B._
 
-2. Build and deploy 1.0 (in the **Terminal 1** tab):
+2. Build the v1.0 container image:
 
 ```bash
 make build tag=1.0
+```
+
+   This compiles your worker code into a Docker image tagged `valet-worker:1.0` inside minikube.
+
+3. Deploy the worker to Kubernetes by applying the manifest:
+
+```bash
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-3. Verify the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
+   The Worker Controller will read the `TemporalWorkerDeployment` resource, create a versioned Deployment, and start worker pods automatically.
+
+4. Verify that the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
 
 ```bash
 kubectl get twd
@@ -78,9 +87,12 @@ kubectl get deployments
 kubectl get pods
 ```
 
-   You should see the `valet-worker` TWD, a Deployment named something like `valet-worker-<build-id>-<hash>`, and pods in `Running` status with `1/1` ready.
+   You should see the following:
+   - A `valet-worker` TWD (Temporal Worker Deployment)
+   - A Deployment named something like `valet-worker-<build-id>-<hash>`
+   - And pods in `Running` status with `1/1` ready.
 
-4. Start the load simulator (in the **Load Simulator** tab):
+5. Start the load simulator (in the **Load Simulator** tab):
 
 ```bash
 make run-load-simulator
@@ -88,7 +100,9 @@ make run-load-simulator
 
 > _**Note:** Keep this running for the rest of the exercise._
 
-5. Check the **Temporal UI** tab - workflows are flowing.
+6. Check the **Temporal UI** tab - workflows are flowing.
+
+You now have a Temporal worker running on Kubernetes, managed entirely through a declarative manifest. You didn't start the worker process directly - you described the desired state in a CRD and the Worker Controller handled the rest. Next, you'll see how this approach handles non-replay-safe code changes.
 
 ---
 
@@ -100,7 +114,7 @@ Another feature request: notify car owners when their car is being retrieved. Th
 
 > _**Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it._
 
-1. Make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep (when the car is being retrieved), right before the move back to the valet zone:
+1. Make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep, and before the `move_car` activity:
 
    ```python
    # Notify the owner their car is being retrieved
@@ -114,13 +128,13 @@ Another feature request: notify car owners when their car is being retrieved. Th
    )
    ```
 
-2. Build the 2.0 image (in the **Terminal 1** tab):
+2. Build the 2.0 image:
 
 ```bash
 make build tag=2.0
 ```
 
-3. Update `k8s/valet-worker.yaml` in the **Code Editor** tab - change the strategy from `AllAtOnce` to `Progressive` with ramp steps, and update the image tag to `2.0`:
+3. Update `k8s/valet-worker.yaml` in the **Code Editor** tab - comment out the existing `AllAtOnce` rollout strategy from Part A. Uncomment the `Progressive` rollout strategy for Part B. And update the image tag to `2.0`:
 
    ```yaml
    rollout:
@@ -144,17 +158,7 @@ make build tag=2.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-5. Watch the progressive rollout unfold:
-
-```bash
-kubectl get twd -w
-```
-
-   - 2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
-   - After 30s, ramps to **75%**
-   - After another 30s, reaches **100%** - 2.0 becomes the Current Version
-
-6. While the rollout progresses, observe the rainbow deployment in the **Terminal 2** tab:
+5. Observe the rainbow deployment in action:
 
 ```bash
 kubectl get deployments
@@ -164,9 +168,23 @@ kubectl get deployments
    - **1.0 workers** continue serving in-flight workflows pinned to version 1.0
    - **2.0 workers** serve new workflow executions (at whatever the current ramp percentage is)
 
+6. Now watch the progressive rollout unfold:
+
+```bash
+kubectl get twd -w
+```
+
+> _**Note:** Press `Ctrl+C` when you're done watching._
+
+   This prints the `TemporalWorkerDeployment` status and the `-w` (watch) flag keeps it running, printing a new line each time the status changes. You'll see columns like `CURRENT VERSION`, `RAMPING VERSION`, and `RAMP PERCENTAGE` update in real time as the rollout progresses.
+
+   - v2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
+   - After 30s, ramps to **75%**
+   - After another 30s, reaches **100%** - 2.0 becomes the Current Version
+
 7. Verify in the **Temporal UI** tab:
-   - New workflows include a "Your car is being retrieved!" notification before the return trip
-   - Older in-flight workflows complete without it
+   - New workflows (v2.0) include a "Your car is being retrieved!" notification before the return trip
+   - Older in-flight workflows (v1.0) complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
 
 > _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
@@ -183,7 +201,7 @@ Progressive rollouts ramp traffic automatically, but what if the new version has
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
-> _**How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers while the version is still `Inactive`. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version stays `Inactive` and production is unaffected._
+> _**How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers before any production traffic is routed to them. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version never receives production traffic._
 
 1. Briefly open `valet/gate_workflow.py` in the **Code Editor** tab and read through the `ValetGateWorkflow`. It runs connectivity checks against the downstream services the valet workflow depends on:
 
@@ -233,7 +251,7 @@ One possible use case for such a gate is verifying credentials after a secret ro
 
 > _**Think:** The gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?_
 
-4. Build and deploy v3.0 (in the **Terminal 1** tab):
+4. Build and deploy v3.0:
 
 ```bash
 make build tag=3.0
@@ -241,7 +259,7 @@ kubectl apply -f k8s/valet-worker.yaml
 ```
 
 5. Verify in the **Temporal UI** tab:
-   - Open the **Deployments** tab - v3.0 should show as `Inactive`. Production traffic is still routing to v2.0.
+   - Open the **Deployments** tab - v3.0 should show that it is not receiving production traffic. v2.0 is still the current version.
    - Find the failed gate workflow and open it - the error shows `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 > _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
@@ -256,7 +274,7 @@ kubectl apply -f k8s/valet-worker.yaml
        return "ok"
    ```
 
-7. Rebuild with a new image tag (in the **Terminal 1** tab):
+7. Rebuild with a new image tag:
 
 ```bash
 make build tag=3.1
@@ -280,8 +298,10 @@ kubectl apply -f k8s/valet-worker.yaml
 kubectl get twd -w
 ```
 
+> _**Note:** Press `Ctrl+C` when you're done watching._
+
    Observe the sequence:
-   1. v3.1 pods start and register with Temporal (Inactive)
+   1. v3.1 pods start and register with Temporal
    2. The controller starts a `ValetGateWorkflow` on v3.1
    3. The gate checks the notification service - passes
    4. The gate checks the billing service - passes this time
@@ -302,7 +322,7 @@ Not every deployment involves a workflow code change. You might be updating a de
 
 > _**Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test._
 
-1. No code changes are needed for this deploy. Build the 4.0 image as-is (in the **Terminal 1** tab):
+1. No code changes are needed for this deploy. Build the 4.0 image as-is:
 
 ```bash
 make build tag=4.0
@@ -332,6 +352,8 @@ kubectl apply -f k8s/valet-worker.yaml
 ```bash
 kubectl get twd -w
 ```
+
+> _**Note:** Press `Ctrl+C` when you're done watching._
 
    v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
@@ -363,4 +385,4 @@ make run-synthetic BUILD_ID=4.0-XXXX
 
 ---
 
-> _**Congratulations!** You've completed Exercise 3._
+> _**Congratulations!** You've completed this exercise!_
