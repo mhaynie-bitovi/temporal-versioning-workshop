@@ -133,7 +133,7 @@ make run-tests
 
    **The test should fail** with a non-determinism error.
 
-   **That error is exactly what would happen in production.** If you deployed this change, every in-flight workflow that replayed against the new code would fail with this same error. Not just one - every workflow that started before your deploy. The replay test caught it before it got that far.
+   **That error is exactly what would happen in production.** If you deployed this change, any in-flight workflow that has already progressed past the point where the new activity is inserted would fail with this same error during replay. The replay test caught it before it got that far.
 
 ---
 

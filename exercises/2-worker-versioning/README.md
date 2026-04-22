@@ -7,6 +7,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 - `VersioningBehavior.AUTO_UPGRADE`
 - `WorkerDeploymentConfig`
 - `set-current-version`
+- `set-ramping-version`
 - `update-options`
 - Rainbow deployments
 - Emergency rollback and evacuation
@@ -14,7 +15,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 ## Summary
 
 - **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
-- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drain.
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
@@ -130,9 +131,9 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
 ## Part B - Deploy a Breaking Change - No Patching Needed
 
-*__Covers:__ Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys*
+*__Covers:__ Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys, version lifecycle statuses*
 
-Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic.
+Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic. Along the way, you'll see how Temporal tracks each version through its lifecycle - from active to drained.
 
 1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
@@ -175,9 +176,20 @@ temporal worker deployment set-current-version \
 
    > _**Nice!** You just deployed a non-replay-safe change without needing any patching._
 
-5. **Wait for v1.0 to drain.** After setting v2.0 as Current, no new workflows are routed to v1.0. But existing PINNED workflows are still running there. Once every in-flight v1.0 workflow completes, the version is considered "drained" - meaning it has no remaining work and its worker can be safely shut down.
+   > **Version Statuses** 
+   > Temporal tracks each deployment version through a [lifecycle](https://docs.temporal.io/worker-versioning#versioning-statuses) which progresses through the following statuses:
+   > - **Inactive**: worker registered, not yet serving traffic
+   > - **Active**: currently Current or Ramping, accepting new workflows
+   > - **Draining**: no longer active, but still has open pinned workflows
+   > - **Drained**: all pinned workflows completed, safe to decommission
+   > 
+   > In the next step, you'll watch v1.0 move from Draining to Drained in real time.
 
-   Since the load simulator creates short-lived workflows (5-30 second trips), draining should only take about 30 seconds.
+5. **Wait for v1.0 to drain.** After setting v2.0 as Current, no new workflows are routed to v1.0. But existing PINNED workflows are still running there.
+
+    Once there are no more open workflows on v1.0, the version is considered "drained" — meaning it has no remaining work and its worker can be safely shut down. In this exercise, that's just the PINNED `ValetParkingWorkflow` executions finishing their trips. The `ParkingLotWorkflow` executions already migrated to v2.0 when you set it as current.
+
+    Since the load simulator creates short-lived workflows (5-30 second trips), draining should only take about 30 seconds.
 
    **Check drain status** using either method:
 
@@ -190,6 +202,8 @@ temporal worker deployment set-current-version \
    - **Web UI:** Open [http://localhost:8233](http://localhost:8233) and navigate to the **Deployments** tab. Click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
 
 6. Once v1.0 is drained, **stop the 1.0 worker** (Ctrl+C in its terminal).
+
+> _**Note:** In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy._
 
 ---
 
@@ -369,7 +383,7 @@ temporal worker deployment set-current-version \
 
 4. **Watch the v4.0 worker logs.** The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determinism error (NDE). The v4.0 code expects a timer (the 2-second sleep), but the existing history doesn't have one.
 
-   > _**Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE workflows *do* replay old history against new code - that's the whole point of auto-upgrading. So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1._
+   > _**Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE moves workflows to the latest code, which involves replaying old history against the new code - and that opens us up to the risk of NDEs (non-determinism errors). So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1._
 
 ### Fix it with a patch
 

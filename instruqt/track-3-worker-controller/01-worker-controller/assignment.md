@@ -169,7 +169,7 @@ kubectl get deployments
    - Older in-flight workflows complete without it
    - Over time, 1.0 workers scale down as their pinned workflows finish
 
-> _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
+> _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
 
 > _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely._
 
