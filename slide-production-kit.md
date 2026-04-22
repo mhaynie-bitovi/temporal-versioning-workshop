@@ -144,7 +144,7 @@ AUTO_UPGRADE means: when a new version becomes current, move this workflow to th
 
 So when do you use which? PINNED is great for workflows that complete in a reasonable timeframe - minutes, hours, maybe a few days. Your parking transactions, for example. They'll finish on their original version and you never think about them again.
 
-AUTO_UPGRADE is for workflows that run indefinitely or for very long periods and need to pick up new behavior. Our ParkingLotWorkflow, for example - it's an immortal singleton. You can't wait for it to "finish" because it never does. You need it to move to the new version.
+AUTO_UPGRADE is for workflows that run indefinitely or for very long periods and need to pick up new behavior. Our ParkingLotWorkflow, for example - it's an Entity Workflow. You can't wait for it to "finish" because it never does. You need it to move to the new version.
 
 In our workshop, ValetParkingWorkflow is PINNED. ParkingLotWorkflow is AUTO_UPGRADE. Watch how they behave differently.
 

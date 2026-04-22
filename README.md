@@ -82,7 +82,7 @@ Your first feature request arrives: notify car owners when their car is being pa
 Feature requests keep coming, and patching is starting to accumulate. You switch to Worker Versioning, where Temporal's infrastructure handles routing instead of conditional code paths. Then a bad deploy hits production.
 
 - **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
-- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0 using PINNED versioning.
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 

@@ -2,7 +2,7 @@ slug: worker-controller
 id: "tbjvecpzjne7"
 type: track
 title: "Worker Controller"
-teaser: "Automate versioned worker deployments on Kubernetes with the Temporal Worker Controller"
+teaser: "In this track, you will automate versioned worker deployments on Kubernetes with the Temporal Worker Controller."
 description: |-
   In the previous exercise, you managed versioned deployments by hand - starting workers,
   setting current versions, draining old ones, responding to incidents. It worked, but

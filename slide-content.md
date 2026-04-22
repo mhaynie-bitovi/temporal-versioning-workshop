@@ -164,7 +164,7 @@
   | Behavior | Stays on original version until completion | Moves to new version on next workflow task |
   | Patching needed? | Never | Yes (replays old history against new code) |
   | Best for | Short-to-medium workflows (minutes to hours) | Long-running workflows (weeks to years) |
-  | In our workshop | ValetParkingWorkflow (each parking transaction) | ParkingLotWorkflow (immortal singleton) |
+  | In our workshop | ValetParkingWorkflow (each parking transaction) | ParkingLotWorkflow (Entity Workflow) |
   | Key benefit | Eliminates version compatibility complexity | Keeps long-running workflows on latest code |
 - Decision guide (from official docs):
   | Workflow Duration | Uses CaN? | Recommended | Patching? |

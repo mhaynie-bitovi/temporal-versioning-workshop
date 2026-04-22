@@ -2,7 +2,7 @@ slug: worker-versioning
 id: "q7wxtzdbq6ja"
 type: track
 title: "Worker Versioning"
-teaser: "Deploy non-replay-safe changes without patching using Temporal Worker Versioning"
+teaser: "In this track, you will deploy non-replay-safe changes using Temporal Worker Versioning."
 description: |-
   Your valet parking system is growing. The notification feature shipped fine, but every
   non-replay-safe change adds another conditional branch. The next feature (billing) is

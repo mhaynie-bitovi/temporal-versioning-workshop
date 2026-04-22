@@ -15,7 +15,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 ## Summary
 
 - **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
-- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drained.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0 using PINNED versioning. Monitor version statuses through drained.
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
@@ -65,7 +65,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
    class ParkingLotWorkflow:
    ```
 
-   > _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an immortal singleton - it never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the singleton on the latest version without manual intervention._
+   > _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an [Entity Workflow](https://docs.temporal.io/workflow-execution/continue-as-new) - it represents a durable object (the parking lot) and never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the entity on the latest version without manual intervention._
    >
    > _**Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D._
 
@@ -104,7 +104,9 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
        --yes
    ```
 
-5. **Inspect the deployment** to confirm everything is wired up:
+   > _**Note:** In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy._
+
+5. **Inspect the deployment** to confirm everything is wired up (in the **Terminal** tab):
 
    ```bash
    temporal worker deployment describe --name valet
@@ -122,16 +124,16 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
 7. **Verify versioning is working** in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). Configure the table columns so versioning info is visible at a glance:
 
-   - Click the **gear icon** at the bottom of the workflows table.
+   - Click the **gear icon** at the bottom of the workflows table. (You may need to refresh if you don't see any workflows listed yet).
    - Add the following columns: **Deployment**, **Deployment Version**, and **Versioning Behavior**.
 
    You should now see `valet` as the Deployment, `valet:1.0` as the Deployment Version, and `Pinned` or `AutoUpgrade` as the Versioning Behavior for each workflow. This confirms Temporal is routing traffic through your versioned worker - every workflow knows which version it belongs to, and that metadata is visible and queryable.
 
 ---
 
-## Part B - Deploy a Breaking Change - No Patching Needed
+## Part B - Deploy a Non-Replay-Safe Change with PINNED Versioning
 
-*__Covers:__ Rainbow deployment with PINNED workflows, version coexistence, zero-patching deploys, version lifecycle statuses*
+*__Covers:__ Rainbow deployment with PINNED workflows, version coexistence, version lifecycle statuses*
 
 Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic. Along the way, you'll see how Temporal tracks each version through its lifecycle - from active to drained.
 
@@ -202,8 +204,6 @@ temporal worker deployment set-current-version \
    - **Web UI:** Open [http://localhost:8233](http://localhost:8233) and navigate to the **Deployments** tab. Click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
 
 6. Once v1.0 is drained, **stop the 1.0 worker** (Ctrl+C in its terminal).
-
-> _**Note:** In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy._
 
 ---
 
@@ -280,6 +280,8 @@ temporal worker deployment set-current-version \
 
 ### Rescue the stuck workflows
 
+   Rollback stopped the bleeding for new workflows, but the PINNED workflows that already started on v3.0 are still retrying the broken activity in a loop. They won't move on their own because PINNED means "stay on this version forever." You need to explicitly override their version assignment, moving them from the broken v3.0 to the working v2.0. Temporal's `update-options` command lets you do this in bulk with a single query.
+
 8. Evacuate them all to v2.0 in one command:
 
 ```bash
@@ -353,7 +355,7 @@ Let's see it happen.
 
 ### Make a non-replay-safe change to ParkingLotWorkflow
 
-1. In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized (the `timedelta` import is already available via `temporalio`):
+1. In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized:
 
    ```python
    # Warm-up delay: let external systems sync before accepting requests
@@ -395,7 +397,7 @@ temporal worker deployment set-current-version \
        await workflow.sleep(2)
    ```
 
-6. **Stop the v4.0 worker** (Ctrl+C) and start v4.1:
+6. **Stop the v4.0 worker** (Ctrl+C) and start v4.1 (in a **new terminal**):
 
 ```bash
 make run-worker BUILD_ID=4.1
