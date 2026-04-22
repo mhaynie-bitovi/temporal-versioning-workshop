@@ -66,7 +66,11 @@ Activities like `move_car`, `request_parking_space`, and `release_parking_space`
 
 The three exercises tell a single story: you're evolving a production valet parking system, and the stakes rise as you go. You'll start with workflow patching - the foundational versioning technique every Temporal developer needs to know - then move to Worker Versioning, where Temporal's infrastructure handles routing between multiple simultaneously deployed worker versions (eliminating most patching). Finally, you'll automate the Worker Versioning deployment lifecycle with the Worker Controller on Kubernetes.
 
-> **The three versioning strategies.** Temporal offers three ways to handle non-replay-safe changes: (1) **Workflow Type Versioning** - create a new workflow type for each incompatible version, (2) **Workflow Patching** - use the patching API to branch execution based on markers in the event history, and (3) **Worker Versioning** - deploy multiple worker versions simultaneously and let Temporal route workflow tasks accordingly. This workshop focuses on Patching (Exercise 1) and Worker Versioning (Exercises 2-3). The Worker Controller in Exercise 3 is not a separate versioning strategy - it's automation tooling that manages the Worker Versioning deployment lifecycle on Kubernetes.
+> **The versioning strategies.** There are two first-class ways to handle non-replay-safe changes in Temporal:
+> 1. **Workflow Patching** - use the patching API to branch execution based on markers in the event history
+> 2. **Worker Versioning** - deploy multiple worker versions simultaneously and let Temporal route workflow tasks accordingly.
+> 
+> A third approach, sometimes called **Workflow Type Versioning** (creating a new workflow type for each incompatible version), is more of a workaround than a built-in strategy. It sidesteps the problem rather than solving it. This workshop focuses on Patching (Exercise 1) and Worker Versioning (Exercises 2-3). The Worker Controller in Exercise 3 is not a separate versioning strategy - it's automation tooling that manages the Worker Versioning deployment lifecycle on Kubernetes.
 
 ### [Exercise 1: Workflow Patching](exercises/1-workflow-patching/README.md)
 
