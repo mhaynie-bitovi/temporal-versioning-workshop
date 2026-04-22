@@ -3,7 +3,7 @@ slug: worker-versioning
 id: ""
 type: challenge
 title: "Worker Versioning"
-teaser: "Deploy non-replay-safe changes without patching using Temporal Worker Versioning"
+teaser: "In this track, you will deploy non-replay-safe changes without Workflow Patching using Temporal Worker Versioning"
 tabs:
 - type: terminal
   title: Worker v1.0
@@ -50,11 +50,15 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 ## Summary
 
 - **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
-- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drain.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drained.
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
-> **Note:** The Temporal dev server is already running in the background. Your terminals start in the exercise's `practice/` directory with the Python virtual environment activated.
+> **Sandbox Notes:**
+> - Use the **Temporal UI** tab to interact with the Temporal Web UI
+> - Use the **Code Editor** tab to make changes to the code
+> - Use the various terminal tabs to run the commands found in the instructions
+> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than boilerplate. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
 
 ---
 

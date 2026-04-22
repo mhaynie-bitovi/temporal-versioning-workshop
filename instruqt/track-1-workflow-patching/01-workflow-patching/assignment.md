@@ -3,7 +3,7 @@ slug: workflow-patching
 id: ""
 type: challenge
 title: "Workflow Patching"
-teaser: "In this track, you will safely evolve running Temporal workflows with replay testing and workflow patching."
+teaser: "In this track, you will safely evolve running Temporal workflows with Replay Testing and Workflow Patching."
 tabs:
 - type: terminal
   title: Worker

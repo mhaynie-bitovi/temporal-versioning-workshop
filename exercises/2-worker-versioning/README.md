@@ -15,7 +15,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 ## Summary
 
 - **Part A:** Configure versioning infrastructure (`PINNED`, `AUTO_UPGRADE`, `WorkerDeploymentConfig`) and deploy v1.0.
-- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drain.
+- **Part B:** Ship a non-replay-safe feature (billing) as v2.0, with no patching required. Monitor version statuses through drained.
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
