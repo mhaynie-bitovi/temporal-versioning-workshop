@@ -2,16 +2,16 @@ slug: workflow-patching
 id: "dnffvi6x7jx0"
 type: track
 title: "Workflow Patching"
-teaser: "Safely evolve running Temporal workflows with replay testing and workflow.patched()"
+teaser: "In this track, you will safely evolve running Temporal workflows with replay testing and workflow patching."
 description: |-
-  Your valet parking system is running in production. Durable execution keeps every parking
-  transaction alive through restarts and crashes. Then a feature request arrives: notify car
+  Your valet parking system is running in production. Durable execution keeps every workflow
+  alive despite any restarts or crashes. Then, a feature request arrives: notify car
   owners when their car is being parked. Adding a new activity call is a non-replay-safe
   change - the same replay mechanism that makes your workflows durable will break if the
   new code doesn't match the recorded history.
 
   In this track, you'll learn to catch that with replay testing and fix it with
-  workflow.patched().
+  workflow patching.
 icon: ""
 tags:
 - temporal

@@ -46,7 +46,7 @@ class ValetParkingWorkflow:
         )
 
         # TODO (Part C): Wrap the notify_owner call with:
-        #   if workflow.patched("add-notify-owner"):
+        # if workflow.patched("add-notify-owner"):
 
         # TODO (Part B): Add notify_owner activity call here.
 

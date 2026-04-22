@@ -1,4 +1,5 @@
 import asyncio
+import os
 import random
 
 from temporalio.client import Client
@@ -23,7 +24,7 @@ async def main() -> None:
         id=str(random.randint(1, NUM_VALET_ZONES)),
     )
 
-    workflow_id = f"valet-{license_plate}"
+    workflow_id = os.environ.get("WORKFLOW_ID") or f"valet-{license_plate}"
     await client.start_workflow(
         ValetParkingWorkflow.run,
         ValetParkingInput(

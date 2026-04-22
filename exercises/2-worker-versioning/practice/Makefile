@@ -11,7 +11,7 @@ run-load-simulator:
 	PYTHONPATH=. exec $(PYTHON) -m valet.load_simulator
 
 run-starter:
-	PYTHONPATH=. exec $(PYTHON) -m valet.starter
+	WORKFLOW_ID="$(WORKFLOW_ID)" PYTHONPATH=. exec $(PYTHON) -m valet.starter
 
 run-tests:
 	PYTHONPATH=. exec $(PYTHON) -m pytest tests/ -v
