@@ -64,6 +64,7 @@ Everything else stays the same.
 **Bullets**
 **Current**: where new workflows go by default
 **Ramping**: a percentage of new workflows for canary
+**Target**: the version a specific workflow will upgrade to next (Current or Ramping)
 Both can accept new and auto-upgrade workflows
 One Current, optionally one Ramping per deployment
 
@@ -223,7 +224,31 @@ One caveat: if you query closed workflows, you may need to keep a worker around 
 
 ---
 
-## Slide 12: Moving a Pinned Workflow
+## Slide 12: Instant Rollback
+
+**Bullets**
+Rollback = `set-current-version` to a previous build ID
+Routing config change takes effect immediately
+New workflows go to the old version right away
+Pinned workflows already running are unaffected
+Old version workers must still be running
+
+**Speaker notes**
+This is one of the best properties of worker versioning.
+
+If something goes wrong, rollback is a single CLI command.
+
+You just set the Current Version back to the previous build ID and routing flips instantly.
+
+New workflows stop going to the bad version.
+
+Pinned workflows that already started on the bad version keep running there - they're already pinned. If those also need to be evacuated, that's the next slide.
+
+The only requirement is that your old version workers are still running and polling. If you've already shut them down, you need to scale them back up first.
+
+---
+
+## Slide 13: Moving a Pinned Workflow
 
 **Bullets**
 `temporal workflow update-options` with a versioning override
