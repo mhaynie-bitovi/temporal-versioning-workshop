@@ -29,7 +29,7 @@ Use **both** the Temporal Docs MCP server and the temporal-developer skill toget
 
 This is a **Temporal workflow workshop** using a valet parking example as the learning vehicle. The workshop teaches worker versioning, workflow patching, and Kubernetes deployment strategies through three progressive exercises. Each exercise has a `practice/` directory (where users make changes) and a `solution/` reference.
 
-After this workshop, the audience should believe that every workflow deploy is a versioning decision - and feel equipped with a graduated playbook that makes the right choice obvious and the execution mechanical.
+After this workshop, the audience should understand the fundamental tension of durable execution - the platform demands rigidity (determinism, replay), but the business demands flexibility (new features, evolving requirements) - and feel equipped with a graduated playbook for reconciling the two, from patching in the code to worker versioning in the deployment to the worker controller in the cluster.
 
 ## Setup
 
@@ -100,6 +100,13 @@ Exercises build upon one another sequentially:
 - **Do not wrap Temporal CLI or kubectl commands in Makefile targets.** Exercise steps that have the user interact with the Temporal cluster (via `temporal` CLI) or Kubernetes (via `kubectl`) should show the raw commands directly so users see the granular steps and build familiarity with the tools. The exception is setup/teardown scaffolding (e.g., `make setup`, `make clean`) that installs the Worker Controller, CRDs, and other boilerplate - those are fine to condense into Makefile helpers.
 
 - Never use em dashes (-). Use regular hyphens (single, not double), commas, or parentheses instead. Make sure not to confuse these with cli args/params/flags.
+
+### Slide Content Conventions
+
+When generating or editing slide content documents (e.g., `*-slides.md` files):
+
+- **Bullets:** Punchy and terse, roughly 5-7 words each. 2-5 bullet points per slide. Each bullet goes on its own line with no markdown bullet prefix (no `-` or `*`).
+- **Speaker notes:** Short sentences, roughly 2-5 per slide. Each sentence on its own line with a blank line between each sentence.
 
 ### Environment Variables
 
