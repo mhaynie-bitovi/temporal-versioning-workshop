@@ -66,6 +66,7 @@ Your valet parking system is moving to Kubernetes. Instead of starting workers b
 2. Build the v1.0 container image:
 
 ```bash
+# in the 'Terminal' tab
 make build tag=1.0
 ```
 
@@ -74,6 +75,7 @@ make build tag=1.0
 3. Deploy the worker to Kubernetes by applying the manifest:
 
 ```bash
+# in the 'Terminal' tab
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
@@ -82,6 +84,7 @@ kubectl apply -f k8s/valet-worker.yaml
 4. Verify that the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
 
 ```bash
+# in the 'Terminal' tab
 kubectl get twd
 kubectl get deployments
 kubectl get pods
@@ -92,9 +95,10 @@ kubectl get pods
    - A Deployment named something like `valet-worker-<build-id>-<hash>`
    - And pods in `Running` status with `1/1` ready.
 
-5. Start the load simulator (in the **Load Simulator** tab):
+5. Start the load simulator:
 
 ```bash
+# in the 'Load Simulator' tab
 make run-load-simulator
 ```
 
@@ -131,6 +135,7 @@ Another feature request: notify car owners when their car is being retrieved. Th
 2. Build the 2.0 image:
 
 ```bash
+# in the 'Terminal' tab
 make build tag=2.0
 ```
 
@@ -155,12 +160,14 @@ make build tag=2.0
 4. Apply the updated manifest:
 
 ```bash
+# in the 'Terminal' tab
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
 5. Observe the rainbow deployment in action:
 
 ```bash
+# in the 'Terminal' tab
 kubectl get deployments
 ```
 
@@ -171,6 +178,7 @@ kubectl get deployments
 6. Now watch the progressive rollout unfold:
 
 ```bash
+# in the 'Terminal' tab
 kubectl get twd -w
 ```
 
@@ -189,7 +197,7 @@ kubectl get twd -w
 
 > _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
 
-> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely._
+> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely. In production, consider aligning `scaledownDelay` with the namespace's retention period (default 3 days) if you need to query completed workflows, since queries trigger a replay that requires a worker with that version's code._
 
 ---
 
@@ -254,6 +262,7 @@ One possible use case for such a gate is verifying credentials after a secret ro
 4. Build and deploy v3.0:
 
 ```bash
+# in the 'Terminal' tab
 make build tag=3.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
@@ -277,6 +286,7 @@ kubectl apply -f k8s/valet-worker.yaml
 7. Rebuild with a new image tag:
 
 ```bash
+# in the 'Terminal' tab
 make build tag=3.1
 ```
 
@@ -289,12 +299,14 @@ make build tag=3.1
 9. Apply:
 
 ```bash
+# in the 'Terminal' tab
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
 10. Watch the rollout this time:
 
 ```bash
+# in the 'Terminal' tab
 kubectl get twd -w
 ```
 
@@ -325,6 +337,7 @@ Not every deployment involves a workflow code change. You might be updating a de
 1. No code changes are needed for this deploy. Build the 4.0 image as-is:
 
 ```bash
+# in the 'Terminal' tab
 make build tag=4.0
 ```
 
@@ -344,12 +357,14 @@ make build tag=4.0
 3. Apply the updated manifest:
 
 ```bash
+# in the 'Terminal' tab
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
 4. Watch the version state:
 
 ```bash
+# in the 'Terminal' tab
 kubectl get twd -w
 ```
 
@@ -362,6 +377,7 @@ kubectl get twd -w
 5. Send synthetic traffic pinned to that version (replace the build ID with yours):
 
 ```bash
+# in the 'Terminal' tab
 make run-synthetic BUILD_ID=4.0-XXXX
 ```
 

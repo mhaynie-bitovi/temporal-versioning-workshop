@@ -37,25 +37,28 @@ cd exercises/1-workflow-patching/practice
    4. `move_car` (back)
    5. `release_parking_space`
 
-3. Start the Temporal dev server (in a **dedicated terminal**):
+3. Start the Temporal dev server:
 
 ```bash
+# in a dedicated terminal
 temporal server start-dev
 ```
 
 > _**Note:** Keep this running for the entire exercise._
 
-4. Start the worker (in a **new terminal** from the same directory):
+4. Start the worker:
 
 ```bash
+# in a new terminal
 make run-worker
 ```
 
 > _**Note:** Keep this worker running - you'll be instructed when to restart it later._
 
-5. Start a single workflow (in a **new terminal** from the same directory):
+5. Start a single workflow:
 
 ```bash
+# in a new terminal
 make run-starter WORKFLOW_ID=valet-CA-1ABC123
 ```
 
@@ -153,17 +156,19 @@ With the patch in place, a single worker can now handle both old and new workflo
 
 The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code, start another "post-patch" workflow, and watch a **single worker** handle both old and new executions correctly.
 
-1. With the **old worker still running** (from Part A), start another workflow in a **new terminal**:
+1. With the **old worker still running** (from Part A), start another workflow:
 
 ```bash
+# in a new terminal
 make run-starter
 ```
 
    This is your **pre-patch workflow**.
 
-2. Immediately **stop the old worker** (Ctrl+C in the **Worker** terminal) and restart it to pick up your patched code:
+2. Immediately **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
 
 ```bash
+# in the Worker terminal
 make run-worker
 ```
 

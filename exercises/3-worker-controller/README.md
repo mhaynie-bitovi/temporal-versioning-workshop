@@ -24,23 +24,26 @@ Ensure `minikube`, `kubectl`, `helm`, and the `temporal` CLI are installed and a
 
 1. Close **all** terminals from the previous exercise, including the Temporal dev server.
 
-2. In a **new terminal**, navigate to the exercise directory:
+2. Navigate to the exercise directory:
 
 ```bash
+# in a new terminal
 cd exercises/3-worker-controller/practice
 ```
 
-3. In another terminal, start a fresh Temporal dev server:
+3. Start a fresh Temporal dev server:
 
 ```bash
+# in another terminal
 temporal server start-dev
 ```
 
 > _**Note**: Keep this running for the rest of the exercise._
 
-4. In another terminal, setup the minikube environment:
+4. Setup the minikube environment:
 
 ```bash
+# in another terminal
 make setup
 ```
 
@@ -189,7 +192,7 @@ kubectl get twd -w
 
 > _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
 
-> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely._
+> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely. In production, consider aligning `scaledownDelay` with the namespace's retention period (default 3 days) if you need to query completed workflows, since queries trigger a replay that requires a worker with that version's code._
 
 ---
 

@@ -25,9 +25,10 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 
 1. Close **all** terminals from the previous exercise, including the Temporal dev server.
 
-2. In a **new terminal**, navigate to the exercise folder:
+2. Navigate to the exercise folder:
 
     ```bash
+    # in a new terminal
     cd exercises/2-worker-versioning/practice
     ```
 
@@ -65,7 +66,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
    class ParkingLotWorkflow:
    ```
 
-   > _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an [Entity Workflow](https://docs.temporal.io/workflow-execution/continue-as-new) - it represents a durable object (the parking lot) and never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the entity on the latest version without manual intervention._
+   > _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an [Entity Workflow](https://temporal.io/blog/very-long-running-workflows) - it represents a durable object (the parking lot) and never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the entity on the latest version without manual intervention._
    >
    > _**Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D._
 
@@ -85,19 +86,34 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
     )
    ```
 
-3. **Start the versioned 1.0 worker** (in a **new terminal**):
+3. **Start the versioned 1.0 worker**:
 
    The `BUILD_ID` env var feeds into the `WorkerDeploymentConfig` you just wired up. When this worker connects, Temporal registers it under the deployment name `valet` with build ID `1.0`.
 
    ```bash
+   # in a new terminal
    make run-worker BUILD_ID=1.0
    ```
 
-4. **Register version 1.0 as the Current Version** for the deployment (in another terminal):
-
-   A running worker alone isn't enough. Temporal needs to know which version should receive new workflow executions. The `set-current-version` command tells Temporal: "route all new traffic for the `valet` deployment to build ID `1.0`." Until you run this, no workflows will be dispatched to your worker.
+4. **Start the load simulator** to generate traffic:
 
    ```bash
+   # in a new terminal
+   make run-load-simulator
+   ```
+
+    > _**Note:** Keep this running for the rest of the exercise._
+
+5. **Observe what happens without a Current Version.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). You should see workflows appearing in the table, but none of them are making progress - they're stuck in a Running state without completing. The worker is connected, but Temporal doesn't know which version should receive workflow tasks. Without a Current Version set, there's no routing rule, so workflow tasks sit in the task queue with no worker polling for them.
+
+   Now navigate to the **Deployments** tab and click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
+
+   > _**Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic._
+
+6. **Register version 1.0 as the Current Version** for the deployment:
+
+   ```bash
+   # in another terminal
    temporal worker deployment set-current-version \
        --deployment-name valet \
        --build-id 1.0 \
@@ -106,7 +122,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
    > _**Note:** In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy._
 
-5. **Inspect the deployment** to confirm everything is wired up (in the **Terminal** tab):
+7. **Inspect the deployment** to confirm everything is wired up:
 
    ```bash
    temporal worker deployment describe --name valet
@@ -114,20 +130,14 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
    You should see version 1.0 listed as the Current Version. This is the command you'll use throughout the exercise to check deployment state, see which versions are active, and confirm when old versions have fully drained.
 
-6. **Start the load simulator** to generate continuous traffic:
-
-   ```bash
-   make run-load-simulator
-   ```
-
-    > _**Note:** Keep this running for the rest of the exercise._
-
-7. **Verify versioning is working** in the Temporal Web UI at [http://localhost:8233](http://localhost:8233). Configure the table columns so versioning info is visible at a glance:
+8. **Verify versioning is working** in the Temporal Web UI. The workflows that were stuck should now be completing, and new workflows should be flowing through successfully. Configure the table columns so versioning info is visible at a glance:
 
    - Click the **gear icon** at the bottom of the workflows table. (You may need to refresh if you don't see any workflows listed yet).
    - Add the following columns: **Deployment**, **Deployment Version**, and **Versioning Behavior**.
 
    You should now see `valet` as the Deployment, `valet:1.0` as the Deployment Version, and `Pinned` or `AutoUpgrade` as the Versioning Behavior for each workflow. This confirms Temporal is routing traffic through your versioned worker - every workflow knows which version it belongs to, and that metadata is visible and queryable.
+
+   Navigate back to the **Deployments** tab and open the `valet` deployment again. Version 1.0 should now show as **Active** - it's the Current Version and receiving all new workflow traffic.
 
 ---
 
@@ -154,17 +164,19 @@ Your next feature request is adding billing. This adds a new activity to the wor
    )
    ```
 
-2. Start a 2.0 worker **alongside** the running 1.0 worker (in a **new terminal**):
+2. Start a 2.0 worker **alongside** the running 1.0 worker:
 
 ```bash
+# in a new terminal
 make run-worker BUILD_ID=2.0
 ```
 
 > _**Think:** The load simulator has been creating workflows on v1.0 for a while now. Some are mid-trip. In the next step when you set v2.0 as the Current Version, what happens to those in-flight v1.0 workflows?_
 
-3. Set 2.0 as the Current Version (in a new terminal):
+3. Set 2.0 as the Current Version:
 
 ```bash
+# in a new terminal
 temporal worker deployment set-current-version \
     --deployment-name valet \
     --build-id 2.0 \
@@ -183,7 +195,9 @@ temporal worker deployment set-current-version \
    > - **Inactive**: worker registered, not yet serving traffic
    > - **Active**: currently Current or Ramping, accepting new workflows
    > - **Draining**: no longer active, but still has open pinned workflows
-   > - **Drained**: all pinned workflows completed, safe to decommission
+   > - **Drained**: all pinned workflows completed, no remaining work
+   > 
+   > **Note:** Drained means no open workflows, but completed workflows still exist in the namespace until the retention period expires (default 3 days). You can view a completed workflow's history in the UI without a worker, but querying it (programmatic queries, stack traces) triggers a replay that requires a worker with that version's code. In production, keep old workers running through the retention period if you need to query those completed executions.
    > 
    > In the next step, you'll watch v1.0 move from Draining to Drained in real time.
 
@@ -195,10 +209,11 @@ temporal worker deployment set-current-version \
 
    **Check drain status** using either method:
 
-   - **CLI:** Run `temporal worker deployment describe --name valet` and look for `Drained` status on the 1.0 version.
+   - **CLI:** Run `watch temporal worker deployment describe --name valet` and wait for `Drained` status on the 1.0 version. Press **Ctrl+C** to stop watching once you see it.
 
      ```bash
-     temporal worker deployment describe --name valet
+     watch temporal worker deployment describe --name valet
+     # Ctrl+C to stop watching
      ```
 
    - **Web UI:** Open [http://localhost:8233](http://localhost:8233) and navigate to the **Deployments** tab. Click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
@@ -215,7 +230,7 @@ Everything is humming along. Billing shipped cleanly with zero patching. The v1.
 
 Then you add a tip calculation to the billing activity. Quick change, no big deal. You deploy v3.0, set it as current, and go back to what you were doing.
 
-A minute later, you glance at the Web UI. Red everywhere. Every new workflow is hitting the billing step and failing. You check the worker logs: `AttributeError`, over and over.
+A minute later, you glance at the Web UI. Something looks off. The number of Running workflows is climbing, and none of them are completing. You check the worker logs: `AttributeError`, over and over. Temporal is faithfully retrying the billing activity on each workflow, but every attempt hits the same error.
 
 You made a typo. You referenced `input.tip_percentage`, a field that doesn't exist. And it's live. You need to act *now*.
 
@@ -233,9 +248,10 @@ You made a typo. You referenced `input.tip_percentage`, a field that doesn't exi
 
    This will cause an `AttributeError` every time billing runs.
 
-2. Start a 3.0 worker (in a **new terminal**):
+2. Start a 3.0 worker:
 
 ```bash
+# in a new terminal
 make run-worker BUILD_ID=3.0
 ```
 
@@ -250,7 +266,7 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-4. **Watch the damage.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). New workflows are starting on 3.0, hitting the billing step, and failing. Look at the worker logs - you'll see `AttributeError` on every billing attempt, retrying forever. These workflows are stuck. Every few seconds, the load simulator starts another one, and it goes straight into the same failure loop.
+4. **Watch the damage.** Open the Temporal Web UI at [http://localhost:8233](http://localhost:8233). New workflows are starting on 3.0 and their count in Running status is growing, but none are completing. They all reach the billing step and get stuck there. Temporal keeps retrying the activity, so the workflows don't fail - they just can't make progress. Check the worker logs and you'll see `AttributeError` on every billing attempt, followed by another retry. Every few seconds, the load simulator starts another workflow, and it joins the same pileup.
 
 5. **Check the damage.** Before you fix anything, see exactly how bad it is:
 
@@ -259,7 +275,7 @@ temporal workflow list \
     --query 'WorkerDeploymentVersion="valet:3.0" AND ExecutionStatus="Running"'
 ```
 
-   Each of these workflows is failing in a retry loop.
+   Each of these workflows is stuck in an activity retry loop, unable to complete.
 
 ### Stop the bleeding
 
@@ -274,9 +290,9 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-7. **Verify it worked.** Check the Temporal Web UI - new workflows should now be starting on v2.0 with working billing. That took seconds, not minutes.
+7. **Verify it worked.** Check the Temporal Web UI - new workflows should now be starting on v2.0 and completing successfully with working billing. That took seconds, not minutes.
 
-   But look closer. The workflows that already started on v3.0 are still there, still failing. They're PINNED to v3.0 - new traffic is safe, but those in-flight workflows are stuck.
+   But look closer. The workflows that already started on v3.0 are still there, still stuck in their retry loops. They're PINNED to v3.0 - new traffic is safe, but those in-flight workflows aren't going anywhere.
 
 ### Rescue the stuck workflows
 
@@ -318,9 +334,10 @@ Rollback bought you time. Now ship the fix.
         # simply remove/comment out the bug you introduced in this function
     ```
 
-11. Start a v3.1 worker (in a **new terminal**):
+11. Start a v3.1 worker:
 
 ```bash
+# in a new terminal
 make run-worker BUILD_ID=3.1
 ```
 
@@ -335,7 +352,7 @@ temporal worker deployment set-current-version \
 
 New workflows now flow through v3.1 with working billing. Incident resolved.
 
-> _**Recap what just happened.** A bad deploy hit production. Within seconds, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level._
+> _**Recap what just happened.** A bad deploy hit production. Within seconds of noticing, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level._
 
 ### Clean up
 
@@ -366,9 +383,10 @@ Let's see it happen.
 
 ### Deploy and watch it break
 
-2. Start a v4.0 worker (in a **new terminal**):
+2. Start a v4.0 worker:
 
 ```bash
+# in a new terminal
 make run-worker BUILD_ID=4.0
 ```
 
@@ -397,9 +415,10 @@ temporal worker deployment set-current-version \
        await workflow.sleep(2)
    ```
 
-6. **Stop the v4.0 worker** (Ctrl+C) and start v4.1 (in a **new terminal**):
+6. **Stop the v4.0 worker** (Ctrl+C) and start v4.1:
 
 ```bash
+# in a new terminal
 make run-worker BUILD_ID=4.1
 ```
 

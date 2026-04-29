@@ -65,25 +65,28 @@ Before making any changes, you'll establish a safety net. Run the current v1.0 w
    4. `move_car` (back)
    5. `release_parking_space`
    
-2. Start the worker (in the **Worker** tab):
+2. Start the worker:
 
 ```bash
+# in the 'Worker' tab
 make run-worker
 ```
 
 > _**Note:** Keep this worker running - you'll be instructed when to restart it later._
 
-3. Start a single workflow (in the **Terminal** tab):
+3. Start a single workflow:
 
 ```bash
+# in the 'Terminal' tab
 make run-starter WORKFLOW_ID=valet-CA-1ABC123
 ```
 
    Wait for it to complete (about 30 seconds). You can check its status in the **Temporal UI** tab.
 
-4. Export the completed workflow's history (in the **Terminal** tab):
+4. Export the completed workflow's history:
 
 ```bash
+# in the 'Terminal' tab
 temporal workflow show --workflow-id valet-CA-1ABC123 --output json > history/valet-CA-1ABC123-history.json
 ```
 
@@ -93,9 +96,10 @@ temporal workflow show --workflow-id valet-CA-1ABC123 --output json > history/va
 
 6. Briefly open `tests/test_replay.py` and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
 
-7. Run the tests (in the **Terminal** tab):
+7. Run the tests:
 
 ```bash
+# in the 'Terminal' tab
 make run-tests
 ```
 
@@ -126,9 +130,10 @@ await workflow.execute_activity(
 
 > _**Think:** You just added a new activity call after `request_parking_space`. The JSON history you captured doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?_
 
-2. Run the replay test again (in the **Terminal** tab):
+2. Run the replay test again:
 
 ```bash
+# in the 'Terminal' tab
 make run-tests
 ```
 
@@ -158,9 +163,10 @@ if workflow.patched("add-notify-owner"):
     )
 ```
 
-2. Run the replay test again (in the **Terminal** tab):
+2. Run the replay test again:
 
 ```bash
+# in the 'Terminal' tab
 make run-tests
 ```
    
@@ -176,23 +182,26 @@ With the patch in place, a single worker can now handle both old and new workflo
 
 The worker you started in Part A is still running the **original v1.0 code**. Even though you edited the file in Parts B and C, the running Python process loaded the workflow at startup and doesn't see your changes. We'll use this to create a "pre-patch" workflow, then restart the worker to pick up the patched code, start another "post-patch" workflow, and watch a **single worker** handle both old and new executions correctly.
 
-1. With the **old worker still running** (from Part A), start another workflow in the **Terminal** tab:
+1. With the **old worker still running** (from Part A), start another workflow:
 
 ```bash
+# in the 'Terminal' tab
 make run-starter
 ```
 
    This is your **pre-patch workflow**.
 
-2. Immediately **stop the old worker** (Ctrl+C in the **Worker** tab) and restart it to pick up your patched code:
+2. Immediately **stop the old worker** (Ctrl+C) and restart it to pick up your patched code:
 
 ```bash
+# in the 'Worker' tab
 make run-worker
 ```
 
-3. Start a **second** workflow (in the **Terminal** tab):
+3. Start a **second** workflow:
 
 ```bash
+# in the 'Terminal' tab
 make run-starter
 ```
 
@@ -207,7 +216,7 @@ make run-starter
 
    Notice how a single deploy of the same code produced two different execution paths. That's the power of `workflow.patched()` - it lets one worker safely handle both old and new workflows without breaking replay.
 
-6. You man stop the worker in the **Worker** tab when you're satisfied (Ctrl+C).
+6. You can stop the worker in the **Worker** tab when you're satisfied (Ctrl+C).
 
 > _**Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open executions, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how **Worker Versioning** can eliminate the need for patching entirely for most workflows._
 
