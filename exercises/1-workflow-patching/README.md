@@ -193,6 +193,9 @@ make run-starter
 
 > _**Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open executions, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how **Worker Versioning** can eliminate the need for patching entirely for most workflows._
 
+> _**Think:** When is it safe to remove a `patch`?
+> It's safe to remove a patch when your `patch` will no longer get Replayed. i.e. Any currently running and/or if you're sure it won't get Queried.
+
 ---
 
 > _**Congratulations!** You've completed this exercise!_
