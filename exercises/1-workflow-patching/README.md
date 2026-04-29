@@ -59,9 +59,10 @@ make run-worker
 make run-starter WORKFLOW_ID=valet-CA-1ABC123
 ```
 
-   Wait for it to complete (about 30 seconds). You can check its status in the Temporal Web UI at [http://localhost:8233](http://localhost:8233).
+   You can check its status in the Temporal Web UI at [http://localhost:8233](http://localhost:8233).
+   You can either export the completed workflow (in about 30s) or export a running workflow.
 
-6. Export the completed workflow's history:
+6. Export the workflow's history:
 
 ```bash
 temporal workflow show --workflow-id valet-CA-1ABC123 --output json > history/valet-CA-1ABC123-history.json
