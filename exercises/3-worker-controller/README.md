@@ -260,7 +260,7 @@ kubectl apply -f k8s/valet-worker.yaml
 ```
 
 5. Verify in the Temporal UI at [http://localhost:8233](http://localhost:8233):
-   - Navigate to **Workers > Deployments** - v3.0 should show that it is not receiving production traffic. v2.0 is still the current version.
+   - Open the **Deployments** tab - v3.0 should show that it is not receiving production traffic. v2.0 is still the current version.
    - Find the failed gate workflow and open it - the error shows `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 > _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
