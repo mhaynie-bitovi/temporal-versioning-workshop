@@ -85,7 +85,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 
 Before shipping new features, you'll set up the versioning infrastructure. This is a one-time configuration that makes every future deploy safer.
 
-1. **Set the versioning behavior on both workflows** (follow the `TODO (Part A)` comments in each file):
+1. **Set the versioning behavior on both workflows** in the **Code Editor** tab (follow the `TODO (Part A)` comments in each file):
 
    **a.** In `valet/valet_parking_workflow.py` add `versioning_behavior=VersioningBehavior.PINNED` to `@workflow.defn`:
 
@@ -187,7 +187,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
 Your next feature request is adding billing. This adds a new activity to the workflow - a non-replay-safe change. In Exercise 1, that required `workflow.patched()`. With PINNED versioning, you'll deploy v2.0 alongside v1.0 and let Temporal route traffic. Along the way, you'll see how Temporal tracks each version through its lifecycle - from active to drained.
 
-1. In `valet/valet_parking_workflow.py` add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
+1. In the **Code Editor** tab, open `valet/valet_parking_workflow.py` and add `bill_customer` at the end of the workflow (follow the `TODO (Part B)` comment):
 
    ```python
    await workflow.execute_activity(
@@ -277,7 +277,7 @@ You made a typo. You referenced `input.tip_percentage`, a field that doesn't exi
 
 ### The bad deploy
 
-1. **Introduce the bug.** In `valet/activities.py`, add this line to the beginning of `bill_customer`:
+1. **Introduce the bug.** In the **Code Editor** tab, open `valet/activities.py` and add this line to the beginning of `bill_customer`:
 
    ```python
    @activity.defn

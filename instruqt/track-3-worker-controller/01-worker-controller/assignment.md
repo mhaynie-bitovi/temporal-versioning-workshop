@@ -118,7 +118,7 @@ Another feature request: notify car owners when their car is being retrieved. Th
 
 > _**Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it._
 
-1. Make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep, and before the `move_car` activity:
+1. In the **Code Editor** tab, make the code change in `valet/valet_parking_workflow.py` - add a `notify_owner` call after the sleep, and before the `move_car` activity:
 
    ```python
    # Notify the owner their car is being retrieved
@@ -183,7 +183,7 @@ watch kubectl get twd
 # Ctrl+C to stop watching
 ```
 
-   This prints the `TemporalWorkerDeployment` status and refreshes every 2 seconds. You'll see columns like `CURRENT VERSION`, `TARGET`, and `RAMP %` update in real time as the rollout progresses. Press **Ctrl+C** to stop watching once the rollout completes.
+   This prints the `TemporalWorkerDeployment` status and refreshes every 2 seconds. You'll see columns like `CURRENT VERSION`, `TARGET`, and `RAMP %` update in real time as the rollout progresses. The `TARGET` column shows the build ID of the version being rolled out to. Press **Ctrl+C** to stop watching once the rollout completes.
 
    - v2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
    - After 30s, ramps to **75%**
@@ -223,7 +223,7 @@ One possible use case for such a gate is verifying credentials after a secret ro
    )
    ```
 
-2. Briefly open `valet/activities.py` and look at `check_billing_service`. It's currently rigged to simulate a misconfigured API key:
+2. Briefly open `valet/activities.py` in the **Code Editor** tab and look at `check_billing_service`. It's currently rigged to simulate a misconfigured API key:
 
    ```python
    raise ApplicationError(
@@ -266,12 +266,12 @@ kubectl apply -f k8s/valet-worker.yaml
 ```
 
 5. Verify in the **Temporal UI** tab:
-   - Open the **Deployments** tab - v3.0 should show that it is not receiving production traffic. v2.0 is still the current version.
-   - Find the failed gate workflow and open it - the error shows `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
+   - Open the **Deployments** tab and click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
+   - Click on the v3.0 version row - this takes you to the workflows list filtered for that version. Find the failed `ValetGateWorkflow` execution and open it, then expand the failed activity to see the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 > _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
 
-6. Now fix the activity. In `valet/activities.py`, replace the `raise` in `check_billing_service` with a passing check:
+6. Now fix the activity. In the **Code Editor** tab, open `valet/activities.py` and replace the `raise` in `check_billing_service` with a passing check:
 
    ```python
    @activity.defn
@@ -288,7 +288,7 @@ kubectl apply -f k8s/valet-worker.yaml
 make build tag=3.1
 ```
 
-8. Update `k8s/valet-worker.yaml` to use the fixed image:
+8. Update `k8s/valet-worker.yaml` in the **Code Editor** tab to use the fixed image:
 
    ```yaml
    image: valet-worker:3.1
@@ -366,7 +366,7 @@ watch kubectl get twd
 # Ctrl+C to stop watching
 ```
 
-   v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
+   v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID shown in the `TARGET` column (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
 > _**Think:** The version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?_
 
@@ -379,7 +379,7 @@ make run-synthetic BUILD_ID=4.0-XXXX
 
    This starts a single `ValetParkingWorkflow` pinned to v4.0 with a short 5-second trip. It runs the full workflow end-to-end on v4.0's workers (parks the car, waits, retrieves it, bills the customer) and waits for it to complete successfully.
 
-6. Briefly open `valet/test_version.py` in the **Code Editor** tab to see how pinning works - the key part is:
+6. Briefly open `valet/test_version.py` in the **Code Editor** tab to see how pinning works - this is the script that `make run-synthetic` calls under the hood. The key part is:
 
    ```python
    versioning_override=PinnedVersioningOverride(

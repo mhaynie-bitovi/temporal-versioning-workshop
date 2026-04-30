@@ -95,7 +95,7 @@ temporal workflow show --workflow-id valet-CA-1ABC123 --output json > history/va
 
 5. In the **Code Editor** tab, briefly open `history/valet-CA-1ABC123-history.json` and skim the exported history. Each entry in the `events` array represents something the workflow did - starting activities, recording results, firing timers, etc. This is the sequence of commands the replayer will compare against your code.
 
-6. Briefly open `tests/test_replay.py` and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
+6. Briefly open `tests/test_replay.py` in the **Code Editor** tab and review the replay test. It loads the history you just captured and replays it against the current workflow code. If the code produces a different command sequence than the history, the test fails with a non-determinism error (NDE).
 
 7. Run the tests:
 
