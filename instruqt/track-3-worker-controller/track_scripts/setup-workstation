@@ -16,23 +16,23 @@ apt-get install -y -qq python3 python3-pip python3-venv git make curl \
 
 # ── Temporal CLI ─────────────────────────────────────────────────────────────
 log "Installing Temporal CLI..."
-curl -sSf https://temporal.download/cli.sh | sh
+curl -sSf https://temporal.download/cli.sh | sh -s -- --version 1.6.2
 export PATH="$HOME/.temporalio/bin:$PATH"
 echo 'export PATH="$HOME/.temporalio/bin:$PATH"' >> /root/.bashrc
 
 # ── Helm ─────────────────────────────────────────────────────────────────────
 log "Installing Helm..."
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | DESIRED_VERSION=v4.1.4 bash
 
 # ── kubectl ──────────────────────────────────────────────────────────────────
 log "Installing kubectl..."
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/v1.36.0/bin/linux/amd64/kubectl"
 install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 rm kubectl
 
 # ── minikube ─────────────────────────────────────────────────────────────────
 log "Installing minikube..."
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+curl -LO https://storage.googleapis.com/minikube/releases/v1.38.1/minikube-linux-amd64
 install minikube-linux-amd64 /usr/local/bin/minikube
 rm minikube-linux-amd64
 
