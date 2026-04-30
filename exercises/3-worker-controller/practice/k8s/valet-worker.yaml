@@ -19,7 +19,7 @@ spec:
   #       pauseDuration: 30s
   #     - rampPercentage: 75
   #       pauseDuration: 30s
-  # TODO (Part C): Switch to Progressive with a gate
+  # TODO (Part C): Add a gate to the Progressive strategy.
   # rollout:
   #  strategy: Progressive
   #  steps:

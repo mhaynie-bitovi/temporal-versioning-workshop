@@ -179,12 +179,11 @@ kubectl get deployments
 
 ```bash
 # in the 'Terminal' tab
-kubectl get twd -w
+watch kubectl get twd
+# Ctrl+C to stop watching
 ```
 
-> _**Note:** Press `Ctrl+C` when you're done watching._
-
-   This prints the `TemporalWorkerDeployment` status and the `-w` (watch) flag keeps it running, printing a new line each time the status changes. You'll see columns like `CURRENT VERSION`, `RAMPING VERSION`, and `RAMP PERCENTAGE` update in real time as the rollout progresses.
+   This prints the `TemporalWorkerDeployment` status and refreshes every 2 seconds. You'll see columns like `CURRENT VERSION`, `TARGET`, and `RAMP %` update in real time as the rollout progresses. Press **Ctrl+C** to stop watching once the rollout completes.
 
    - v2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
    - After 30s, ramps to **75%**
@@ -193,7 +192,6 @@ kubectl get twd -w
 7. Verify in the **Temporal UI** tab:
    - New workflows (v2.0) include a "Your car is being retrieved!" notification before the return trip
    - Older in-flight workflows (v1.0) complete without it
-   - Over time, 1.0 workers scale down as their pinned workflows finish
 
 > _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
 
@@ -307,10 +305,9 @@ kubectl apply -f k8s/valet-worker.yaml
 
 ```bash
 # in the 'Terminal' tab
-kubectl get twd -w
+watch kubectl get twd
+# Ctrl+C to stop watching
 ```
-
-> _**Note:** Press `Ctrl+C` when you're done watching._
 
    Observe the sequence:
    1. v3.1 pods start and register with Temporal
@@ -365,10 +362,9 @@ kubectl apply -f k8s/valet-worker.yaml
 
 ```bash
 # in the 'Terminal' tab
-kubectl get twd -w
+watch kubectl get twd
+# Ctrl+C to stop watching
 ```
-
-> _**Note:** Press `Ctrl+C` when you're done watching._
 
    v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID in the output (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
