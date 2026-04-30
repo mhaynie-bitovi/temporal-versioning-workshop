@@ -81,7 +81,8 @@ make run-worker
 make run-starter WORKFLOW_ID=valet-CA-1ABC123
 ```
 
-   Wait for it to complete (about 30 seconds). You can check its status in the **Temporal UI** tab.
+   You can check its status in the Temporal Web UI at [http://localhost:8233](http://localhost:8233).
+   You can either export the completed workflow (in about 30s) or export a running workflow.
 
 4. Export the completed workflow's history:
 
@@ -219,6 +220,9 @@ make run-starter
 6. You can stop the worker in the **Worker** tab when you're satisfied (Ctrl+C).
 
 > _**Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open executions, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how **Worker Versioning** can eliminate the need for patching entirely for most workflows._
+
+> _**Think:** When is it safe to remove a `patch`?
+> It's safe to remove a patch when your `patch` will no longer get Replayed. i.e. Any currently running and/or if you're sure it won't get Queried.
 
 ---
 
