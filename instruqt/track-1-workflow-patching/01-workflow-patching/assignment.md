@@ -48,7 +48,7 @@ In this track, you'll learn to catch that with replay testing and fix it with wo
 > - Use the **Temporal UI** tab to interact with the Temporal Web UI
 > - Use the **Code Editor** tab to make changes to the code
 > - Use the various terminal tabs to run the commands found in the instructions
-> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than boilerplate. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
+> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than managing the Temporal systems. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
 > - Avoid refreshing your host browser tab as it can interrupt the exercise environment. Use the refresh button at the top of the **Temporal UI** tab, or the refresh buttons within the Temporal Web UI itself.
 ---
 
@@ -81,7 +81,7 @@ make run-worker
 make run-starter WORKFLOW_ID=valet-CA-1ABC123
 ```
 
-   You can check its status in the Temporal Web UI at [http://localhost:8233](http://localhost:8233).
+   You can check its status in the **Temporal UI** tab.
    You can either export the completed workflow (in about 30s) or export a running workflow.
 
 4. Export the completed workflow's history:

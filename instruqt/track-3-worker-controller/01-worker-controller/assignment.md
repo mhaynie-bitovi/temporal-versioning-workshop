@@ -47,7 +47,7 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 > - Use the **Temporal UI** tab to interact with the Temporal Web UI
 > - Use the **Code Editor** tab to make changes to the code
 > - Use the **Terminal** tab to run the commands found in the instructions
-> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than boilerplate. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
+> - This course uses `make` commands (like `make run-worker`) as shortcuts for longer shell commands. This keeps the focus on Temporal concepts rather than managing the Temporal systems. If you're curious what a command does under the hood, check the `Makefile` in the **Code Editor** tab.
 > - Avoid refreshing your host browser tab as it can interrupt the exercise environment. Use the refresh button at the top of the **Temporal UI** tab, or the refresh buttons within the Temporal Web UI itself.
 ---
 
