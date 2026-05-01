@@ -94,7 +94,7 @@ Feature requests keep coming, and patching is starting to accumulate. You switch
 
 You've been managing versioned deployments by hand. The Worker Controller automates all of that - progressive rollouts, draining, and pre-deployment checks - so you can ship with confidence and less manual coordination.
 
-- **Part A:** Deploy v1.0 via a `TemporalWorkerDeployment` CRD with an `AllAtOnce` strategy.
+- **Part A:** Deploy v1.0 via a `WorkerDeployment` CRD with an `AllAtOnce` strategy.
 - **Part B:** Ship a non-replay-safe change using a `Progressive` rollout (ramped traffic + automatic draining).
 - **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
 - **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.

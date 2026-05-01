@@ -3,7 +3,7 @@
 In Exercise 2, you managed versioned deployments by hand - starting workers, setting current versions, draining and stopping old ones. It worked, but durable execution never sleeps, and managing it manually required constant attention. The Worker Controller automates all of that: progressive rollouts, draining, and pre-deployment checks, all driven by a Kubernetes CRD (Custom Resource Definition).
 
 **Temporal features and patterns covered:**
-- `TemporalWorkerDeployment` CRD
+- `WorkerDeployment` CRD
 - `AllAtOnce`/`Progressive`/`Manual` rollout strategies
 - Progressive ramping
 - Gate workflows
@@ -11,7 +11,7 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 
 ## Summary
 
-- **Part A:** Deploy v1.0 via a `TemporalWorkerDeployment` CRD with an `AllAtOnce` strategy.
+- **Part A:** Deploy v1.0 via a `WorkerDeployment` CRD with an `AllAtOnce` strategy.
 - **Part B:** Ship a non-replay-safe change using a `Progressive` rollout (ramped traffic + automatic draining).
 - **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
 - **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.
@@ -49,16 +49,16 @@ make setup
 
    This does three things:
    - **Starts minikube** (if not already running) - a local, single-node Kubernetes cluster on your machine.
-   - **Installs the [Temporal Worker Controller](https://github.com/temporalio/temporal-worker-controller)** via Helm - a Kubernetes operator that watches for `TemporalWorkerDeployment` custom resources and manages versioned worker rollouts automatically. Helm is a package manager for Kubernetes.
-   - **Applies a `TemporalClusterConnection` resource** - a configuration object that tells the controller how to reach the Temporal dev server running on your host machine.
+   - **Installs the [Temporal Worker Controller](https://github.com/temporalio/temporal-worker-controller)** via Helm - a Kubernetes operator that watches for `WorkerDeployment` custom resources and manages versioned worker rollouts automatically. Helm is a package manager for Kubernetes.
+   - **Applies a `Connection` resource** - a configuration object that tells the controller how to reach the Temporal dev server running on your host machine.
 
 ---
 
 ## Part A - Deploy on Kubernetes
 
-*__Covers:__ `TemporalWorkerDeployment` CRD, `AllAtOnce` rollout strategy*
+*__Covers:__ `WorkerDeployment` CRD, `AllAtOnce` rollout strategy*
 
-Your valet parking system is moving to Kubernetes. Instead of starting workers by hand like you did in Exercises 1 and 2, you'll declare the desired state in a `TemporalWorkerDeployment` k8s manifest and let the Worker Controller handle the rest - creating versioned Deployments, registering build IDs with Temporal, and managing pod lifecycles.
+Your valet parking system is moving to Kubernetes. Instead of starting workers by hand like you did in Exercises 1 and 2, you'll declare the desired state in a `WorkerDeployment` k8s manifest and let the Worker Controller handle the rest - creating versioned Deployments, registering build IDs with Temporal, and managing pod lifecycles.
 
 1. Briefly examine the k8s manifests:
    - `k8s/temporal-connection.yaml` - points to the host Temporal server. We will not modify this manifest during this exercise.
@@ -80,18 +80,18 @@ make build tag=1.0
 kubectl apply -f k8s/valet-worker.yaml
 ```
 
-   The Worker Controller will read the `TemporalWorkerDeployment` resource, create a versioned Deployment, and start worker pods automatically:
+   The Worker Controller will read the `WorkerDeployment` resource, create a versioned Deployment, and start worker pods automatically:
 
-4. Verify that the TemporalWorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
+4. Verify that the WorkerDeployment exists, the controller created a versioned Deployment, and worker pods are Running:
 
 ```bash
-kubectl get twd
+kubectl get wd
 kubectl get deployments
 kubectl get pods
 ```
 
    You should see the following:
-   - A `valet-worker` TWD (Temporal Worker Deployment)
+   - A `valet-worker` WD (Worker Deployment)
    - A Deployment named something like `valet-worker-<build-id>-<hash>`
    - And pods in `Running` status with `1/1` ready.
 
@@ -174,11 +174,11 @@ kubectl get deployments
 6. Now watch the progressive rollout unfold:
 
 ```bash
-watch kubectl get twd
+watch kubectl get wd
 # Ctrl+C to stop watching
 ```
 
-   This prints the `TemporalWorkerDeployment` status and refreshes every 2 seconds. You'll see columns like `CURRENT VERSION`, `TARGET`, and `RAMP %` update in real time as the rollout progresses. The `TARGET` column shows the build ID of the version being rolled out to. Press **Ctrl+C** to stop watching once the rollout completes.
+   This prints the `WorkerDeployment` status and refreshes every 2 seconds. You'll see columns like `CURRENT VERSION`, `TARGET`, and `RAMP %` update in real time as the rollout progresses. The `TARGET` column shows the build ID of the version being rolled out to. Press **Ctrl+C** to stop watching once the rollout completes.
 
    - 2.0 starts at **rampPercentage: 25%** - only 25% of *new* workflow executions go to 2.0
    - After 30s, ramps to **75%**
@@ -263,10 +263,10 @@ kubectl apply -f k8s/valet-worker.yaml
    - Open the **Deployments** tab and click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
    - Click on the v3.0 version row - this takes you to the workflows list filtered for that version. Find the failed `ValetGateWorkflow` execution and open it, then expand the failed activity to see the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
-You can also check the TWD progress to see the status of the failed gate (look for **"TestWorkflows"** near the bottom)
+You can also check the WD progress to see the status of the failed gate (look for **"TestWorkflows"** near the bottom)
    
 ```bash
-kubectl describe twd
+kubectl describe wd
 ```
 
 > _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
@@ -302,7 +302,7 @@ kubectl apply -f k8s/valet-worker.yaml
 10. Watch the rollout this time:
 
 ```bash
-watch kubectl get twd
+watch kubectl get wd
 # Ctrl+C to stop watching
 ```
 
@@ -356,7 +356,7 @@ kubectl apply -f k8s/valet-worker.yaml
 4. Watch the version state:
 
 ```bash
-watch kubectl get twd
+watch kubectl get wd
 # Ctrl+C to stop watching
 ```
 

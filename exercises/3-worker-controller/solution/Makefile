@@ -2,7 +2,7 @@ PYTHON ?= ../../../env/bin/python
 tag ?= latest
 IMAGE_NAME = valet-worker
 WORKER_CONTROLLER_NAMESPACE = temporal-worker-controller
-WORKER_CONTROLLER_VERSION ?= 0.24.0
+WORKER_CONTROLLER_VERSION ?= 0.26.0
 
 .PHONY: setup build deploy get-status get-logs run-load-simulator run-synthetic run-worker run-tests clean
 
@@ -30,7 +30,7 @@ setup:
 		--namespace $(WORKER_CONTROLLER_NAMESPACE) \
 		--set replicas=1 \
 		--wait --timeout 5m
-	@echo "==> Applying TemporalConnection..."
+	@echo "==> Applying Connection..."
 	kubectl apply -f k8s/temporal-connection.yaml
 	@echo "==> Setup complete. Verifying pods..."
 	kubectl get pods -n $(WORKER_CONTROLLER_NAMESPACE)
@@ -41,17 +41,17 @@ build:
 	@echo "==> Building image $(IMAGE_NAME):$(tag) in minikube..."
 	eval $$(minikube docker-env) && docker build -t $(IMAGE_NAME):$(tag) .
 
-## deploy - apply TemporalConnection + TemporalWorkerDeployment
+## deploy - apply Connection + WorkerDeployment
 deploy:
 	@echo "==> Deploying valet worker..."
 	kubectl apply -f k8s/temporal-connection.yaml
 	kubectl apply -f k8s/valet-worker.yaml
 	@echo "==> Deployed. Run 'make get-status' to check."
 
-## get-status - show TemporalWorkerDeployment and Deployments
+## get-status - show WorkerDeployment and Deployments
 get-status:
-	@echo "==> TemporalWorkerDeployments:"
-	kubectl get twd
+	@echo "==> WorkerDeployments:"
+	kubectl get wd
 	@echo ""
 	@echo "==> Deployments:"
 	kubectl get deployments

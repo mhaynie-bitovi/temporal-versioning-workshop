@@ -35,7 +35,7 @@ These are the key Temporal concepts covered in the workshop. Follow the links fo
 - **Version lifecycle** - Versions progress through Inactive, Active, Draining, and Drained statuses. ([Versioning statuses](https://docs.temporal.io/worker-versioning#versioning-statuses))
 - **Rainbow deployments** - Multiple worker versions coexist simultaneously; old versions drain as pinned workflows complete. ([Worker Versioning in production](https://docs.temporal.io/production-deployment/worker-deployments/worker-versioning))
 - **Emergency remediation** - Instant rollback via `set-current-version`, bulk evacuation of stuck workflows via `update-options`, then fix-forward with a new version. ([CLI: update-options](https://docs.temporal.io/cli/workflow#update-options))
-- **Worker Controller** - A Kubernetes operator that automates versioned deployments via a `TemporalWorkerDeployment` CRD, supporting `AllAtOnce`, `Progressive`, and `Manual` rollout strategies, gate workflows, and `VersioningOverride` for synthetic testing. ([Worker Controller repo](https://github.com/temporalio/temporal-worker-controller))
+- **Worker Controller** - A Kubernetes operator that automates versioned deployments via a `WorkerDeployment` CRD, supporting `AllAtOnce`, `Progressive`, and `Manual` rollout strategies, gate workflows, and `VersioningOverride` for synthetic testing. ([Worker Controller repo](https://github.com/temporalio/temporal-worker-controller))
 
 ## Common Instruqt Platform Issues
 
