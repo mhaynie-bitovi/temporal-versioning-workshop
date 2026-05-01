@@ -136,7 +136,7 @@ The `BUILD_ID` env var feeds into the `WorkerDeploymentConfig` you just wired up
 
 _NOTE: This track has many terminal tabs - you may need to scroll horizontally to find the right one._
 
-Click the [button label="Worker v1.0" background="#444CE7"](tab-0) terminal.
+Click the [button label="Worker v1.0" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make run-worker BUILD_ID=1.0
@@ -144,7 +144,7 @@ make run-worker BUILD_ID=1.0
 
 ### Step 4: Start the load simulator
 
-Click the [button label="Load Simulator" background="#444CE7"](tab-6) terminal.
+Click the [button label="Load Simulator" background="#444CE7"](tab-6) tab.
 
 ```bash,run
 make run-load-simulator
@@ -167,7 +167,7 @@ Now navigate to the **Deployments** tab and click on the `valet` deployment. You
 
 ### Step 6: Register version 1.0 as the Current Version
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -181,7 +181,7 @@ temporal worker deployment set-current-version \
 
 ### Step 7: Inspect the deployment
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment describe --name valet
@@ -229,7 +229,7 @@ await workflow.execute_activity(
 
 ### Step 2: Start a 2.0 worker
 
-Click the [button label="Worker v2.0" background="#444CE7"](tab-1) terminal.
+Click the [button label="Worker v2.0" background="#444CE7"](tab-1) tab.
 Start a 2.0 worker **alongside** the running 1.0 worker:
 
 ```bash,run
@@ -241,7 +241,7 @@ make run-worker BUILD_ID=2.0
 
 ### Step 3: Set 2.0 as the Current Version
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -284,7 +284,7 @@ _NOTE: Draining may take 1-3 minutes. The workflows themselves finish in 5-30 se
 
 - **CLI:** Run `watch temporal worker deployment describe --name valet` and wait for `Drained` status on the 1.0 version. Press **Ctrl+C** to stop watching once you see it.
 
-  Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+  Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
   ```bash,run
   watch temporal worker deployment describe --name valet
@@ -330,7 +330,7 @@ This will cause an `AttributeError` every time billing runs.
 
 ### Step 2: Start a 3.0 worker
 
-Click the [button label="Worker v3.0" background="#444CE7"](tab-2) terminal.
+Click the [button label="Worker v3.0" background="#444CE7"](tab-2) tab.
 
 ```bash,run
 make run-worker BUILD_ID=3.0
@@ -341,7 +341,7 @@ make run-worker BUILD_ID=3.0
 
 ### Step 3: Set 3.0 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -358,7 +358,7 @@ Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab. New workf
 
 Before you fix anything, see exactly how bad it is:
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow list \
@@ -373,7 +373,7 @@ The fastest possible response: redirect new traffic away from the broken version
 
 ### Step 6: Roll back to v2.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -394,7 +394,7 @@ Rollback stopped the bleeding for new workflows, but the PINNED workflows that a
 
 ### Step 8: Evacuate stuck workflows to v2.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow update-options \
@@ -414,7 +414,7 @@ Go back to the [button label="Temporal UI" background="#444CE7"](tab-9) tab. The
 
 Run the same query from step 5 again:
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow list \
@@ -439,7 +439,7 @@ async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
 
 ### Step 11: Start a v3.1 worker
 
-Click the [button label="Worker v3.1" background="#444CE7"](tab-3) terminal.
+Click the [button label="Worker v3.1" background="#444CE7"](tab-3) tab.
 
 ```bash,run
 make run-worker BUILD_ID=3.1
@@ -447,7 +447,7 @@ make run-worker BUILD_ID=3.1
 
 ### Step 12: Set v3.1 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -498,7 +498,7 @@ This is a non-replay-safe change: it adds a timer command that doesn't exist in 
 
 ### Step 2: Start a v4.0 worker
 
-Click the [button label="Worker v4.0" background="#444CE7"](tab-4) terminal.
+Click the [button label="Worker v4.0" background="#444CE7"](tab-4) tab.
 
 ```bash,run
 make run-worker BUILD_ID=4.0
@@ -509,7 +509,7 @@ make run-worker BUILD_ID=4.0
 
 ### Step 3: Set v4.0 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -539,7 +539,7 @@ In `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the
 
 ### Step 6: Start a v4.1 worker
 
-Click the [button label="Worker v4.1" background="#444CE7"](tab-5) terminal.
+Click the [button label="Worker v4.1" background="#444CE7"](tab-5) tab.
 
 ```bash,run
 make run-worker BUILD_ID=4.1
@@ -547,7 +547,7 @@ make run-worker BUILD_ID=4.1
 
 ### Step 7: Set v4.1 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
