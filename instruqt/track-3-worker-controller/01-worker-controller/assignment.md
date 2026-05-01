@@ -43,6 +43,7 @@ In Exercise 2, you managed versioned deployments by hand - starting workers, set
 - **Part C:** Add a gate workflow that blocks bad deploys before they take traffic.
 - **Part D (Optional):** Use a `Manual` strategy to pre-test a version with synthetic traffic before promotion.
 
+> [!NOTE]
 > **Sandbox Notes:**
 > - Use the [button label="Temporal UI" background="#444CE7"](tab-3) tab to interact with the Temporal Web UI
 > - Use the [button label="Code Editor" background="#444CE7"](tab-2) tab to make changes to the code
@@ -64,7 +65,8 @@ Briefly examine the k8s manifests in the [button label="Code Editor" background=
 - `k8s/temporal-connection.yaml` - points to the host Temporal server. We will not modify this manifest during this exercise.
 - `k8s/valet-worker.yaml` - This is the main manifest we'll modify throughout this exercise - updating it and re-applying it is how we'll make changes to the Kubernetes cluster.
 
-> _**Note:** Initially, this manifest uses the `AllAtOnce` rollout strategy where every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B._
+> [!NOTE]
+> Initially, this manifest uses the `AllAtOnce` rollout strategy where every replica cuts over immediately. This is fine for the first deploy, but for non-replay-safe changes you'll want a `Progressive` strategy so old and new versions coexist safely. We'll switch to that in Part B.
 
 ### Step 2: Build the v1.0 container image
 
@@ -116,7 +118,8 @@ Click the [button label="Load Simulator" background="#444CE7"](tab-1) terminal.
 make run-load-simulator
 ```
 
-> _**Note:** Keep this running for the rest of the exercise._
+> [!NOTE]
+> Keep this running for the rest of the exercise.
 
 ### Step 6: Verify workflows are flowing
 
@@ -132,7 +135,8 @@ You now have a Temporal worker running on Kubernetes, managed entirely through a
 
 Another feature request: notify car owners when their car is being retrieved. This is a non-replay-safe change. Instead of cutting over all at once, you'll use a Progressive rollout to ramp traffic gradually while old workflows complete on their original version.
 
-> _**Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it._
+> [!NOTE]
+> **Why Progressive?** A Progressive rollout introduces the new version gradually - starting with a small percentage of new workflow executions, pausing to let you verify things are healthy, then ramping up. Meanwhile, in-flight workflows stay pinned to their original version. This is the **rainbow deployment model**: multiple versions coexist, each serving the workflows that belong to it.
 
 ### Step 1: Make the code change
 
@@ -176,7 +180,8 @@ rollout:
 image: valet-worker:2.0
 ```
 
-> _**Think:** You're applying a Progressive strategy with 25% as the first ramp step. What percentage of *currently in-flight* v1.0 workflows will move to v2.0? (Hint: they're PINNED.)_
+> [!IMPORTANT]
+> **Think:** You're applying a Progressive strategy with 25% as the first ramp step. What percentage of *currently in-flight* v1.0 workflows will move to v2.0? (Hint: they're PINNED.)
 
 ### Step 4: Apply the updated manifest
 
@@ -222,9 +227,11 @@ Check the [button label="Temporal UI" background="#444CE7"](tab-3) tab:
 - New workflows (v2.0) include a "Your car is being retrieved!" notification before the return trip
 - Older in-flight workflows (v1.0) complete without it
 
-> _**Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest._
+> [!IMPORTANT]
+> **Key insight:** The Worker Controller orchestrates the entire rainbow deployment automatically. In Exercise 2, you managed all of this by hand - starting workers, running `set-current-version` or `set-ramping-version`, watching for draining, stopping old workers. Here, you updated the image tag and the controller handled the rest.
 
-> _**Note:** The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely. In production, consider aligning `scaledownDelay` with the namespace's retention period (default 3 days) if you need to query completed workflows, since queries trigger a replay that requires a worker with that version's code._
+> [!NOTE]
+> The `sunset` section in the manifest controls when drained versions are cleaned up. `scaledownDelay` sets how long to wait after draining before scaling to zero, and `deleteDelay` sets how long before the versioned Deployment is deleted entirely. Without these, old versions hang around indefinitely. In production, consider aligning `scaledownDelay` with the namespace's retention period (default 3 days) if you need to query completed workflows, since queries trigger a replay that requires a worker with that version's code.
 
 ---
 
@@ -236,7 +243,8 @@ Progressive rollouts ramp traffic automatically, but what if the new version has
 
 One possible use case for such a gate is verifying credentials after a secret rotation. Imagine you've rotated the billing service API key and deployed a new image with the updated secret. The gate workflow authenticates against the billing service to confirm the new credentials are valid - before any production traffic reaches the new version.
 
-> _**How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers before any production traffic is routed to them. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version never receives production traffic._
+> [!NOTE]
+> **How it works:** When `spec.rollout.gate` is configured, the controller starts the gate workflow on the new version's workers before any production traffic is routed to them. Only after the gate workflow completes successfully does the controller begin ramping traffic. If the gate fails, the version never receives production traffic.
 
 ### Step 1: Review the gate workflow
 
@@ -290,7 +298,8 @@ rollout:
 image: valet-worker:3.0
 ```
 
-> _**Think:** The gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?_
+> [!IMPORTANT]
+> **Think:** The gate workflow checks billing credentials, and you know those credentials are bad. What should happen to production traffic when you apply this manifest?
 
 ### Step 4: Build and deploy v3.0
 
@@ -319,7 +328,8 @@ Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
 kubectl describe twd
 ```
 
-> _**Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened._
+> [!IMPORTANT]
+> **Key observation:** Production traffic is still flowing to v2.0. Unlike the Exercise 2 incident where the bad deploy hit live traffic before you could respond, the gate caught the bad credential before any routing change happened.
 
 ### Step 6: Fix the activity
 
@@ -380,7 +390,8 @@ Observe the sequence:
 
 Find the successful gate workflow in the [button label="Temporal UI" background="#444CE7"](tab-3) tab. Compare it to the failed one from v3.0.
 
-> _**Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically._
+> [!IMPORTANT]
+> **Key takeaway:** Compare this to Exercise 2's incident response. There, a bad deploy reached production, workflows started failing, and you had to manually roll back and evacuate. Here, the gate blocked the rollout before any customer was affected. After fixing the credentials and redeploying, the gate passed and traffic ramped automatically.
 
 ---
 
@@ -390,7 +401,8 @@ Find the successful gate workflow in the [button label="Temporal UI" background=
 
 Not every deployment involves a workflow code change. You might be updating a dependency, rotating credentials, or changing config. Before routing production traffic to the new build, you can test it on real infrastructure using pinned synthetic traffic.
 
-> _**Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test._
+> [!NOTE]
+> **Why Manual?** The `Manual` strategy tells the controller to create the versioned Deployment and register the version with Temporal, but *not* automatically promote it. The version stays `Inactive` until you explicitly promote it. This gives you time to test.
 
 ### Step 1: Build the 4.0 image
 
@@ -435,7 +447,8 @@ Press **Ctrl+C** to stop watching once you see the version registered.
 
 v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID shown in the `TARGET` column (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
-> _**Think:** The version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?_
+> [!IMPORTANT]
+> **Think:** The version is `Inactive` - Temporal isn't routing any production traffic to it. How will this workflow reach v4.0's workers?
 
 ### Step 5: Send synthetic traffic pinned to v4.0
 
@@ -465,10 +478,13 @@ Check the [button label="Temporal UI" background="#444CE7"](tab-3) tab:
 - Find the `test-4.0-XXXX` workflow - it completed on v4.0
 - Meanwhile, load simulator workflows are still running on v3.1
 
-> _**Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change._
+> [!IMPORTANT]
+> **Key insight:** The `Inactive` state + `VersioningOverride` lets you test a new version with synthetic traffic before any production traffic touches it. The test workflow ran the full code path on real infrastructure (same namespace, same Temporal server, same task queue, same ParkingLotWorkflow), with no special test logic or sandbox environment needed. This works whether the deploy contains a code change, a dependency update, or just a config change.
 
-> _**How would you promote?** We won't do this in the exercise, but for reference: the simplest way to promote is to change the strategy in `k8s/valet-worker.yaml` from `Manual` to `AllAtOnce` (or `Progressive`) and re-apply with `kubectl apply -f k8s/valet-worker.yaml`. The controller will then promote v4.0 automatically. You could also promote directly via the CLI with `temporal worker deployment set-current-version --deployment-name "default/valet-worker" --build-id 4.0-XXXX`, but be aware that manual CLI changes trigger the controller's [ownership model](https://github.com/temporalio/temporal-worker-controller/blob/main/docs/ownership.md), requiring you to hand control back afterward._
+> [!NOTE]
+> **How would you promote?** We won't do this in the exercise, but for reference: the simplest way to promote is to change the strategy in `k8s/valet-worker.yaml` from `Manual` to `AllAtOnce` (or `Progressive`) and re-apply with `kubectl apply -f k8s/valet-worker.yaml`. The controller will then promote v4.0 automatically. You could also promote directly via the CLI with `temporal worker deployment set-current-version --deployment-name "default/valet-worker" --build-id 4.0-XXXX`, but be aware that manual CLI changes trigger the controller's [ownership model](https://github.com/temporalio/temporal-worker-controller/blob/main/docs/ownership.md), requiring you to hand control back afterward.
 
 ---
 
-> _**Congratulations!** You've completed this exercise!_
+> [!NOTE]
+> **Congratulations!** You've completed this exercise!

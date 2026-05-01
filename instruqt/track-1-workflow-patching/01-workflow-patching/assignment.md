@@ -44,6 +44,7 @@ In this track, you'll learn to catch that with replay testing and fix it with wo
 - **Part C:** Fix the change with `workflow.patched()` so replay stays safe.
 - **Part D:** Deploy the patched code and observe how in-flight vs. new workflows behave differently.
 
+> [!NOTE]
 > **Sandbox Notes:**
 > - Use the [button label="Temporal UI" background="#444CE7"](tab-3) tab to interact with the Temporal Web UI
 > - Use the [button label="Code Editor" background="#444CE7"](tab-2) tab to make changes to the code
@@ -77,7 +78,8 @@ Start the worker:
 make run-worker
 ```
 
-> _**Note:** Keep this worker running - you'll be instructed when to restart it later._
+> [!NOTE]
+> Keep this worker running - you'll be instructed when to restart it later.
 
 ### Step 3: Start a single workflow
 
@@ -100,7 +102,8 @@ Export the completed workflow's history:
 temporal workflow show --workflow-id valet-CA-1ABC123 --output json > history/valet-CA-1ABC123-history.json
 ```
 
-> _**Note:** You may need to refresh the file explorer in the [button label="Code Editor" background="#444CE7"](tab-2) tab to see the json file you just created._
+> [!NOTE]
+> You may need to refresh the file explorer in the [button label="Code Editor" background="#444CE7"](tab-2) tab to see the json file you just created.
 
 ### Step 5: Skim the exported history
 
@@ -146,7 +149,8 @@ await workflow.execute_activity(
 )
 ```
 
-> _**Think:** You just added a new activity call after `request_parking_space`. The JSON history you captured doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?_
+> [!IMPORTANT]
+> **Think:** You just added a new activity call after `request_parking_space`. The JSON history you captured doesn't have that command. What will the replayer do when the new code produces a command the history doesn't expect?
 
 ### Step 2: Run the replay test
 
@@ -242,7 +246,8 @@ This is your **post-patch workflow**.
 
 Open the [button label="Temporal UI" background="#444CE7"](tab-3) tab. Find both workflow executions and open their detail pages. They should both complete within about 30 seconds.
 
-> _**Tip:** When `workflow.patched()` writes a marker into a workflow's history, Temporal automatically populates a `TemporalChangeVersion` search attribute on that workflow with the patch ID (e.g. `add-notify-owner`). The data is there, but the UI won't show it by default. If you want to see it, you can add a **Change Version** column to the workflows table to see the value for each workflow (use the gear icon at the bottom of the workflows table).You might also try adding a `TemporalChangeVersion` filter in the search bar to filter the table to only workflows with a specific patch ID. This isn't required for the exercise, just a handy option if you want to explore._
+> [!NOTE]
+> **Tip:** When `workflow.patched()` writes a marker into a workflow's history, Temporal automatically populates a `TemporalChangeVersion` search attribute on that workflow with the patch ID (e.g. `add-notify-owner`). The data is there, but the UI won't show it by default. If you want to see it, you can add a **Change Version** column to the workflows table to see the value for each workflow (use the gear icon at the bottom of the workflows table). You might also try adding a `TemporalChangeVersion` filter in the search bar to filter the table to only workflows with a specific patch ID. This isn't required for the exercise, just a handy option if you want to explore.
 
 ### Step 5: Examine the differences
 
@@ -257,11 +262,14 @@ Notice how a single deploy of the same code produced two different execution pat
 
 You can stop the worker in the [button label="Worker" background="#444CE7"](tab-0) tab when you're satisfied (Ctrl+C).
 
-> _**Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open executions, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how **Worker Versioning** can eliminate the need for patching entirely for most workflows._
+> [!NOTE]
+> **Looking ahead:** The notification feature is shipped and working. Durable execution is humming along again. But notice the cost: you added a conditional branch to the workflow. Durability demands that your code stay compatible with open executions, so every future non-replay-safe change adds another branch. Over time, long-lived workflows accumulate layers of `if workflow.patched(...)` blocks. In Exercise 2, you'll see how **Worker Versioning** can eliminate the need for patching entirely for most workflows.
 
-> _**Think:** When is it safe to remove a `patch`?
-> It's safe to remove a patch when your `patch` will no longer get Replayed. i.e. Any currently running and/or if you're sure it won't get Queried._
+> [!IMPORTANT]
+> **Think:** When is it safe to remove a `patch`?
+> It's safe to remove a patch when your `patch` will no longer get Replayed. i.e. Any currently running and/or if you're sure it won't get Queried.
 
 ---
 
-> _**Congratulations!** You've completed this exercise!_
+> [!NOTE]
+> **Congratulations!** You've completed this exercise!

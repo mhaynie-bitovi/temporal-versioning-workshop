@@ -70,6 +70,7 @@ Your valet parking system is growing. The notification feature from Exercise 1 s
 - **Part C:** Respond to a bad deploy: rollback, evacuate stuck workflows, and fix-forward.
 - **Part D (Optional):** Discover why `AUTO_UPGRADE` workflows still need patching.
 
+> [!NOTE]
 > **Sandbox Notes:**
 > - Use the [button label="Temporal UI" background="#444CE7"](tab-9) tab to interact with the Temporal Web UI
 > - Use the [button label="Code Editor" background="#444CE7"](tab-8) tab to make changes to the code
@@ -96,7 +97,8 @@ In the [button label="Code Editor" background="#444CE7"](tab-8) tab, follow the 
 class ValetParkingWorkflow:
 ```
 
-> _**Why PINNED?** Each parking transaction should complete on the code version it started on. No mid-execution surprises, no patching needed._
+> [!NOTE]
+> **Why PINNED?** Each parking transaction should complete on the code version it started on. No mid-execution surprises, no patching needed.
 
 **b.** In `valet/parking_lot_workflow.py` add `versioning_behavior=VersioningBehavior.AUTO_UPGRADE` to `@workflow.defn`:
 
@@ -105,9 +107,10 @@ class ValetParkingWorkflow:
 class ParkingLotWorkflow:
 ```
 
-> _**Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an [Entity Workflow](https://temporal.io/blog/very-long-running-workflows) - it represents a durable object (the parking lot) and never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the entity on the latest version without manual intervention._
+> [!NOTE]
+> **Why AUTO_UPGRADE here?** `ParkingLotWorkflow` is an [Entity Workflow](https://temporal.io/blog/very-long-running-workflows) - it represents a durable object (the parking lot) and never completes normally. AUTO_UPGRADE means that when a new version becomes Current, the workflow automatically migrates to the new code on its next workflow task. This keeps the entity on the latest version without manual intervention.
 >
-> _**Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D._
+> **Important caveat:** AUTO_UPGRADE still requires patching for non-replay-safe changes. When the workflow auto-upgrades, it replays its existing history against the new code. If the new code produces different commands, you get an NDE - just like Exercise 1. We'll explore this in Part D.
 
 ### Step 2: Configure the worker for versioning
 
@@ -147,7 +150,8 @@ Click the [button label="Load Simulator" background="#444CE7"](tab-6) terminal.
 make run-load-simulator
 ```
 
-> _**Note:** Keep this running for the rest of the exercise._
+> [!NOTE]
+> Keep this running for the rest of the exercise.
 
 ### Step 5: Observe what happens without a Current Version
 
@@ -155,9 +159,11 @@ Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab. You shoul
 
 Now navigate to the **Deployments** tab and click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
 
-> _**Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic._
+> [!IMPORTANT]
+> **Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic.
 
-> _**Try:** Click on **Go to Workflows**, to see if there's any workflows registered to the current worker._
+> [!NOTE]
+> **Try:** Click on **Go to Workflows**, to see if there's any workflows registered to the current worker.
 
 ### Step 6: Register version 1.0 as the Current Version
 
@@ -170,7 +176,8 @@ temporal worker deployment set-current-version \
     --yes
 ```
 
-> _**Note:** In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy._
+> [!NOTE]
+> In this exercise we use `set-current-version` for instant cutover to keep things moving, but in production you'd likely prefer `set-ramping-version`, which routes a configurable percentage of new traffic to the new version while the rest stays on the Current Version. You can increase the percentage over time as confidence grows, then promote with `set-current-version` when ready. In Exercise 3, the Worker Controller automates this same pattern via its `Progressive` rollout strategy.
 
 ### Step 7: Inspect the deployment
 
@@ -229,7 +236,8 @@ Start a 2.0 worker **alongside** the running 1.0 worker:
 make run-worker BUILD_ID=2.0
 ```
 
-> _**Think:** The load simulator has been creating workflows on v1.0 for a while now. Some are mid-trip. In the next step when you set v2.0 as the Current Version, what happens to those in-flight v1.0 workflows?_
+> [!IMPORTANT]
+> **Think:** The load simulator has been creating workflows on v1.0 for a while now. Some are mid-trip. In the next step when you set v2.0 as the Current Version, what happens to those in-flight v1.0 workflows?
 
 ### Step 3: Set 2.0 as the Current Version
 
@@ -250,17 +258,18 @@ Check the [button label="Temporal UI" background="#444CE7"](tab-9) tab:
 - **In-flight 1.0 workflows** stay pinned to version 1.0 - they complete on the 1.0 worker with no billing, and no replay issues.
 - **`ParkingLotWorkflow`** (AUTO_UPGRADE) automatically migrates to v2.0 on its next workflow task.
 
-> _**Nice!** You just deployed a non-replay-safe change without needing any patching._
+**Nice!** You just deployed a non-replay-safe change without needing any patching.
 
-> **Version Statuses** 
+> [!NOTE]
+> **Version Statuses**
 > Temporal tracks each deployment version through a [lifecycle](https://docs.temporal.io/worker-versioning#versioning-statuses) which progresses through the following statuses:
 > - **Inactive**: worker registered, not yet serving traffic
 > - **Active**: currently Current or Ramping, accepting new workflows
 > - **Draining**: no longer active, but still has open pinned workflows
 > - **Drained**: all pinned workflows completed, no remaining work
-> 
-> **Note:** Drained means no open workflows, but completed workflows still exist in the namespace until the retention period expires (default 3 days). You can view a completed workflow's history in the UI without a worker, but querying it (programmatic queries, stack traces) triggers a replay that requires a worker with that version's code. In production, keep old workers running through the retention period if you need to query those completed executions.
-> 
+>
+> Drained means no open workflows, but completed workflows still exist in the namespace until the retention period expires (default 3 days). You can view a completed workflow's history in the UI without a worker, but querying it (programmatic queries, stack traces) triggers a replay that requires a worker with that version's code. In production, keep old workers running through the retention period if you need to query those completed executions.
+>
 > In the next step, you'll watch v1.0 move from Draining to Drained in real time.
 
 ### Step 5: Wait for v1.0 to drain
@@ -327,7 +336,8 @@ Click the [button label="Worker v3.0" background="#444CE7"](tab-2) terminal.
 make run-worker BUILD_ID=3.0
 ```
 
-> _**Think:** The load simulator is still running. What happens to new workflows the instant you run the next command?_
+> [!IMPORTANT]
+> **Think:** The load simulator is still running. What happens to new workflows the instant you run the next command?
 
 ### Step 3: Set 3.0 as current
 
@@ -395,7 +405,8 @@ temporal workflow update-options \
     --yes
 ```
 
-> _**Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries._
+> [!NOTE]
+> **Why is this replay-safe?** The workflow code between v2.0 and v3.0 is identical - the bug is in the activity implementation, not the workflow definition. The v2.0 worker replays the workflow history, reaches the billing step, and calls the working v2.0 `bill_customer`. Failed activity attempts in history don't cause replay errors - the workflow just sees "activity not yet completed" and retries.
 
 ### Step 9: Watch them recover
 
@@ -447,7 +458,8 @@ temporal worker deployment set-current-version \
 
 New workflows now flow through v3.1 with working billing. Incident resolved. You can verify this by inspecting new workflows in the [button label="Temporal UI" background="#444CE7"](tab-9) tab.
 
-> _**Recap what just happened.** A bad deploy hit production. Within seconds of noticing, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level._
+> [!IMPORTANT]
+> **Recap what just happened.** A bad deploy hit production. Within seconds of noticing, you redirected new traffic (no redeploy). Then you bulk-rescued every stuck workflow (one command). Then you shipped a fix. Total production impact: the time it took you to notice and type two commands. That's the power of version routing at the infrastructure level.
 
 ### Clean up
 
@@ -492,7 +504,8 @@ Click the [button label="Worker v4.0" background="#444CE7"](tab-4) terminal.
 make run-worker BUILD_ID=4.0
 ```
 
-> _**Think:** `ParkingLotWorkflow` is AUTO_UPGRADE. What happens to it when a new version becomes Current?_
+> [!IMPORTANT]
+> **Think:** `ParkingLotWorkflow` is AUTO_UPGRADE. What happens to it when a new version becomes Current?
 
 ### Step 3: Set v4.0 as current
 
@@ -509,7 +522,8 @@ temporal worker deployment set-current-version \
 
 The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determinism error (NDE). The v4.0 code expects a timer (the 2-second sleep), but the existing history doesn't have one.
 
-> _**Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE moves workflows to the latest code, which involves replaying old history against the new code - and that opens us up to the risk of NDEs (non-determinism errors). So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1._
+> [!IMPORTANT]
+> **Wait - didn't versioning eliminate patching?** Only for **PINNED** workflows. PINNED workflows never replay old history against new code because they stay on their original version. AUTO_UPGRADE moves workflows to the latest code, which involves replaying old history against the new code - and that opens us up to the risk of NDEs (non-determinism errors). So AUTO_UPGRADE still requires patching for non-replay-safe changes, just like the unversioned worker in Exercise 1.
 
 ### Fix it with a patch
 
@@ -546,7 +560,8 @@ temporal worker deployment set-current-version \
 
 `ParkingLotWorkflow` auto-upgrades to v4.1. This time, `workflow.patched("add-warmup-delay")` returns `False` during replay (no patch marker in the old history), so the sleep is skipped. The workflow continues without an NDE. Future runs (after `continue_as_new`) will include the sleep.
 
-> _**The takeaway:** PINNED eliminates patching. AUTO_UPGRADE does not. When an AUTO_UPGRADE workflow migrates to new code, it replays its history - so the new code must be replay-compatible. Patching is still the tool for that._
+> [!IMPORTANT]
+> **The takeaway:** PINNED eliminates patching. AUTO_UPGRADE does not. When an AUTO_UPGRADE workflow migrates to new code, it replays its history - so the new code must be replay-compatible. Patching is still the tool for that.
 
 ## Aside: Upgrade on Continue as New (or "Trampolining")
 
@@ -556,4 +571,5 @@ This is the core insight behind **trampolining** (upgrade on continue-as-new): i
 
 ---
 
-> _**Congratulations!** You've completed this exercise!_
+> [!NOTE]
+> **Congratulations!** You've completed this exercise!
