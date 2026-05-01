@@ -25,7 +25,8 @@ with workflow.unsafe.imports_passed_through():
     )
 
 
-# TODO (Part A): Add versioning_behavior=VersioningBehavior.PINNED to @workflow.defn
+# TODO (Part A): Declare this workflow a PINNED workflow
+# @workflow.defn(versioning_behavior=VersioningBehavior.PINNED)
 @workflow.defn
 class ValetParkingWorkflow:
 
