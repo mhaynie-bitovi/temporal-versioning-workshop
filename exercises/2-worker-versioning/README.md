@@ -110,7 +110,7 @@ Before shipping new features, you'll set up the versioning infrastructure. This 
 
    > _**Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic._
 
-   > _**Try:** Click on **Go to Workflows**, to see if there's any workflows registered to the current worker.
+   > _**Try:** Click on **Go to Workflows**, to see if there's any workflows registered to the current worker._
 
 6. **Register version 1.0 as the Current Version** for the deployment:
 
@@ -445,4 +445,4 @@ This is the core insight behind **trampolining** (upgrade on continue-as-new): i
 
 ---
 
-> _**🎉 Congratulations!** You've completed Exercise 2._
+> _**Congratulations!** You've completed this exercise!_
