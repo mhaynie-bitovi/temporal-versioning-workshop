@@ -25,6 +25,9 @@ class ParkingLotWorkflow:
         # TODO (Part D): Allow a 2-second warmup delay
         # Warm-up delay: let external systems sync before accepting requests
         # await workflow.sleep(2)
+        # TODO (Part D.5): Fix NDE using a patch
+        # if workflow.patched("add-warmup-delay"):
+        #    await workflow.sleep(2)
 
         await workflow.wait_condition(lambda: self._should_continue_as_new)
         workflow.continue_as_new(ParkingLotInput(parking_spaces=self.parking_spaces))
