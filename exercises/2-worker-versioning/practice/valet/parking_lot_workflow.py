@@ -7,7 +7,8 @@ with workflow.unsafe.imports_passed_through():
     from valet.models import ParkingLotInput, ParkingLotOutput
 
 
-# TODO (Part A): Add versioning_behavior=VersioningBehavior.AUTO_UPGRADE to @workflow.defn
+# TODO (Part A): Declare this workflow as an AUTO_UPGRADE workflow
+# @workflow.defn(versioning_behavior=VersioningBehavior.AUTO_UPGRADE)
 @workflow.defn
 class ParkingLotWorkflow:
 
