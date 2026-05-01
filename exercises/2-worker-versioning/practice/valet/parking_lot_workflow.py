@@ -25,6 +25,7 @@ class ParkingLotWorkflow:
         # TODO (Part D): Allow a 2-second warmup delay
         # Warm-up delay: let external systems sync before accepting requests
         # await workflow.sleep(2)
+        # TODO (Part D.5): Add a patch
         # if workflow.patched("add-warmup-delay"):
         #    await workflow.sleep(2)
 
