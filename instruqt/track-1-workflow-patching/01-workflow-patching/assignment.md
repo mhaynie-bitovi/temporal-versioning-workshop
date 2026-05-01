@@ -210,6 +210,8 @@ make run-starter
 
 4. Open the **Temporal UI** tab. Find both workflow executions and open their detail pages. They should both complete within about 30 seconds.
 
+> _**Tip:** When `workflow.patched()` writes a marker into a workflow's history, Temporal automatically populates a `TemporalChangeVersion` search attribute on that workflow with the patch ID (e.g. `add-notify-owner`). The data is there, but the UI won't show it by default. If you want to see it, you can add a **Change Version** column to the workflows table to see the value for each workflow (use the gear icon at the bottom of the workflows table).You might also try adding a `TemporalChangeVersion` filter in the search bar to filter the table to only workflows with a specific patch ID. This isn't required for the exercise, just a handy option if you want to explore._
+
 5. Compare the two executions. The same worker handled both, but the histories differ:
 
    - **Pre-patch workflow:** Completes **without** `notify_owner`. When the new worker replayed this workflow's history, it found no patch marker, so `workflow.patched()` returned `False` and the notification block was skipped. You won't see a `notify_owner` activity in this history.
