@@ -440,10 +440,8 @@ kubectl apply -f k8s/valet-worker.yaml
 Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
-watch kubectl get wd
+kubectl get wd
 ```
-
-Press **Ctrl+C** to stop watching once you see the version registered.
 
 v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Production traffic continues flowing to v3.1 - the Manual strategy means the controller won't promote automatically. Note the build ID shown in the `TARGET` column (e.g., `4.0-9bd4`) - you'll need it in the next step.
 
