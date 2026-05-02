@@ -70,7 +70,7 @@ Briefly examine the k8s manifests in the [button label="Code Editor" background=
 
 ### Step 2: Build the v1.0 container image
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make build tag=1.0
@@ -80,7 +80,7 @@ This compiles your worker code into a Docker image tagged `valet-worker:1.0` ins
 
 ### Step 3: Deploy the worker to Kubernetes
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl apply -f k8s/valet-worker.yaml
@@ -90,7 +90,7 @@ The Worker Controller will read the `WorkerDeployment` resource, create a versio
 
 ### Step 4: Verify the deployment
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl get wd
@@ -112,7 +112,7 @@ You should see the following:
 
 ### Step 5: Start the load simulator
 
-Click the [button label="Load Simulator" background="#444CE7"](tab-1) terminal.
+Click the [button label="Load Simulator" background="#444CE7"](tab-1) tab.
 
 ```bash,run
 make run-load-simulator
@@ -156,7 +156,7 @@ await workflow.execute_activity(
 
 ### Step 2: Build the 2.0 image
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make build tag=2.0
@@ -185,7 +185,7 @@ image: valet-worker:2.0
 
 ### Step 4: Apply the updated manifest
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl apply -f k8s/valet-worker.yaml
@@ -193,7 +193,7 @@ kubectl apply -f k8s/valet-worker.yaml
 
 ### Step 5: Observe the rainbow deployment
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl get deployments
@@ -206,7 +206,7 @@ Both 1.0 and 2.0 Deployments run simultaneously:
 
 ### Step 6: Watch the progressive rollout
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 watch kubectl get wd
@@ -303,7 +303,7 @@ image: valet-worker:3.0
 
 ### Step 4: Build and deploy v3.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make build tag=3.0
@@ -317,12 +317,12 @@ kubectl apply -f k8s/valet-worker.yaml
 
 Check the [button label="Temporal UI" background="#444CE7"](tab-3) tab:
 
-- Open the **Deployments** tab and click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
+- In the Temporal Web UI sidebar, click **Workers** and then click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
 - Click on the v3.0 version row - this takes you to the workflows list filtered for that version. Find the failed `ValetGateWorkflow` execution and open it, then expand the failed activity to see the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 You can also check the WD progress to see the status of the failed gate (look for **"TestWorkflows"** near the bottom)
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl describe wd
@@ -345,7 +345,7 @@ async def check_billing_service() -> str:
 
 ### Step 7: Rebuild with the fix
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make build tag=3.1
@@ -361,7 +361,7 @@ image: valet-worker:3.1
 
 ### Step 9: Apply the fix
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl apply -f k8s/valet-worker.yaml
@@ -369,7 +369,7 @@ kubectl apply -f k8s/valet-worker.yaml
 
 ### Step 10: Watch the successful rollout
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 watch kubectl get wd
@@ -406,7 +406,7 @@ Not every deployment involves a workflow code change. You might be updating a de
 
 ### Step 1: Build the 4.0 image
 
-No code changes are needed for this deploy. Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+No code changes are needed for this deploy. Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make build tag=4.0
@@ -429,7 +429,7 @@ image: valet-worker:4.0
 
 ### Step 3: Apply the updated manifest
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 kubectl apply -f k8s/valet-worker.yaml
@@ -437,7 +437,7 @@ kubectl apply -f k8s/valet-worker.yaml
 
 ### Step 4: Watch the version state
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 watch kubectl get wd
@@ -452,7 +452,7 @@ v4.0 pods start, register with Temporal, and sit in the **Inactive** state. Prod
 
 ### Step 5: Send synthetic traffic pinned to v4.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-0) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-0) tab.
 Replace the build ID with yours:
 
 ```bash

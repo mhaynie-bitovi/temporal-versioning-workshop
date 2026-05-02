@@ -71,7 +71,7 @@ Briefely examine `valet/valet_parking_workflow.py` in the [button label="Code Ed
 
 ### Step 2: Start the worker
 
-Click the [button label="Worker" background="#444CE7"](tab-0) terminal.
+Click the [button label="Worker" background="#444CE7"](tab-0) tab.
 Start the worker:
 
 ```bash,run
@@ -83,7 +83,7 @@ make run-worker
 
 ### Step 3: Start a single workflow
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Start a single workflow:
 
 ```bash,run
@@ -95,7 +95,7 @@ You can either export the completed workflow (in about 30s) or export a running 
 
 ### Step 4: Export the workflow history
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Export the completed workflow's history:
 
 ```bash,run
@@ -115,7 +115,7 @@ Briefly open `tests/test_replay.py` in the [button label="Code Editor" backgroun
 
 ### Step 7: Run the tests
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Run the tests:
 
 ```bash,run
@@ -135,7 +135,7 @@ Now that you have a replay test guarding the current workflow, it's time to ship
 
 ### Step 1: Add the notify_owner activity call
 
-In `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
+In the [button label="Code Editor" background="#444CE7"](tab-2) tab, in `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
 
 ```python
 # Notify the owner their car is being parked
@@ -154,7 +154,7 @@ await workflow.execute_activity(
 
 ### Step 2: Run the replay test
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Run the replay test again:
 
 ```bash,run
@@ -175,7 +175,7 @@ The replay test caught the problem before it reached production. Now we'll fix i
 
 ### Step 1: Wrap the activity call with workflow.patched()
 
-In `valet/valet_parking_workflow.py`, wrap the new activity call with `workflow.patched()`:
+In the [button label="Code Editor" background="#444CE7"](tab-2) tab, in `valet/valet_parking_workflow.py`, wrap the new activity call with `workflow.patched()`:
 
 ```python
 if workflow.patched("add-notify-owner"):
@@ -191,7 +191,7 @@ if workflow.patched("add-notify-owner"):
 
 ### Step 2: Run the replay test again
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Run the replay test again:
 
 ```bash,run
@@ -212,7 +212,7 @@ The worker you started in Part A is still running the **original v1.0 code**. Ev
 
 ### Step 1: Start a pre-patch workflow
 
-With the **old worker still running** (from Part A), click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+With the **old worker still running** (from Part A), click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Start another workflow:
 
 ```bash,run
@@ -225,7 +225,7 @@ This is your **pre-patch workflow**.
 
 Immediately **stop the old worker** (Ctrl+C in the [button label="Worker" background="#444CE7"](tab-0) tab) and restart it to pick up your patched code:
 
-Click the [button label="Worker" background="#444CE7"](tab-0) terminal.
+Click the [button label="Worker" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make run-worker
@@ -233,7 +233,7 @@ make run-worker
 
 ### Step 3: Start a post-patch workflow
 
-Click the [button label="Terminal" background="#444CE7"](tab-1) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-1) tab.
 Start a **second** workflow:
 
 ```bash,run

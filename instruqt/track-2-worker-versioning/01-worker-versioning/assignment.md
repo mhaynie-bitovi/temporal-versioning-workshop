@@ -114,7 +114,7 @@ class ParkingLotWorkflow:
 
 ### Step 2: Configure the worker for versioning
 
-In `valet/worker.py`, add the `deployment_config` argument to the `Worker` constructor (follow the `TODO (Part A)` comment):
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/worker.py`, add the `deployment_config` argument to the `Worker` constructor (follow the `TODO (Part A)` comment):
 
 ```python
  worker = Worker(
@@ -136,7 +136,7 @@ The `BUILD_ID` env var feeds into the `WorkerDeploymentConfig` you just wired up
 
 _NOTE: This track has many terminal tabs - you may need to scroll horizontally to find the right one._
 
-Click the [button label="Worker v1.0" background="#444CE7"](tab-0) terminal.
+Click the [button label="Worker v1.0" background="#444CE7"](tab-0) tab.
 
 ```bash,run
 make run-worker BUILD_ID=1.0
@@ -144,7 +144,7 @@ make run-worker BUILD_ID=1.0
 
 ### Step 4: Start the load simulator
 
-Click the [button label="Load Simulator" background="#444CE7"](tab-6) terminal.
+Click the [button label="Load Simulator" background="#444CE7"](tab-6) tab.
 
 ```bash,run
 make run-load-simulator
@@ -157,7 +157,7 @@ make run-load-simulator
 
 Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab. You should see workflows appearing in the table, but none of them are making progress - they're stuck in a Running state without completing. The worker is connected, but Temporal doesn't know which version should receive workflow tasks. Without a Current Version set, there's no routing rule, so workflow tasks sit in the task queue with no worker polling for them.
 
-Now navigate to the **Deployments** tab and click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
+Now, in the Temporal Web UI sidebar, click **Workers** and then click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
 
 > [!IMPORTANT]
 > **Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic.
@@ -167,7 +167,7 @@ Now navigate to the **Deployments** tab and click on the `valet` deployment. You
 
 ### Step 6: Register version 1.0 as the Current Version
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -181,7 +181,7 @@ temporal worker deployment set-current-version \
 
 ### Step 7: Inspect the deployment
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment describe --name valet
@@ -198,7 +198,7 @@ Check the [button label="Temporal UI" background="#444CE7"](tab-9) tab. The work
 
 You should now see `valet` as the Deployment, `valet:1.0` as the Deployment Version, and `Pinned` or `AutoUpgrade` as the Versioning Behavior for each workflow. This confirms Temporal is routing traffic through your versioned worker - every workflow knows which version it belongs to, and that metadata is visible and queryable.
 
-Navigate back to the **Deployments** tab and open the `valet` deployment again. Version 1.0 should now show as **Active** - it's the Current Version and receiving all new workflow traffic.
+Navigate back to **Workers** in the Temporal Web UI sidebar and open the `valet` deployment again. Version 1.0 should now show as **Active** - it's the Current Version and receiving all new workflow traffic.
 
 ---
 
@@ -229,7 +229,7 @@ await workflow.execute_activity(
 
 ### Step 2: Start a 2.0 worker
 
-Click the [button label="Worker v2.0" background="#444CE7"](tab-1) terminal.
+Click the [button label="Worker v2.0" background="#444CE7"](tab-1) tab.
 Start a 2.0 worker **alongside** the running 1.0 worker:
 
 ```bash,run
@@ -241,7 +241,7 @@ make run-worker BUILD_ID=2.0
 
 ### Step 3: Set 2.0 as the Current Version
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -278,13 +278,14 @@ After setting v2.0 as Current, no new workflows are routed to v1.0. But existing
 
 Once there are no more open workflows on v1.0, the version is considered "drained" - meaning it has no remaining work and its worker can be safely shut down. In this exercise, that's just the PINNED `ValetParkingWorkflow` executions finishing their trips. The `ParkingLotWorkflow` execution already migrated to v2.0 when you set it as current.
 
-_NOTE: Draining may take 1-3 minutes. The workflows themselves finish in 5-30 seconds, but Temporal's visibility system (which tracks open workflows per version) is **eventually** consistent. The version won't show as "Drained" until visibility catches up, which can lag behind actual workflow completion by a minute or two._
+> [!NOTE]
+> Draining may take 1-3 minutes. The workflows themselves finish in 5-30 seconds, but Temporal's visibility system (which tracks open workflows per version) is **eventually** consistent. The version won't show as "Drained" until visibility catches up, which can lag behind actual workflow completion by a minute or two.
 
 **Check drain status** using either method:
 
 - **CLI:** Run `watch temporal worker deployment describe --name valet` and wait for `Drained` status on the 1.0 version. Press **Ctrl+C** to stop watching once you see it.
 
-  Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+  Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
   ```bash,run
   watch temporal worker deployment describe --name valet
@@ -292,7 +293,7 @@ _NOTE: Draining may take 1-3 minutes. The workflows themselves finish in 5-30 se
 
   Press **Ctrl+C** to stop watching once you see it.
 
-- **Web UI:** Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab and navigate to the **Deployments** tab. Click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
+- **Web UI:** In the [button label="Temporal UI" background="#444CE7"](tab-9) tab, click **Workers** in the sidebar and then click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
 
 ### Step 6: Stop the 1.0 worker
 
@@ -330,7 +331,7 @@ This will cause an `AttributeError` every time billing runs.
 
 ### Step 2: Start a 3.0 worker
 
-Click the [button label="Worker v3.0" background="#444CE7"](tab-2) terminal.
+Click the [button label="Worker v3.0" background="#444CE7"](tab-2) tab.
 
 ```bash,run
 make run-worker BUILD_ID=3.0
@@ -341,7 +342,7 @@ make run-worker BUILD_ID=3.0
 
 ### Step 3: Set 3.0 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -358,7 +359,7 @@ Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab. New workf
 
 Before you fix anything, see exactly how bad it is:
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow list \
@@ -373,7 +374,7 @@ The fastest possible response: redirect new traffic away from the broken version
 
 ### Step 6: Roll back to v2.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -394,7 +395,7 @@ Rollback stopped the bleeding for new workflows, but the PINNED workflows that a
 
 ### Step 8: Evacuate stuck workflows to v2.0
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow update-options \
@@ -414,7 +415,7 @@ Go back to the [button label="Temporal UI" background="#444CE7"](tab-9) tab. The
 
 Run the same query from step 5 again:
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal workflow list \
@@ -429,7 +430,7 @@ Rollback bought you time. Now ship the fix.
 
 ### Step 10: Fix the bug
 
-In `valet/activities.py`, remove the `tip = input.tip_percentage` line you added in step 1.
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/activities.py`, remove the `tip = input.tip_percentage` line you added in step 1.
 
 ```python
 @activity.defn
@@ -439,7 +440,7 @@ async def bill_customer(input: BillCustomerInput) -> BillCustomerOutput:
 
 ### Step 11: Start a v3.1 worker
 
-Click the [button label="Worker v3.1" background="#444CE7"](tab-3) terminal.
+Click the [button label="Worker v3.1" background="#444CE7"](tab-3) tab.
 
 ```bash,run
 make run-worker BUILD_ID=3.1
@@ -447,7 +448,7 @@ make run-worker BUILD_ID=3.1
 
 ### Step 12: Set v3.1 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -485,7 +486,7 @@ Let's see it happen.
 
 ### Step 1: Add a warm-up delay
 
-In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized:
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized:
 
 ```python
 # Warm-up delay: let external systems sync before accepting requests
@@ -498,7 +499,7 @@ This is a non-replay-safe change: it adds a timer command that doesn't exist in 
 
 ### Step 2: Start a v4.0 worker
 
-Click the [button label="Worker v4.0" background="#444CE7"](tab-4) terminal.
+Click the [button label="Worker v4.0" background="#444CE7"](tab-4) tab.
 
 ```bash,run
 make run-worker BUILD_ID=4.0
@@ -509,7 +510,7 @@ make run-worker BUILD_ID=4.0
 
 ### Step 3: Set v4.0 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
@@ -529,7 +530,7 @@ The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determ
 
 ### Step 5: Wrap the sleep in workflow.patched()
 
-In `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
 
 ```python
  # Warm-up delay: let external systems sync before accepting requests
@@ -539,7 +540,7 @@ In `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the
 
 ### Step 6: Start a v4.1 worker
 
-Click the [button label="Worker v4.1" background="#444CE7"](tab-5) terminal.
+Click the [button label="Worker v4.1" background="#444CE7"](tab-5) tab.
 
 ```bash,run
 make run-worker BUILD_ID=4.1
@@ -547,7 +548,7 @@ make run-worker BUILD_ID=4.1
 
 ### Step 7: Set v4.1 as current
 
-Click the [button label="Terminal" background="#444CE7"](tab-7) terminal.
+Click the [button label="Terminal" background="#444CE7"](tab-7) tab.
 
 ```bash,run
 temporal worker deployment set-current-version \
