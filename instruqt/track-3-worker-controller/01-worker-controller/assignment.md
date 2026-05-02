@@ -317,7 +317,7 @@ kubectl apply -f k8s/valet-worker.yaml
 
 Check the [button label="Temporal UI" background="#444CE7"](tab-3) tab:
 
-- Open the **Deployments** tab and click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
+- In the Temporal Web UI sidebar, click **Workers** and then click on the `valet-worker` deployment. You should see v3.0 listed but not receiving production traffic - v2.0 is still the current version.
 - Click on the v3.0 version row - this takes you to the workflows list filtered for that version. Find the failed `ValetGateWorkflow` execution and open it, then expand the failed activity to see the error: `Billing service: invalid API key`. This is exactly what would happen if a rotated secret was misconfigured.
 
 You can also check the TWD progress to see the status of the failed gate (look for **"TestWorkflows"** near the bottom)

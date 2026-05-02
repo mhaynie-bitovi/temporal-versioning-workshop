@@ -157,7 +157,7 @@ make run-load-simulator
 
 Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab. You should see workflows appearing in the table, but none of them are making progress - they're stuck in a Running state without completing. The worker is connected, but Temporal doesn't know which version should receive workflow tasks. Without a Current Version set, there's no routing rule, so workflow tasks sit in the task queue with no worker polling for them.
 
-Now navigate to the **Deployments** tab and click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
+Now, in the Temporal Web UI sidebar, click **Workers** and then click on the `valet` deployment. You should see version 1.0 listed with an **Inactive** status - the worker registered itself, but it's not receiving any traffic yet.
 
 > [!IMPORTANT]
 > **Key insight:** A versioned worker registering itself is not enough. Temporal requires an explicit `set-current-version` (or `set-ramping-version`) command to begin routing. This is a safety mechanism - it separates "deploy" from "activate," giving you a window to verify the worker is healthy before it receives traffic.
@@ -198,7 +198,7 @@ Check the [button label="Temporal UI" background="#444CE7"](tab-9) tab. The work
 
 You should now see `valet` as the Deployment, `valet:1.0` as the Deployment Version, and `Pinned` or `AutoUpgrade` as the Versioning Behavior for each workflow. This confirms Temporal is routing traffic through your versioned worker - every workflow knows which version it belongs to, and that metadata is visible and queryable.
 
-Navigate back to the **Deployments** tab and open the `valet` deployment again. Version 1.0 should now show as **Active** - it's the Current Version and receiving all new workflow traffic.
+Navigate back to **Workers** in the Temporal Web UI sidebar and open the `valet` deployment again. Version 1.0 should now show as **Active** - it's the Current Version and receiving all new workflow traffic.
 
 ---
 
@@ -292,7 +292,7 @@ _NOTE: Draining may take 1-3 minutes. The workflows themselves finish in 5-30 se
 
   Press **Ctrl+C** to stop watching once you see it.
 
-- **Web UI:** Open the [button label="Temporal UI" background="#444CE7"](tab-9) tab and navigate to the **Deployments** tab. Click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
+- **Web UI:** In the [button label="Temporal UI" background="#444CE7"](tab-9) tab, click **Workers** in the sidebar and then click on the `valet` deployment to see per-version status. When 1.0 shows as drained, it has no remaining workflows.
 
 ### Step 6: Stop the 1.0 worker
 
