@@ -114,7 +114,7 @@ class ParkingLotWorkflow:
 
 ### Step 2: Configure the worker for versioning
 
-In `valet/worker.py`, add the `deployment_config` argument to the `Worker` constructor (follow the `TODO (Part A)` comment):
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/worker.py`, add the `deployment_config` argument to the `Worker` constructor (follow the `TODO (Part A)` comment):
 
 ```python
  worker = Worker(
@@ -429,7 +429,7 @@ Rollback bought you time. Now ship the fix.
 
 ### Step 10: Fix the bug
 
-In `valet/activities.py`, remove the `tip = input.tip_percentage` line you added in step 1.
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/activities.py`, remove the `tip = input.tip_percentage` line you added in step 1.
 
 ```python
 @activity.defn
@@ -485,7 +485,7 @@ Let's see it happen.
 
 ### Step 1: Add a warm-up delay
 
-In `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized:
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/parking_lot_workflow.py`, add a 2-second warm-up delay after the parking spaces are initialized:
 
 ```python
 # Warm-up delay: let external systems sync before accepting requests
@@ -529,7 +529,7 @@ The `ParkingLotWorkflow` auto-upgrades to v4.0 and immediately hits a non-determ
 
 ### Step 5: Wrap the sleep in workflow.patched()
 
-In `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
+In the [button label="Code Editor" background="#444CE7"](tab-8) tab, in `valet/parking_lot_workflow.py`, wrap the sleep in `workflow.patched()` - the same technique from Exercise 1:
 
 ```python
  # Warm-up delay: let external systems sync before accepting requests

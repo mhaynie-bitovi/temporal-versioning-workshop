@@ -135,7 +135,7 @@ Now that you have a replay test guarding the current workflow, it's time to ship
 
 ### Step 1: Add the notify_owner activity call
 
-In `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
+In the [button label="Code Editor" background="#444CE7"](tab-2) tab, in `valet/valet_parking_workflow.py`, find the `TODO (Part B)` comment and **uncomment** the `notify_owner` activity call below it. The result should look like this:
 
 ```python
 # Notify the owner their car is being parked
@@ -175,7 +175,7 @@ The replay test caught the problem before it reached production. Now we'll fix i
 
 ### Step 1: Wrap the activity call with workflow.patched()
 
-In `valet/valet_parking_workflow.py`, wrap the new activity call with `workflow.patched()`:
+In the [button label="Code Editor" background="#444CE7"](tab-2) tab, in `valet/valet_parking_workflow.py`, wrap the new activity call with `workflow.patched()`:
 
 ```python
 if workflow.patched("add-notify-owner"):
