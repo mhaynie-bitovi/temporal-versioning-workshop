@@ -278,7 +278,8 @@ After setting v2.0 as Current, no new workflows are routed to v1.0. But existing
 
 Once there are no more open workflows on v1.0, the version is considered "drained" - meaning it has no remaining work and its worker can be safely shut down. In this exercise, that's just the PINNED `ValetParkingWorkflow` executions finishing their trips. The `ParkingLotWorkflow` execution already migrated to v2.0 when you set it as current.
 
-_NOTE: Draining may take 1-3 minutes. The workflows themselves finish in 5-30 seconds, but Temporal's visibility system (which tracks open workflows per version) is **eventually** consistent. The version won't show as "Drained" until visibility catches up, which can lag behind actual workflow completion by a minute or two._
+> [!NOTE]
+> Draining may take 1-3 minutes. The workflows themselves finish in 5-30 seconds, but Temporal's visibility system (which tracks open workflows per version) is **eventually** consistent. The version won't show as "Drained" until visibility catches up, which can lag behind actual workflow completion by a minute or two.
 
 **Check drain status** using either method:
 
